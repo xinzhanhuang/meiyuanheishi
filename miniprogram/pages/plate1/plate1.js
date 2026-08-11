@@ -337,7 +337,7 @@ Page({
     var index = this.data.index
     var ss_xx = this.data.ss_xx
     console.log("index::::", index)
-    if (index >= 0) {
+    if (index >= 0 && ss_xx[index] && ss_xx[index].ss_xx) {
       ss_xx[index].ss_xx.look = app.ssinfo.looknb
       var loveinfo = app.loveinfo
       //console.log("app.loveinfo:",loveinfo)

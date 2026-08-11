@@ -182,7 +182,7 @@ Page({
     var ss_xx = this.data.ss_xx
     var reping = app.ssinfo.reping
     //console.log("index::::",index)
-    if (index >= 0 && reping == 4444) {
+    if (index >= 0 && reping == 4444 && ss_xx[index] && ss_xx[index].ss_xx) {
       ss_xx[index].ss_xx.look = app.ssinfo.looknb
       var loveinfo = app.loveinfo
       //console.log("app.loveinfo:",loveinfo)

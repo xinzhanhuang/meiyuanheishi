@@ -280,7 +280,7 @@ Page({
 
 
     //console.log("index::::",index)
-    if (index >= 0 && reping == 2222) {
+    if (index >= 0 && reping == 2222 && ss_xx[index] && ss_xx[index].ss_xx) {
       ss_xx[index].ss_xx.look = app.ssinfo.looknb
       var loveinfo = app.loveinfo
       //console.log("app.loveinfo:",loveinfo)
