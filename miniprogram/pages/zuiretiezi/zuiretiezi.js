@@ -106,28 +106,7 @@ Page({
           wx.hideLoading()
           if (app.userInfo._openid == "") {
           } else {
-            //登录上了就监听user
-            console.log("已经登录，开启监听user")
-            var _id = app.userInfo._id
-            var that = this
-            this.watcher = db.collection('users').doc(_id).watch({
-              onChange: function (e) {
-                var user = e.docs && e.docs[0]
-                if (!user) return
-
-                console.log('监听user数据变化：', user)
-                app.userInfo = user
-                var message = user.message || [] // message数组
-                app.message = message
-                // that.jiantingchuli(message)
-
-                console.log('长度', message.length)
-
-              },
-              onError: function (err) {
-                console.error('监听出现问题！', err)
-              }
-            })
+            app.startUserWatcher()
           }
         }).catch((err) => {
           console.error('获取当前用户信息失败:', err)
@@ -139,11 +118,7 @@ Page({
       });
     } else {
 
-      //登录上了就监听user
-      if (!app.jianting) {
-        //开启监听
-        app.jianting = true
-      }
+      app.startUserWatcher()
     }
 
     this.jiazai()

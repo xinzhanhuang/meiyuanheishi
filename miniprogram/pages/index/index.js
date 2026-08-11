@@ -667,17 +667,11 @@ Page({
       }
     }
 
-    // 检查登录状态并重新初始化监听器
-    if (app.userInfo._id && !app.jianting) {
+    // 注册首页监听回调，并确保全局消息监听已启动
+    if (app.userInfo._id) {
       this.jianting();
-      app.jianting = true;
     } else if (!app.userInfo._id && app.jianting) {
-      // 用户登出时关闭监听器
-      if (this.watcher) {
-        this.watcher.close();
-        this.watcher = null;
-      }
-      app.jianting = false;
+      app.stopUserWatcher();
     }
 
   },
@@ -687,51 +681,14 @@ Page({
    * 用于更新非tabar页面未设置的红点
    */
   checkred() {
-    // 确保使用最新的消息数据
-    var message = app.message || (app.userInfo && app.userInfo.message) || [];
-    var dzmessage = app.userInfo && app.userInfo.dzmessage || []; // 获取点赞消息
-
-    var weidu = Array.isArray(message) ? message.length : 0;
-    var dzweidu = Array.isArray(dzmessage) ? dzmessage.length : 0; // 点赞消息数量
-    var totalWeidu = weidu + dzweidu; // 总未读数量
-
-    console.log('index checkred检查消息数量:', weidu, '点赞数量:', dzweidu, '总未读:', totalWeidu);
-
-    if (totalWeidu != 0) {
-      // 有未读消息，设置底部导航栏红点
-      wx.setTabBarBadge({
-        index: 2,
-        text: totalWeidu.toString()
-      })
-      app.hongdian = true
-      wx.setStorageSync('badgeCount', totalWeidu)
-    } else {
-      // 没有未读消息时，强制移除红点
-      try {
-        wx.removeTabBarBadge({ index: 2 })
-        app.hongdian = false
-        wx.setStorageSync('badgeCount', 0)
-      } catch (e) {
-        console.log('移除红点时出错（可能红点不存在）:', e)
-        app.hongdian = false
-        wx.setStorageSync('badgeCount', 0)
-      }
-    }
+    return app.refreshMessageBadge();
   },
 
   /**
    * 生命周期函数--监听页面隐藏
    */
   onHide: function () {
-    if (this.watcherRetryTimer) {
-      clearTimeout(this.watcherRetryTimer);
-      this.watcherRetryTimer = null;
-    }
-    if (this.watcher) {
-      this.watcher.close();
-      this.watcher = null;
-    }
-    app.jianting = false;
+    app.clearUserWatcherListener();
   },
 
   /**
@@ -748,15 +705,7 @@ Page({
     clearTimeout(this.showListTimer);
     clearTimeout(this.modalTimer);
     clearTimeout(this.onlineToastTimer);
-    if (this.watcherRetryTimer) {
-      clearTimeout(this.watcherRetryTimer);
-      this.watcherRetryTimer = null;
-    }
-    if (this.watcher) {
-      this.watcher.close();
-      this.watcher = null;
-    }
-    app.jianting = false;
+    app.clearUserWatcherListener();
   },
 
   /**
@@ -1117,65 +1066,11 @@ Page({
   /**
    * 消息监听
    */
-  jianting(retryCount = 0) {
-    // 如果重试次数超过3次，不再重试
-    if (retryCount > 3) {
-      console.error('监听器重试次数过多，停止重试');
-      return;
-    }
-
-    // 先关闭已存在的监听器
-    if (this.watcher) {
-      this.watcher.close();
-      this.watcher = null;
-    }
-
-    if (!app.userInfo._id) {
-      console.error('用户未登录，无法开启监听');
-      return;
-    }
-
-    var _id = app.userInfo._id;
-    var that = this;
-
-    try {
-      this.watcher = db.collection('users').doc(_id).watch({
-        onChange: function (e) {
-          var user = e.docs && e.docs[0]
-          if (!user) {
-            console.warn('监听user数据为空，跳过本次更新')
-            return
-          }
-
-          console.log('监听user数据变化：', user);
-          app.userInfo = user;
-          var message = user.message || []; // 确保message存在
-          app.message = message;
-          that.jiantingchuli(message);
-
-          // 成功连接后，重置重试计数（如果需要）
-          // 但这里是onChange，连接成功并不一定马上触发onChange。
-          // 比较好的做法是单独维护状态，但简单起见，这里不需要重置，
-          // 因为我们只关心由于onError触发的连续重试。
-        },
-        onError: function (err) {
-          console.error('监听出现问题！', err);
-
-          // 检查错误类型，如果是权限问题可能不应该重试
-          if (err.errCode === -402002) {
-            console.log("鉴权失败或连接断开，尝试重连...");
-          }
-
-          // 增加重试延迟到5秒，并增加计数
-          that.watcherRetryTimer = setTimeout(() => {
-            that.watcherRetryTimer = null;
-            that.jianting(retryCount + 1);
-          }, 5000);
-        }
-      });
-    } catch (err) {
-      console.error('初始化监听器失败:', err);
-    }
+  jianting() {
+    app.setUserWatcherListener((user) => {
+      this.jiantingchuli(user.message || []);
+    });
+    app.startUserWatcher();
   },
 
   /**
@@ -1188,30 +1083,6 @@ Page({
     }
 
     this.checkred();
-
-    // 计算总未读数量
-    const message = app.message || [];
-    const dzmessage = app.userInfo && app.userInfo.dzmessage || [];
-    const weidu = message.length;
-    const dzweidu = dzmessage.length;
-    const totalWeidu = weidu + dzweidu;
-
-    if (totalWeidu > 0) {
-      wx.setTabBarBadge({
-        index: 2,
-        text: totalWeidu.toString()
-      });
-      app.hongdian = true;
-    } else {
-      // 消息数量为0时，强制移除红点
-      try {
-        wx.removeTabBarBadge({ index: 2 });
-        app.hongdian = false;
-      } catch (e) {
-        console.log('jiantingchuli: 移除红点时出错:', e);
-        app.hongdian = false;
-      }
-    }
   },
 
   /**

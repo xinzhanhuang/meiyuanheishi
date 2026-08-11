@@ -65,6 +65,7 @@ App({
   },
   onShow() {
     this.checkUpdate()
+    this.startUserWatcher()
     wx.cloud.callFunction({
       name: 'updateUserPresence',
       data: { online: true }
@@ -77,6 +78,7 @@ App({
 
   //不在小程序中就下线
   onHide() {
+    this.stopUserWatcher()
     wx.cloud.callFunction({
       name: 'updateUserPresence',
       data: { online: false }
@@ -89,6 +91,81 @@ App({
   },
 
   onUnload() {
+    this.stopUserWatcher()
+  },
+
+  refreshMessageBadge() {
+    var message = Array.isArray(this.message) ? this.message : []
+    var dzmessage = this.userInfo && Array.isArray(this.userInfo.dzmessage) ? this.userInfo.dzmessage : []
+    var total = message.length + dzmessage.length
+
+    if (total > 0) {
+      wx.setTabBarBadge({ index: 2, text: total.toString() })
+      this.hongdian = true
+    } else {
+      wx.removeTabBarBadge({ index: 2 })
+      this.hongdian = false
+    }
+    wx.setStorageSync('badgeCount', total)
+    return total
+  },
+
+  setUserWatcherListener(listener) {
+    this.userWatcherListener = listener
+    if (listener && this.userInfo && this.userInfo._id) listener(this.userInfo)
+  },
+
+  clearUserWatcherListener() {
+    this.userWatcherListener = null
+  },
+
+  startUserWatcher(retryCount = 0) {
+    var userId = this.userInfo && this.userInfo._id
+    if (!userId) return
+    if (this.userWatcher && this.userWatcherId === userId) return
+    if (retryCount > 3) {
+      console.error('用户消息监听重试次数过多，停止重试')
+      this.jianting = false
+      return
+    }
+
+    this.stopUserWatcher()
+    this.userWatcherId = userId
+    this.jianting = true
+    var that = this
+    this.userWatcher = wx.cloud.database().collection('users').doc(userId).watch({
+      onChange: function (event) {
+        var user = event.docs && event.docs[0]
+        if (!user) return
+        that.userInfo = user
+        that.message = Array.isArray(user.message) ? user.message : []
+        that.refreshMessageBadge()
+        if (that.userWatcherListener) that.userWatcherListener(user)
+      },
+      onError: function (err) {
+        console.error('用户消息监听出现问题！', err)
+        that.userWatcher = null
+        that.jianting = false
+        if (that.userWatcherRetryTimer) return
+        that.userWatcherRetryTimer = setTimeout(function () {
+          that.userWatcherRetryTimer = null
+          that.startUserWatcher(retryCount + 1)
+        }, 5000)
+      }
+    })
+  },
+
+  stopUserWatcher() {
+    if (this.userWatcherRetryTimer) {
+      clearTimeout(this.userWatcherRetryTimer)
+      this.userWatcherRetryTimer = null
+    }
+    if (this.userWatcher) {
+      this.userWatcher.close()
+      this.userWatcher = null
+    }
+    this.userWatcherId = ''
+    this.jianting = false
   },
 
   checkUpdate: function () {

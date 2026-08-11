@@ -289,93 +289,25 @@ Page({
    * 开启消息监听
    * @param {String} _id 用户ID
    */
-  jianting(_id, retryCount = 0) {
-    if (retryCount > 3) {
-      console.error('监听器重试次数过多，停止重试');
-      if (this.watcher) {
-        this.watcher.close();
-        this.watcher = null;
-      }
-      app.jianting = false;
-      return;
-    }
-
-    if (this.watcherRetryTimer) {
-      clearTimeout(this.watcherRetryTimer);
-      this.watcherRetryTimer = null;
-    }
-
-    // 先关闭已存在的监听器
-    if (this.watcher) {
-      this.watcher.close();
-    }
-
-    if (!_id) {
-      console.error('用户ID不存在，无法开启监听');
-      return;
-    }
-
-    var that = this;
-    app.jianting = true;
-
-    try {
-      this.watcher = db.collection('users').doc(_id).watch({
-        onChange: function (e) {
-          var user = e.docs && e.docs[0];
-          if (!user) return;
-
-          console.log('监听user数据变化：', user);
-          app.userInfo = user;
-          var message = user.message || [];
-          app.message = message;
-          that.jiantingchuli(message);
-        },
-        onError: function (err) {
-          console.error('监听出现问题！', err);
-          if (that.watcherRetryTimer) return;
-
-          // 监听出错时有限重试，避免网络或鉴权异常持续刷屏
-          that.watcherRetryTimer = setTimeout(() => {
-            that.watcherRetryTimer = null;
-            if (app.userInfo._id) {
-              that.jianting(app.userInfo._id, retryCount + 1);
-            }
-          }, 3000);
-        }
-      });
-    } catch (err) {
-      console.error('初始化监听器失败:', err);
-    }
+  jianting() {
+    app.setUserWatcherListener((user) => {
+      this.jiantingchuli(user.message || []);
+    });
+    app.startUserWatcher();
   },
 
   /**
    * 生命周期函数--监听页面卸载
    */
   onUnload: function () {
-    if (this.watcherRetryTimer) {
-      clearTimeout(this.watcherRetryTimer);
-      this.watcherRetryTimer = null;
-    }
-    if (this.watcher) {
-      this.watcher.close();
-      this.watcher = null;
-    }
-    app.jianting = false;
+    app.clearUserWatcherListener();
   },
 
   /**
    * 生命周期函数--监听页面隐藏
    */
   onHide: function () {
-    if (this.watcherRetryTimer) {
-      clearTimeout(this.watcherRetryTimer);
-      this.watcherRetryTimer = null;
-    }
-    if (this.watcher) {
-      this.watcher.close();
-      this.watcher = null;
-    }
-    app.jianting = false;
+    app.clearUserWatcherListener();
   },
 
   /**
@@ -389,44 +321,8 @@ Page({
    * 生命周期函数--监听页面显示
    */
   onShow: function () {
-    // 重新从数据库获取最新消息数据，确保红点状态正确
-    if (app.userInfo._id && app.userInfo.userinfo && app.userInfo.userinfo.login) {
-      var that = this;
-      db.collection('users').doc(app.userInfo._id).get().then((res) => {
-        if (res.data) {
-          // 无论message是否存在，都要更新（包括空数组的情况）
-          var message = res.data.message || [];
-          var dzmessage = res.data.dzmessage || []; // 获取点赞消息
-
-          // 更新app.userInfo的完整数据
-          app.userInfo = res.data;
-          // 确保app.message和app.userInfo.message一致
-          app.message = message;
-          app.userInfo.message = message;
-          app.userInfo.dzmessage = dzmessage; // 更新点赞消息
-
-          // 更新本地数据
-          that.setData({
-            message: message,
-            dzmessage: dzmessage
-          });
-          console.log('onShow获取到的消息数量:', message.length, '点赞数量:', dzmessage.length);
-        }
-        // 检查并更新红点状态
-        that.checkred();
-      }).catch((err) => {
-        console.error('获取消息数据失败:', err);
-        // 即使获取失败，也尝试检查红点
-        that.checkred();
-      });
-    } else {
-      this.checkred();
-    }
-
-    // 如果用户已登录且没有活跃的监听器，则重新初始化
-    if (app.userInfo._id && !app.jianting) {
-      this.jianting(app.userInfo._id);
-    }
+    if (app.userInfo._id) this.jianting();
+    this.checkred();
   },
 
   /**
@@ -441,46 +337,12 @@ Page({
 
     this.checkred();
 
-    // 计算总未读数量
-    const message = app.message || [];
-    const dzmessage = app.userInfo && app.userInfo.dzmessage || [];
-    const weidu = message.length;
-    const dzweidu = dzmessage.length;
-    const totalWeidu = weidu + dzweidu;
-
-    if (totalWeidu > 0) {
-      // 更新底部导航栏红点
-      const ceng = getCurrentPages();
-      if (ceng.length == 1) {
-        wx.setTabBarBadge({
-          index: 2,
-          text: totalWeidu.toString()
-        });
-        app.hongdian = true;
-      }
-
-      // 处理新消息（用于页面展示）
-      const oldMessage = this.data.message2 || [];
-      const newMessages = e.filter(msg => !oldMessage.some(m => m.id === msg.id));
-
-      if (newMessages.length > 0) {
-        this.setData({
-          message2: [...oldMessage, ...newMessages]
-        });
-      }
-    } else {
-      // 消息数量为0时，强制移除红点
-      const ceng = getCurrentPages();
-      if (ceng.length == 1) {
-        try {
-          wx.removeTabBarBadge({ index: 2 });
-          app.hongdian = false;
-          console.log('jiantingchuli: 已移除红点，消息数量为0');
-        } catch (e) {
-          console.log('jiantingchuli: 移除红点时出错:', e);
-          app.hongdian = false;
-        }
-      }
+    const oldMessage = this.data.message2 || [];
+    const newMessages = e.filter(msg => !oldMessage.some(m => m.id === msg.id));
+    if (newMessages.length > 0) {
+      this.setData({
+        message2: [...oldMessage, ...newMessages]
+      });
     }
   },
 
@@ -557,24 +419,7 @@ Page({
       dzmessagenumber: dzweidu > 0 ? dzweidu.toString() : 0
     })
 
-    if (totalWeidu != 0) {
-      // 有未读消息，设置底部导航栏红点
-      wx.setTabBarBadge({
-        index: 2,
-        text: totalWeidu.toString()
-      })
-      app.hongdian = true
-    } else {
-      // 没有未读消息时，强制移除红点
-      try {
-        wx.removeTabBarBadge({ index: 2 })
-        app.hongdian = false
-        console.log('checkred: 已移除红点，消息数量为0')
-      } catch (e) {
-        console.log('checkred: 移除红点时出错（可能红点不存在）:', e)
-        app.hongdian = false
-      }
-    }
+    app.refreshMessageBadge()
   },
 
   /**

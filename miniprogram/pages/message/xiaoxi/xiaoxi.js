@@ -84,22 +84,7 @@ Page({
         // 更新app中的消息数据
         app.message = message
         app.userInfo.message = message
-        // 检查并更新红点状态
-        var weidu = message.length
-        if (weidu == 0) {
-          // 没有未读消息，移除红点
-          if (app.hongdian) {
-            wx.removeTabBarBadge({ index: 2 })
-            app.hongdian = false
-          }
-        } else {
-          // 更新红点数字
-          wx.setTabBarBadge({
-            index: 2,
-            text: weidu.toString()
-          })
-          app.hongdian = true
-        }
+        app.refreshMessageBadge()
       })
   },
 
@@ -120,13 +105,7 @@ Page({
           // 更新app中的消息数据
           app.message = []
           app.userInfo.message = []
-          // 移除红点
-          if (app.hongdian) {
-            wx.removeTabBarBadge({
-              index: 2
-            });
-            app.hongdian = false;
-          }
+          app.refreshMessageBadge()
 
           wx.showToast({
             title: 'ok',
@@ -141,14 +120,9 @@ Page({
         message: [],
 
       })
-
-      // 立即更新红点状态（不等待数据库响应）
-      if (app.hongdian) {
-        wx.removeTabBarBadge({
-          index: 2
-        });
-        app.hongdian = false;
-      }
+      app.message = []
+      app.userInfo.message = []
+      app.refreshMessageBadge()
 
     } else {
 
@@ -208,20 +182,7 @@ Page({
           // Update App Global Data
           app.message = message
           app.userInfo.message = message
-          // Update Badge
-          var weidu = message.length
-          if (weidu == 0) {
-            if (app.hongdian) {
-              wx.removeTabBarBadge({ index: 2 })
-              app.hongdian = false
-            }
-          } else {
-            wx.setTabBarBadge({
-              index: 2,
-              text: weidu.toString()
-            })
-            app.hongdian = true
-          }
+          app.refreshMessageBadge()
         })
 
       wx.navigateTo({
@@ -240,6 +201,5 @@ Page({
   },
 
 })
-
 
 

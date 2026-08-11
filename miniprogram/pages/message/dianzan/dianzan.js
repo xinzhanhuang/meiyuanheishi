@@ -84,20 +84,7 @@ Page({
                 // 更新app中的消息数据
                 app.userInfo.dzmessage = message
 
-                // Update badge
-                var weidu = app.message.length + message.length
-                if (weidu == 0) {
-                    if (app.hongdian) {
-                        wx.removeTabBarBadge({ index: 2 })
-                        app.hongdian = false
-                    }
-                } else {
-                    wx.setTabBarBadge({
-                        index: 2,
-                        text: weidu.toString()
-                    })
-                    app.hongdian = true
-                }
+                app.refreshMessageBadge()
 
             })
     },
@@ -118,6 +105,7 @@ Page({
                     console.log("删消息（已读）", res)
                     // 更新app中的消息数据
                     app.userInfo.dzmessage = []
+                    app.refreshMessageBadge()
 
                     wx.showToast({
                         title: 'ok',
