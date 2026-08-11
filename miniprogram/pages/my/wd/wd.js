@@ -289,7 +289,22 @@ Page({
    * 开启消息监听
    * @param {String} _id 用户ID
    */
-  jianting(_id) {
+  jianting(_id, retryCount = 0) {
+    if (retryCount > 3) {
+      console.error('监听器重试次数过多，停止重试');
+      if (this.watcher) {
+        this.watcher.close();
+        this.watcher = null;
+      }
+      app.jianting = false;
+      return;
+    }
+
+    if (this.watcherRetryTimer) {
+      clearTimeout(this.watcherRetryTimer);
+      this.watcherRetryTimer = null;
+    }
+
     // 先关闭已存在的监听器
     if (this.watcher) {
       this.watcher.close();
@@ -317,11 +332,13 @@ Page({
         },
         onError: function (err) {
           console.error('监听出现问题！', err);
-          // 监听出错时尝试重新初始化
+          if (that.watcherRetryTimer) return;
+
+          // 监听出错时有限重试，避免网络或鉴权异常持续刷屏
           that.watcherRetryTimer = setTimeout(() => {
             that.watcherRetryTimer = null;
             if (app.userInfo._id) {
-              that.jianting(app.userInfo._id);
+              that.jianting(app.userInfo._id, retryCount + 1);
             }
           }, 3000);
         }
