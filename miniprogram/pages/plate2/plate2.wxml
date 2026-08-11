@@ -622,5 +622,5 @@
 
 <!-- 评论操作菜单 -->
 <!-- 评论操作菜单 (mp-actionSheet) -->
-<mp-actionSheet bindactiontap="btnClick" bindclose="closeCommentMenu" show="{{showDialog}}" actions="{{groups}}" title="">
+<mp-actionSheet wx:if="{{showDialog}}" bindactiontap="btnClick" bindclose="closeCommentMenu" show="{{showDialog}}" actions="{{groups}}" title="">
 </mp-actionSheet>
