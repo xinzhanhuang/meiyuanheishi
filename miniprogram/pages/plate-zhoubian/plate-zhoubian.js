@@ -3,6 +3,7 @@ var app = getApp()
 var _ = db.command
 var utils = require('../../utils/util.js')
 var detailPageState = require('../../utils/detail-page-state.js')
+var detailPageInteractions = require('../../utils/detail-page-interactions.js')
 Page({
   //页面的初始数据
   data: {
@@ -622,18 +623,7 @@ Page({
 
   // 预览图片
   previewImg: function (e) {
-    //获取当前图片的下标
-    //console.log(e.currentTarget.dataset.tp)
-    var index = e.currentTarget.dataset.tp[0];
-    //所有图片
-    var imgs = e.currentTarget.dataset.tp[1];
-
-    wx.previewImage({
-      //当前显示图片
-      current: imgs[index],
-      //所有图片
-      urls: imgs
-    })
+    detailPageInteractions.previewImage(e)
   },
 
 
@@ -1845,10 +1835,10 @@ Page({
   // plate-zhoubian already has zhankai/shouqi.
   // Input handlers
   onInputFocus() {
-    this.setData({ isKeyboardOpen: true, focus: true });
+    detailPageInteractions.setInputFocus(this, true);
   },
   onInputBlur() {
-    this.setData({ isKeyboardOpen: false, focus: false });
+    detailPageInteractions.setInputFocus(this, false);
   },
 
 
@@ -2357,20 +2347,12 @@ Page({
 
   // 展开评论
   zhankai(e) {
-    var index = e.currentTarget.dataset.index;
-    var zhankai = "ss_xx.ss_xx.huifunr[" + index + "].zhankai";
-    this.setData({
-      [zhankai]: true,
-    });
+    detailPageInteractions.setCommentExpanded(this, e.currentTarget.dataset.index, true);
   },
 
   // 收起评论
   shouqi(e) {
-    var index = e.currentTarget.dataset.index;
-    var zhankai = "ss_xx.ss_xx.huifunr[" + index + "].zhankai";
-    this.setData({
-      [zhankai]: false,
-    });
+    detailPageInteractions.setCommentExpanded(this, e.currentTarget.dataset.index, false);
   },
 
   // Helper functions from plate2.js

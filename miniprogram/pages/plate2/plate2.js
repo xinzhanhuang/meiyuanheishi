@@ -5,6 +5,7 @@ const app = getApp();
 const _ = db.command;
 const utils = require('../../utils/util.js');
 const detailPageState = require('../../utils/detail-page-state.js');
+const detailPageInteractions = require('../../utils/detail-page-interactions.js');
 
 Page({
   /**
@@ -1416,17 +1417,7 @@ Page({
    * 预览图片
    */
   previewImg: function (e) {
-    // 获取当前图片的下标
-    var index = e.currentTarget.dataset.tp[0];
-    // 所有图片
-    var imgs = e.currentTarget.dataset.tp[1];
-
-    wx.previewImage({
-      // 当前显示图片
-      current: imgs[index],
-      // 所有图片
-      urls: imgs
-    });
+    detailPageInteractions.previewImage(e);
   },
 
   /**
@@ -2224,23 +2215,13 @@ Page({
   // 展开评论
   zhankai(e) {
     console.log(e.currentTarget.dataset.index); // 该条评论所在数组的下表
-    var index = e.currentTarget.dataset.index;
-    var zhankai = "ss_xx.ss_xx.huifunr[" + index + "].zhankai";
-    // console.log(zhankai)
-    this.setData({
-      [zhankai]: true,
-    });
+    detailPageInteractions.setCommentExpanded(this, e.currentTarget.dataset.index, true);
   },
 
   // 收起评论
   shouqi(e) {
     console.log(e.currentTarget.dataset.index); // 该条评论所在数组的下表
-    var index = e.currentTarget.dataset.index;
-    var zhankai = "ss_xx.ss_xx.huifunr[" + index + "].zhankai";
-    // console.log(zhankai)
-    this.setData({
-      [zhankai]: false,
-    });
+    detailPageInteractions.setCommentExpanded(this, e.currentTarget.dataset.index, false);
   },
 
   // 用云函数发表评论
@@ -3190,20 +3171,14 @@ Page({
    * 输入框获得焦点
    */
   onInputFocus() {
-    this.setData({
-      isKeyboardOpen: true,
-      focus: true
-    });
+    detailPageInteractions.setInputFocus(this, true);
   },
 
   /**
    * 输入框失去焦点
    */
   onInputBlur() {
-    this.setData({
-      isKeyboardOpen: false,
-      focus: false
-    });
+    detailPageInteractions.setInputFocus(this, false);
   },
 
   // 判断登录,返回true或false
