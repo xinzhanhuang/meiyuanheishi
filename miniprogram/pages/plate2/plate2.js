@@ -933,6 +933,7 @@ Page({
     var lzopenid = options.openid;
     var lzid = options.lzid;
     var DONOT = options.DONOT;
+    var orderlzid = false;
     var systeminfo = wx.getWindowInfo();
 
     if (options.heishiweixin) {
@@ -1319,10 +1320,9 @@ Page({
         nr: nr
       }; // 当前的时间戳
 
-      db.collection("users").doc(app.userInfo._id).update({
-        data: {
-          lookhistory: _.push({ each: [historyEntry], slice: -10 }),
-        }
+      wx.cloud.callFunction({
+        name: 'updateUserPresence',
+        data: { historyEntry }
       }).then(updateRes => {
         console.log('浏览记录已更新', updateRes);
       }).catch(updateErr => {

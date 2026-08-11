@@ -8,6 +8,12 @@ exports.main = async (event) => {
 
   if (typeof event.online === 'boolean') data.online = event.online
   if (event.updateLoginTime === true) data.logintime = Date.now()
+  if (event.historyEntry && event.historyEntry.id) {
+    data.lookhistory = cloud.database().command.push({
+      each: [event.historyEntry],
+      slice: -10
+    })
+  }
 
   if (!Object.keys(data).length) return { updated: 0 }
 
