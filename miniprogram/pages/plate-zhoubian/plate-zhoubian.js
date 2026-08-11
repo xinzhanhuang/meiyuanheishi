@@ -424,35 +424,6 @@ Page({
     }
   },
 
-  // 跳转广告详情
-  toBannerDetail(e) {
-    const { appid, type, title } = e.currentTarget.dataset;
-    if (type === 'miniprogram') {
-      wx.navigateToMiniProgram({
-        appId: appid,
-        path: '',
-        success(res) {
-          console.log('Opened mini program successfully');
-        }
-      });
-    } else {
-      // Handle other types if necessary
-      console.log('Banner clicked:', appid, type, title);
-    }
-  },
-
-  /**
-   * 通用输入绑定
-   */
-  bindFieldInput(e) {
-    const field = e.currentTarget.dataset.field;
-    const value = e.detail.value;
-    const path = `ss_xx.ss_xx.orderdetail.${field}`;
-    this.setData({
-      [path]: value
-    });
-  },
-
   /**
    * 修改信息提交
    */
@@ -625,33 +596,11 @@ Page({
     }
   },
 
-  /**
-   * 实时获取input,写到data中储存为wbnr
-   */
-  changewbnr(e) {
-    var s = e.detail.value.length;
-    var y = s + "/" + 599;
-    this.setData({
-      changewbnr: e.detail.value,
-      'ss_xx.ss_xx.nr': e.detail.value,
-      sy: y
-    });
-  },
-
   modalConfirm: function () {
     this.setData({
       modalHidden111: true
     });
   },
-
-  // 提示关注公众号
-  noticet() {
-    this.setData({
-      modalHidden111: false
-    });
-  },
-
-
 
   //点击跳转到详情进行阅读
   tiaozhuan(e) {
@@ -1137,54 +1086,6 @@ Page({
 
 
 
-  //回复别人的评论1
-  huifu(e) {
-    //console.log("index:",e.currentTarget.dataset.index)
-    //console.log("index1:",e.currentTarget.dataset.index1)
-    //console.log(e.currentTarget.dataset.xx)//这是评论的全部内容
-
-
-    var index1 = e.currentTarget.dataset.index1
-    var xx = e.currentTarget.dataset.xx
-    var xx1 = e.currentTarget.dataset.xx1
-    console.log("xx:", e.currentTarget.dataset.xx)
-    console.log("xx1:", e.currentTarget.dataset.xx1)
-    if (index1 == undefined) {
-      //这是回复lv0
-      var name = xx.name
-      xx.id = xx.plrid
-      xx.lv0 = xx.plrid
-    } else {
-      xx.wbnr = xx1.wbnr
-      xx.id = xx1.plrid
-      xx.lv0 = xx.plrid
-
-      //这是回复lv1,2
-      console.log("q", xx.lv)
-      xx.lv = xx1.lv
-      console.log("h", xx.lv)
-      if (xx1.lv == 1) {
-        var name = xx1.name
-        console.log("333")
-      } else {
-        var name = xx1.yuanname
-        console.log("444")
-      }
-    }
-
-    xx.name = name//此处特殊整合信息！！！
-    console.log("存下：", xx)
-
-    //拉起键盘进行回复
-    this.setData({
-      input: "回复 " + name,
-      focus: true,//拉起键盘
-      huifukuang: true,//显示回复框   
-      xx: xx,
-      index: e.currentTarget.dataset.index,
-    })
-  },
-
   //失去焦点，收起键盘
   //键盘收起
   setChatListHeight() {
@@ -1192,10 +1093,6 @@ Page({
 
       chatListHeight: app.globalData.sysHeight - app.globalData.statsuBarHeight - this.data.headHeight - this.data.keyboardHeight - this.data.inutPanelHeight
     })
-  },
-  hideKeyboard() {
-    wx.hideKeyboard();
-    this.hideMediaPanel();
   },
   // 点击键盘遮罩，收起键盘
   hideKeyboard() {
@@ -1247,29 +1144,6 @@ Page({
 
 
 
-
-
-
-  //展开评论
-  zhankai(e) {
-    console.log(e.currentTarget.dataset.index)//该条评论所在数组的下表
-    var index = e.currentTarget.dataset.index
-    var zhankai = "ss_xx.ss_xx.huifunr[" + index + "].zhankai"
-    //console.log(zhankai)
-    this.setData({
-      [zhankai]: true,
-    })
-  },
-  //收起评论
-  shouqi(e) {
-    console.log(e.currentTarget.dataset.index)//该条评论所在数组的下表
-    var index = e.currentTarget.dataset.index
-    var zhankai = "ss_xx.ss_xx.huifunr[" + index + "].zhankai"
-    //console.log(zhankai)
-    this.setData({
-      [zhankai]: false,
-    })
-  },
 
 
 
@@ -1639,22 +1513,6 @@ Page({
     })
   },
 
-  // Input Focus Handler
-  onInputFocus(e) {
-    this.setData({
-      isInputFocused: true,
-      showKeyboardMask: true // Sync mask state just in case
-    });
-  },
-
-  // Input Blur Handler
-  onInputBlur(e) {
-    this.setData({
-      isInputFocused: false,
-      showKeyboardMask: false // Sync mask state
-    });
-  },
-
   data_Input: function (e) {
     var evaluation_text = this.data.evaluation_text;
     console.log(e.detail.value.length)
@@ -1676,33 +1534,6 @@ Page({
 
 
 
-
-  /**
-   * 统一身份验证
-   */
-  checkFullLogin() {
-
-    if (app.userInfo.userinfo.login != true) {
-      wx.showModal({
-        title: '💡',
-        content: '登录可进行操作，是否授权登录？',
-        showCancel: true,
-        confirmText: '是',
-        confirmColor: '#20e606',
-        cancelText: '否',
-        cancelColor: '#8d8d8d',
-        success(res) {
-          if (res.confirm) {
-            wx.switchTab({
-              url: "/pages/my/wd/wd"
-            });
-          }
-        }
-      });
-      return false;
-    }
-    return true;
-  },
 
   /**
    * 右上角弹窗
@@ -1759,28 +1590,6 @@ Page({
         icon: 'none',
         duration: 800
       });
-    }
-  },
-
-  /**
-  * 菜单点击处理
-  */
-  btnClick(e) {
-    const { value } = e.detail;
-    this.setData({ showDialog: false });
-
-    if (value === 'reply') {
-      this.handleMenuReply();
-    } else if (value === 'copy') {
-      this.handleMenuCopy();
-    } else if (value === 'delete') {
-      this.handleMenuDelete();
-    } else if (value === 'toggle_status') {
-      this.oderover();
-    } else if (value === 'delete_post') {
-      this.deletethisone();
-    } else if (value === 'modify_content') {
-      this.xiugai();
     }
   },
 
