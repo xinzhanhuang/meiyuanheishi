@@ -388,7 +388,7 @@ Page({
     }
 
     // 延迟显示列表
-    setTimeout(() => {
+    this.showListTimer = setTimeout(() => {
       this.setData({
         showList: true,
         loadingHidden: true,
@@ -581,7 +581,7 @@ Page({
     }
 
     if (!modalHidden) {
-      setTimeout(item => {
+      this.modalTimer = setTimeout(item => {
         this.setData({
           modalHidden
         })
@@ -740,6 +740,9 @@ Page({
    * 生命周期函数--监听页面卸载
    */
   onUnload: function () {
+    clearTimeout(this.showListTimer);
+    clearTimeout(this.modalTimer);
+    clearTimeout(this.jiantingDebounceTimer);
     if (this.watcherRetryTimer) {
       clearTimeout(this.watcherRetryTimer);
       this.watcherRetryTimer = null;
@@ -1155,7 +1158,7 @@ Page({
     }
 
     this.jiantingDebounce = true;
-    setTimeout(() => {
+    this.jiantingDebounceTimer = setTimeout(() => {
       this.jiantingDebounce = false;
     }, 2000); // 2秒防抖
 

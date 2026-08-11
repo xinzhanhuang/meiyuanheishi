@@ -41,11 +41,15 @@ Component({
       SHOW_TOP: true
     })
 
-    setTimeout(() => {
+    this.hideTimer = setTimeout(() => {
       this.setData({
         SHOW_TOP: false
       })
     }, this.data.duration * 1000)
+  },
+
+  detached: function() {
+    clearTimeout(this.hideTimer)
   },
 
   /**

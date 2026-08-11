@@ -266,7 +266,7 @@ Page({
 
 
 
-    setTimeout(() => {
+    this.showListTimer = setTimeout(() => {
       this.setData({
         showList: true,
         loadingHidden: true,
@@ -325,7 +325,11 @@ Page({
   onHide: function () { },
 
   //生命周期函数--监听页面卸载
-  onUnload: function () { },
+  onUnload: function () {
+    clearTimeout(this.showListTimer);
+    clearTimeout(this.timer);
+    clearTimeout(this.searchBlurTimer);
+  },
 
 
 
@@ -937,7 +941,7 @@ Page({
   // 搜索框失焦
   onSearchBlur(e) {
     // Delay hiding to allow tap event to process
-    setTimeout(() => {
+    this.searchBlurTimer = setTimeout(() => {
       this.setData({ showSuggestions: false });
     }, 200);
   },
@@ -1242,4 +1246,3 @@ Page({
   },
 
 })
-

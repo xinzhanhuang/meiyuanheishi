@@ -133,7 +133,7 @@ Page({
       movehight: systeminfo.windowHeight,
       movehight2: systeminfo.windowHeight - 80
     })
-    setTimeout(() => {
+    this.showListTimer = setTimeout(() => {
       this.setData({
         showList: true,
         loadingHidden: true,
@@ -211,6 +211,10 @@ Page({
 
   //生命周期函数--监听页面卸载
   onUnload: function () {
+    if (this.showListTimer) {
+      clearTimeout(this.showListTimer);
+      this.showListTimer = null;
+    }
     if (this.watcher) {
       this.watcher.close();
       this.watcher = null;
