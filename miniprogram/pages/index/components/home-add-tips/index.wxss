@@ -28,9 +28,8 @@
   padding: 0 20rpx;
   margin-right: 40rpx;
 }
-.body > text {
+.body-text {
   color: rgb(13, 53, 185);
   font-size: 28rpx;
   font-weight: 400;
 }
-
