@@ -2098,30 +2098,6 @@ Page({
   },
 
   /**
-   * 回复别人的评论1
-   */
-  /**
-   * 输入框失去焦点
-   */
-  onInputBlur() {
-    this.setData({
-      focus: false
-    });
-  },
-
-  /**
-   * 回复用户的评论
-   */
-  /**
-   * 输入框失去焦点
-   */
-  onInputBlur() {
-    this.setData({
-      focus: false
-    });
-  },
-
-  /**
    * 回复用户的评论
    */
   huifu(e) {
@@ -2183,19 +2159,6 @@ Page({
       chatListHeight: app.globalData.sysHeight - app.globalData.statsuBarHeight - this.data.headHeight - this.data.keyboardHeight - this.data.inutPanelHeight
     })
   },
-  hideKeyboard() {
-    wx.hideKeyboard();
-    this.hideMediaPanel();
-  },
-
-  onInputBlur() {
-    console.log('[Debug] Input Blur. Clearing focus.');
-    this.setData({
-      focus: false,
-      activeReplyId: '' // Clear highlight
-    });
-  },
-
   onPageScroll(e) {
     if (this.data.focus) {
       // Throttle log? For debugging now, just log.
