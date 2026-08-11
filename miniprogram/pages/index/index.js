@@ -602,14 +602,6 @@ Page({
       app.shuaxin = false
     }
 
-    // 检测登录并开启监听
-    if (app.userInfo._id != "") {
-      if (!app.jianting) {
-        this.jianting()
-        app.jianting = true
-      }
-    }
-
     // 点赞页面返回更新点赞评论浏览状态
     var index = this.data.index
     var ss_xx = this.data.ss_xx
@@ -652,34 +644,6 @@ Page({
       app.jianting = false;
     }
 
-    // 重新从数据库获取最新消息数据，确保红点状态正确
-    if (app.userInfo._id && app.userInfo.userinfo && app.userInfo.userinfo.login) {
-      var that = this;
-      db.collection('users').doc(app.userInfo._id).get().then((res) => {
-        if (res.data) {
-          // 无论message是否存在，都要更新（包括空数组的情况）
-          var message = res.data.message || [];
-          var dzmessage = res.data.dzmessage || []; // 获取点赞消息
-
-          // 更新app.userInfo的完整数据
-          app.userInfo = res.data;
-          // 确保app.message和app.userInfo.message一致
-          app.message = message;
-          app.userInfo.message = message;
-          app.userInfo.dzmessage = dzmessage; // 更新点赞消息
-
-          console.log('index onShow获取到的消息数量:', message.length, '点赞数量:', dzmessage.length);
-        }
-        // 检查并更新红点状态
-        that.checkred();
-      }).catch((err) => {
-        console.error('获取消息数据失败:', err);
-        // 即使获取失败，也尝试检查红点
-        that.checkred();
-      });
-    } else {
-      this.checkred();
-    }
   },
 
   /**
@@ -747,7 +711,6 @@ Page({
   onUnload: function () {
     clearTimeout(this.showListTimer);
     clearTimeout(this.modalTimer);
-    clearTimeout(this.jiantingDebounceTimer);
     clearTimeout(this.onlineToastTimer);
     if (this.watcherRetryTimer) {
       clearTimeout(this.watcherRetryTimer);
@@ -1151,22 +1114,11 @@ Page({
    * 消息监听
    */
   jianting(retryCount = 0) {
-    // 防抖：如果最近刚初始化过，则跳过
-    if (this.jiantingDebounce) {
-      console.log('监听器初始化过于频繁，已跳过');
-      return;
-    }
-
     // 如果重试次数超过3次，不再重试
     if (retryCount > 3) {
       console.error('监听器重试次数过多，停止重试');
       return;
     }
-
-    this.jiantingDebounce = true;
-    this.jiantingDebounceTimer = setTimeout(() => {
-      this.jiantingDebounce = false;
-    }, 2000); // 2秒防抖
 
     // 先关闭已存在的监听器
     if (this.watcher) {
