@@ -2,8 +2,6 @@ var db = wx.cloud.database()
 var app = getApp()
 var _ = db.command
 var utils = require('../../utils/util.js')
-var detailPageState = require('../../utils/detail-page-state.js')
-var detailPageInteractions = require('../../utils/detail-page-interactions.js')
 Page({
   //页面的初始数据
   data: {
@@ -402,12 +400,12 @@ Page({
 
   // 图片加载成功回调
   imageOnLoad(e) {
-    detailPageState.markPostImageLoaded(this, e.currentTarget.dataset.index);
+    utils.markPostImageLoaded(this, e.currentTarget.dataset.index);
   },
 
   // 评论图片加载成功回调
   imageOnLoadComment(e) {
-    detailPageState.markCommentImageLoaded(this, e.currentTarget.dataset.index0, e.currentTarget.dataset.index1);
+    utils.markCommentImageLoaded(this, e.currentTarget.dataset.index0, e.currentTarget.dataset.index1);
   },
 
   /**
@@ -623,7 +621,7 @@ Page({
 
   // 预览图片
   previewImg: function (e) {
-    detailPageInteractions.previewImage(e)
+    utils.previewDetailImage(e)
   },
 
 
@@ -1064,7 +1062,7 @@ Page({
   //失去焦点，收起键盘
   //键盘收起
   setChatListHeight() {
-    detailPageState.setChatListHeight(this, app.globalData);
+    utils.setChatListHeight(this, app.globalData);
   },
   // 点击键盘遮罩，收起键盘
   hideKeyboard() {
@@ -1835,10 +1833,10 @@ Page({
   // plate-zhoubian already has zhankai/shouqi.
   // Input handlers
   onInputFocus() {
-    detailPageInteractions.setInputFocus(this, true);
+    utils.setInputFocus(this, true);
   },
   onInputBlur() {
-    detailPageInteractions.setInputFocus(this, false);
+    utils.setInputFocus(this, false);
   },
 
 
@@ -2347,12 +2345,12 @@ Page({
 
   // 展开评论
   zhankai(e) {
-    detailPageInteractions.setCommentExpanded(this, e.currentTarget.dataset.index, true);
+    utils.setCommentExpanded(this, e.currentTarget.dataset.index, true);
   },
 
   // 收起评论
   shouqi(e) {
-    detailPageInteractions.setCommentExpanded(this, e.currentTarget.dataset.index, false);
+    utils.setCommentExpanded(this, e.currentTarget.dataset.index, false);
   },
 
   // Helper functions from plate2.js

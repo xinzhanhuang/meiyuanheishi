@@ -4,8 +4,6 @@ const VOTE_RECORD = wx.cloud.database().collection("VoteRecord");
 const app = getApp();
 const _ = db.command;
 const utils = require('../../utils/util.js');
-const detailPageState = require('../../utils/detail-page-state.js');
-const detailPageInteractions = require('../../utils/detail-page-interactions.js');
 
 Page({
   /**
@@ -1283,12 +1281,12 @@ Page({
 
   // 图片加载成功回调
   imageOnLoad(e) {
-    detailPageState.markPostImageLoaded(this, e.currentTarget.dataset.index);
+    utils.markPostImageLoaded(this, e.currentTarget.dataset.index);
   },
 
   // 评论图片加载成功回调
   imageOnLoadComment(e) {
-    detailPageState.markCommentImageLoaded(this, e.currentTarget.dataset.index0, e.currentTarget.dataset.index1);
+    utils.markCommentImageLoaded(this, e.currentTarget.dataset.index0, e.currentTarget.dataset.index1);
   },
   addlookhistory(ss_xx) {
     var historyId = ss_xx._id;
@@ -1417,7 +1415,7 @@ Page({
    * 预览图片
    */
   previewImg: function (e) {
-    detailPageInteractions.previewImage(e);
+    utils.previewDetailImage(e);
   },
 
   /**
@@ -2128,7 +2126,7 @@ Page({
   //失去焦点，收起键盘
   //键盘收起
   setChatListHeight() {
-    detailPageState.setChatListHeight(this, app.globalData);
+    utils.setChatListHeight(this, app.globalData);
   },
   onPageScroll(e) {
     if (this.data.focus) {
@@ -2215,13 +2213,13 @@ Page({
   // 展开评论
   zhankai(e) {
     console.log(e.currentTarget.dataset.index); // 该条评论所在数组的下表
-    detailPageInteractions.setCommentExpanded(this, e.currentTarget.dataset.index, true);
+    utils.setCommentExpanded(this, e.currentTarget.dataset.index, true);
   },
 
   // 收起评论
   shouqi(e) {
     console.log(e.currentTarget.dataset.index); // 该条评论所在数组的下表
-    detailPageInteractions.setCommentExpanded(this, e.currentTarget.dataset.index, false);
+    utils.setCommentExpanded(this, e.currentTarget.dataset.index, false);
   },
 
   // 用云函数发表评论
@@ -3171,14 +3169,14 @@ Page({
    * 输入框获得焦点
    */
   onInputFocus() {
-    detailPageInteractions.setInputFocus(this, true);
+    utils.setInputFocus(this, true);
   },
 
   /**
    * 输入框失去焦点
    */
   onInputBlur() {
-    detailPageInteractions.setInputFocus(this, false);
+    utils.setInputFocus(this, false);
   },
 
   // 判断登录,返回true或false
