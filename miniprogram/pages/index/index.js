@@ -325,17 +325,14 @@ Page({
     const systeminfo = wx.getWindowInfo()
     const menuButtonInfo = wx.getMenuButtonBoundingClientRect()
 
-    this.setData({
-      movehight: systeminfo.windowHeight,
-      movehight2: systeminfo.windowHeight - 80,
-      menuButtonInfo: menuButtonInfo
-    })
-
     console.log(menuButtonInfo)
     const { top, width, height, right } = menuButtonInfo
     const { statusBarHeight } = systeminfo
     const margin = top - statusBarHeight
     this.setData({
+      movehight: systeminfo.windowHeight,
+      movehight2: systeminfo.windowHeight - 80,
+      menuButtonInfo: menuButtonInfo,
       navHeight: (height + statusBarHeight + (margin * 2)),
       searchMarginTop: statusBarHeight + margin, // 状态栏 + 胶囊按钮边距
       searchHeight: height,  // 与胶囊按钮同高
@@ -555,15 +552,6 @@ Page({
    * 生命周期函数--监听页面初次渲染完成
    */
   onReady: function () {
-    // 计算一周前的时间戳
-    var now = new Date().getTime() // 现在的时间
-    var yizhou = (now - 3600 * 7000 * 24)
-    console.log("现在：", now)
-    console.log("一周：", yizhou)
-    this.setData({
-      yizhou: yizhou
-    })
-
     this.getBannerList();
   },
 
