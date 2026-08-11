@@ -160,7 +160,7 @@ Page({
       msgnb: app.userInfo.msgnb || [0, 0],
     });
 
-    wx.onKeyboardHeightChange(res => {
+    this.keyboardHeightChangeHandler = res => {
 
       if (res.height > 0) {
         this.setData({
@@ -176,7 +176,8 @@ Page({
       }
 
       this.setChatListHeight();
-    });
+    };
+    wx.onKeyboardHeightChange(this.keyboardHeightChangeHandler);
 
 
     var systeminfo = wx.getSystemInfoSync()
@@ -2787,6 +2788,10 @@ Page({
   },
 
   onUnload: function () {
+    if (this.keyboardHeightChangeHandler && wx.offKeyboardHeightChange) {
+      wx.offKeyboardHeightChange(this.keyboardHeightChangeHandler);
+      this.keyboardHeightChangeHandler = null;
+    }
     if (this.downloadTask) {
       this.downloadTask.abort();
     }

@@ -1010,7 +1010,7 @@ Page({
 
     // 键盘弹起
     this.setChatListHeight();
-    wx.onKeyboardHeightChange(res => {
+    this.keyboardHeightChangeHandler = res => {
       console.log(res.height, 'kkkk');
 
       if (res.height > 0) {
@@ -1029,7 +1029,8 @@ Page({
       }
 
       this.setChatListHeight();
-    });
+    };
+    wx.onKeyboardHeightChange(this.keyboardHeightChangeHandler);
 
     // 判断是否为分享来的
     if (options.fenxiang === "true" || options.fenxiang === "ture") {
@@ -3307,6 +3308,13 @@ Page({
       this.setData({
         focus: false  // 移除输入框焦点，收起键盘
       });
+    }
+  },
+
+  onUnload() {
+    if (this.keyboardHeightChangeHandler && wx.offKeyboardHeightChange) {
+      wx.offKeyboardHeightChange(this.keyboardHeightChangeHandler);
+      this.keyboardHeightChangeHandler = null;
     }
   },
 
