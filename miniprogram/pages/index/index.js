@@ -96,21 +96,26 @@ Page({
    * 统计并显示当前在线人数
    */
   currentOnlineNum: function () {
-    db.collection("users").where({
-      logintime: _.gte(Date.now() - 18e6)
-    }).count().then((function (e) {
+    wx.cloud.callFunction({
+      name: 'getOnlineUserCount'
+    }).then((res) => {
+      const total = res.result && res.result.total
+      if (typeof total !== 'number') return
+
       // 生成一个随机整数，范围在1到9之间（包括1和5）
       var A = Math.floor(Math.random() * 9) + 1;
       var B = Math.floor(Math.random() * 9) + 1;
       var C = A * B
 
-      setTimeout(() => {
+      this.onlineToastTimer = setTimeout(() => {
         wx.showToast({
-          title: e.total + C + "人在线",
+          title: total + C + "人在线",
           icon: "none"
         })
       }, 3000)
-    }))
+    }).catch((err) => {
+      console.error('获取在线人数失败:', err)
+    })
   },
 
   /**
@@ -743,6 +748,7 @@ Page({
     clearTimeout(this.showListTimer);
     clearTimeout(this.modalTimer);
     clearTimeout(this.jiantingDebounceTimer);
+    clearTimeout(this.onlineToastTimer);
     if (this.watcherRetryTimer) {
       clearTimeout(this.watcherRetryTimer);
       this.watcherRetryTimer = null;
@@ -1269,12 +1275,16 @@ Page({
    * 上传此次登陆的时间
    */
   logintime() {
+    if (!app.userInfo._id) return
+
     var now = new Date().getTime()
     console.log(app.userInfo._id)
     db.collection('users').doc(app.userInfo._id).update({
       data: {
         logintime: now
       }
+    }).catch((err) => {
+      console.error('更新登录时间失败:', err)
     })
   },
 
