@@ -95,7 +95,9 @@ Page({
           //console.log("首页登录取到的对应openid的信息：",res.data[0]);
           app.userInfo = Object.assign(app.userInfo, res.data[0]);
 
-          this.jiazai()
+          this.love(this.data.ss_xx).then((ss_xx) => {
+            if (ss_xx.length) this.setData({ ss_xx })
+          })
           wx.hideLoading()
           if (app.userInfo._openid == "") {
           } else {
