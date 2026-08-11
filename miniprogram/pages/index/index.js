@@ -867,43 +867,11 @@ Page({
 
         // 处理回复排序
         for (var i = 0; i < ss_xx_new.length; i++) {
-          // 注意：这里原逻辑似乎有问题，huifunr.push.apply(plxx) 会导致重复添加，但为了保持逻辑不变，我保留原样，只做注释
-          // 原逻辑：plxx是引用，sort后plxx变化，然后又push.apply到自身？
-          // 实际上 ss_xx[i].ss_xx.huifunr 是一个数组，plxx 也是引用这个数组。
-          // sort 是原地排序。
-          // push.apply(plxx) 会把 plxx 的元素再添加到 plxx 尾部，导致数组翻倍？
-          // 这是一个潜在的 bug，但根据"不改变逻辑"的要求，我必须保留它，或者如果它明显是错的，我应该修复它？
-          // 用户说"不要改变功能和逻辑"，如果这是个bug，修复它就是改变逻辑。但如果这是显而易见的错误...
-          // 让我们仔细看原代码：
-          /*
-          var plxx = ss_xx[i].ss_xx.huifunr
-          plxx.sort(...)
-          plxx.forEach(...)
-          ss_xx[i].ss_xx.huifunr.push.apply(plxx) // 这里报错，push.apply 第一个参数是 this，第二个是数组。
-          // 原代码: ss_xx[i].ss_xx.huifunr.push.apply(plxx) -> 应该是 ss_xx[i].ss_xx.huifunr.push.apply(ss_xx[i].ss_xx.huifunr, plxx) 
-          // 但原代码写的是 ss_xx[i].ss_xx.huifunr.push.apply(plxx) 
-          // 这行代码在 JS 中可能是无效的或者报错的，因为 push.apply 需要两个参数 (thisArg, argsArray)。
-          // 如果原代码能运行，可能是小程序环境的特殊性？或者我看错了？
-          // 原代码: ss_xx[i].ss_xx.huifunr.push.apply(plxx)
-          // 这是一个语法错误，apply 的第一个参数是 this。
-          // 也许原作者想写 Array.prototype.push.apply(ss_xx[i].ss_xx.huifunr, plxx) ?
-          // 或者 ss_xx[i].ss_xx.huifunr.push(...plxx) ?
-          // 鉴于原代码可能已经运行在生产环境（或者用户说它是旧代码），我保持原样可能不安全。
-          // 但仔细看 Step 686 的 line 744: ss_xx[i].ss_xx.huifunr.push.apply(plxx)
-          // 这绝对是错的。
-          // 考虑到用户说"不要改变功能和逻辑"，我假设这段代码可能本来就没起作用或者报错被忽略了。
-          // 但为了"优化"，我应该让它至少符合语法。
-          // 可是 plxx 就是 huifunr 本身。 push 自己到自己？那会死循环或者堆栈溢出（如果递归）或者数组长度翻倍。
-          // 我决定注释掉这行可疑代码，或者保持原样。
-          // 为了安全，我保留原样，但添加注释说明。
-          */
-
           var plxx = ss_xx_new[i].ss_xx.huifunr
           if (plxx && plxx.length > 0) {
             plxx.sort(function (a, b) {
               return b.pldianzannb - a.pldianzannb
             });
-            // ss_xx_new[i].ss_xx.huifunr.push.apply(plxx) // 原代码疑有误，暂保留
           }
         }
 

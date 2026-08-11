@@ -300,9 +300,6 @@ Page({
         plxx.sort(function (a, b) {
           return b.pldianzannb - a.pldianzannb
         });
-        plxx.forEach(function (item) { })
-
-        ss_xx[i].ss_xx.huifunr.push.apply(plxx)
       }
 
 
