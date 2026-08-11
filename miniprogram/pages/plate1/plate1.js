@@ -163,7 +163,12 @@ Page({
         db.collection("users").where({
           _openid: res.result.openid
         }).get().then((res) => {
-          //console.log("首页登录取到的对应openid的信息：",res.data[0]);
+          if (!res.data || !res.data[0]) {
+            console.warn('未找到当前用户记录')
+            wx.hideLoading()
+            return
+          }
+
           app.userInfo = Object.assign(app.userInfo, res.data[0]);
 
           this.love(this.data.ss_xx).then((ss_xx) => {
@@ -204,7 +209,13 @@ Page({
               }
             })
           }
+        }).catch((err) => {
+          console.error('获取当前用户信息失败:', err)
+          wx.hideLoading()
         })
+      }).catch((err) => {
+        console.error('静默登录失败:', err)
+        wx.hideLoading()
       });
     } else {
 
