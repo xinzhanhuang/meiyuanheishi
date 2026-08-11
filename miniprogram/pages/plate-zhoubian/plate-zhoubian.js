@@ -2,6 +2,7 @@ var db = wx.cloud.database()
 var app = getApp()
 var _ = db.command
 var utils = require('../../utils/util.js')
+var detailPageState = require('../../utils/detail-page-state.js')
 Page({
   //页面的初始数据
   data: {
@@ -400,28 +401,12 @@ Page({
 
   // 图片加载成功回调
   imageOnLoad(e) {
-    const index = e.currentTarget.dataset.index;
-    const updateKey = `ss_xx.ss_xx.tp2[${index}].loaded`;
-    this.setData({
-      [updateKey]: true
-    });
+    detailPageState.markPostImageLoaded(this, e.currentTarget.dataset.index);
   },
 
   // 评论图片加载成功回调
   imageOnLoadComment(e) {
-    const index0 = e.currentTarget.dataset.index0;
-    const index1 = e.currentTarget.dataset.index1;
-    if (index1 !== undefined) {
-      const updateKey = `ss_xx.ss_xx.huifunr[${index0}].huifu[${index1}].tp2[0].loaded`;
-      this.setData({
-        [updateKey]: true
-      });
-    } else {
-      const updateKey = `ss_xx.ss_xx.huifunr[${index0}].tp2[0].loaded`;
-      this.setData({
-        [updateKey]: true
-      });
-    }
+    detailPageState.markCommentImageLoaded(this, e.currentTarget.dataset.index0, e.currentTarget.dataset.index1);
   },
 
   /**
@@ -1089,10 +1074,7 @@ Page({
   //失去焦点，收起键盘
   //键盘收起
   setChatListHeight() {
-    this.setData({
-
-      chatListHeight: app.globalData.sysHeight - app.globalData.statsuBarHeight - this.data.headHeight - this.data.keyboardHeight - this.data.inutPanelHeight
-    })
+    detailPageState.setChatListHeight(this, app.globalData);
   },
   // 点击键盘遮罩，收起键盘
   hideKeyboard() {

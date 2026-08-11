@@ -4,6 +4,7 @@ const VOTE_RECORD = wx.cloud.database().collection("VoteRecord");
 const app = getApp();
 const _ = db.command;
 const utils = require('../../utils/util.js');
+const detailPageState = require('../../utils/detail-page-state.js');
 
 Page({
   /**
@@ -1281,31 +1282,12 @@ Page({
 
   // 图片加载成功回调
   imageOnLoad(e) {
-    const index = e.currentTarget.dataset.index; // 图片索引
-    const updateKey = `ss_xx.ss_xx.tp2[${index}].loaded`;
-    this.setData({
-      [updateKey]: true
-    });
+    detailPageState.markPostImageLoaded(this, e.currentTarget.dataset.index);
   },
 
   // 评论图片加载成功回调
   imageOnLoadComment(e) {
-    const index0 = e.currentTarget.dataset.index0; // 评论索引
-    const index1 = e.currentTarget.dataset.index1; // 回复索引 (如果有)
-
-    if (index1 !== undefined) {
-      // 回复的图片
-      const updateKey = `ss_xx.ss_xx.huifunr[${index0}].huifu[${index1}].tp2[0].loaded`;
-      this.setData({
-        [updateKey]: true
-      });
-    } else {
-      // 评论的图片
-      const updateKey = `ss_xx.ss_xx.huifunr[${index0}].tp2[0].loaded`;
-      this.setData({
-        [updateKey]: true
-      });
-    }
+    detailPageState.markCommentImageLoaded(this, e.currentTarget.dataset.index0, e.currentTarget.dataset.index1);
   },
   addlookhistory(ss_xx) {
     var historyId = ss_xx._id;
@@ -2155,9 +2137,7 @@ Page({
   //失去焦点，收起键盘
   //键盘收起
   setChatListHeight() {
-    this.setData({
-      chatListHeight: app.globalData.sysHeight - app.globalData.statsuBarHeight - this.data.headHeight - this.data.keyboardHeight - this.data.inutPanelHeight
-    })
+    detailPageState.setChatListHeight(this, app.globalData);
   },
   onPageScroll(e) {
     if (this.data.focus) {
