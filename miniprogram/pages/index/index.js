@@ -1,6 +1,30 @@
 const app = getApp()
 const db = wx.cloud.database()
 const _ = db.command
+const POST_LIST_FIELDS = {
+  _id: true,
+  _openid: true,
+  'ss_xx.nr': true,
+  'ss_xx.tp': true,
+  'ss_xx.tp2': true,
+  'ss_xx.tuswiper': true,
+  'ss_xx.look': true,
+  'ss_xx.dianzannb': true,
+  'ss_xx.dianzanid': true,
+  'ss_xx.huifunb': true,
+  'ss_xx.huifunr': true,
+  'ss_xx.userphoto': true,
+  'ss_xx.username': true,
+  'ss_xx.gender': true,
+  'ss_xx.niming1': true,
+  'ss_xx.isover': true,
+  'ss_xx.zhuanye': true,
+  'ss_xx.orderdetail': true,
+  'ss_xx.choosetitle': true,
+  'ss_xx.firsttime': true,
+  'ss_xx.lzid': true,
+  voteOption: true
+}
 
 Page({
   /**
@@ -789,7 +813,7 @@ Page({
       time: db.command.gt(yizhou),
       "ss_xx.orderdetail.openlocationtitle": openlocationtitle
     }).orderBy(zuixinorzuire, 'desc')
-      .skip(head).get().then(async (res) => {
+      .field(POST_LIST_FIELDS).skip(head).get().then(async (res) => {
         if (res.data == "") {
           this.setData({
             kong: true,
