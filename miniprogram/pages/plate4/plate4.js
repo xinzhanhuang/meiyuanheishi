@@ -122,19 +122,10 @@ Page({
 
   // 获取滚动条当前位置！！！！！！！！！！！！！！
   onPageScroll: function (e) {
-    //console.log(e)
-    if (e.scrollTop > 210) {
-      this.setData({
-        yincang: true,
-
-      });
-    } else {
-      this.setData({
-        yincang: false,
-      });
+    const yincang = e.scrollTop > 210
+    if (this.data.yincang !== yincang) {
+      this.setData({ yincang });
     }
-
-
   },
 
 

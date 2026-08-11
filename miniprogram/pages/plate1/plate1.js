@@ -110,15 +110,9 @@ Page({
   },
   // 获取滚动条当前位置！！！！！！！！！！！！！！
   onPageScroll: function (e) {
-    //console.log(e)
-    if (e.scrollTop > 200) {
-      this.setData({
-        yincang: false
-      });
-    } else {
-      this.setData({
-        yincang: true
-      });
+    const yincang = e.scrollTop <= 200
+    if (this.data.yincang !== yincang) {
+      this.setData({ yincang });
     }
   },
   //生命周期函数--监听页面加载！！！！！！！！！！！！

@@ -428,14 +428,9 @@ Page({
    * 用于控制回到顶部按钮的显示与隐藏
    */
   onPageScroll: function (e) {
-    if (e.scrollTop > 210) {
-      this.setData({
-        yincang: true,
-      });
-    } else {
-      this.setData({
-        yincang: false,
-      });
+    const yincang = e.scrollTop > 210
+    if (this.data.yincang !== yincang) {
+      this.setData({ yincang });
     }
   },
 
