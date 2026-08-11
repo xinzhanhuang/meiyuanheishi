@@ -1,0 +1,12 @@
+{
+    "permissions": {
+        "openapi": []
+    },
+    "triggers": [
+        {
+            "name": "process_articles_3times_daily",
+            "type": "timer",
+            "config": "0 0 12 * * * *"
+        }
+    ]
+}

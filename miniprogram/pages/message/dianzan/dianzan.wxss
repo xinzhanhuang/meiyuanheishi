@@ -1,0 +1,119 @@
+/* page{background-color: #EDEDED;} */
+
+.content {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: #fff;
+  display: flex;
+  padding: 15rpx;
+  min-height: 140rpx;
+  border-bottom: 1rpx solid rgb(241, 241, 241); /* 粗线 */
+  font-size: 30rpx;
+  color: rgb(97, 97, 97);
+  
+}
+
+.left {
+  display: flex;
+  width: 100%;
+}
+
+.avatar-container {
+  display: flex;
+  align-items: flex-start;
+  margin-right: 20rpx;
+}
+
+.avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50rpx;
+  overflow: hidden;
+}
+
+.avatar.square {
+  border-radius: 10rpx;
+}
+
+.info-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: space-around;
+  
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5rpx;
+}
+
+.huifuren {
+  color: #000;
+  font-size: 80%;
+  font-weight: 700;
+}
+
+.time {
+  font-size: 78%;
+  color: #656565;
+}
+
+.action-row {
+  display: flex;
+  /* margin: 0 0 10rpx 0; */
+}
+
+.wbnr {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 80%;
+  color: #656565;
+}
+
+.title {
+  color: rgb(92, 106, 133);
+  font-size: 100%;
+  width: 100%;
+  word-break: break-all;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub-title {
+  font-size: 80%;
+  color: dimgrey;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 10rpx;
+  background-color: rgb(235, 235, 235);
+  border-radius: 10rpx;
+  padding: 5rpx 10rpx;
+  margin-left: -10rpx;
+  
+ 
+}
+
+.del {
+  background-color: #c7c7c7;
+  color: #aaaaaa;
+  border-radius: 20rpx;
+  margin: 10rpx;
+  text-align: center;
+  padding: 10rpx;
+}
+
+.empty-tip {
+  text-align: center;
+  margin: 60rpx;
+  color: dimgrey;
+}

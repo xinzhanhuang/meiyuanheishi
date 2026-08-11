@@ -1,0 +1,111 @@
+<wxs module="tools" src="/utils/filter.wxs" />
+
+<view class="container">
+  <view class="nav-bar-container" style="height:{{navHeight+160}}px;">
+    <view class="custom-bar-wrapper" style="margin-top:{{searchMarginTop}}px; height: {{searchHeight}}px;">
+    </view>
+    <view class="title-container" style="margin-top:{{searchMarginTop+40}}px;">
+      <view>{{choosetitle}}</view>
+      <view class="subtitle-text" wx:for="{{choosetitle1}}" wx:for-item="item" wx:for-index="index" wx:key="index" wx:if="{{choosetitle==item.title11}}">{{item.title33}}</view>
+    </view>
+  </view>
+
+  <view class="action-bar-container" style="margin-top: {{navHeight-160}}px;">
+    <!-- 按钮 -->
+    <button style="margin-left: 35rpx;"  open-type="share" class="share-button">
+      <image src="/images/转发.png" class="share-icon"></image>
+    </button>
+
+    <!--pages/select/select.wxml-->
+    <view>
+      <!-- 以下style样式均为实现动画效果 -->
+      <view bindtap="show" class="timePicker">
+        <image src="/images/xiahua.png" class="imagexx arrow-icon" style="transform:rotate({{show?'90':'0'}}deg)" />
+      </view>
+
+      <view class="modal-mask" bindtap="show" wx:if="{{show}}"></view>
+      <view class="box dropdown-box" style="height:{{show?33*3:'0'}}px;">
+        <view>
+          <!-- 下面显示举报，点击可举报 -->
+          <view class="jubao dropdown-item" bindtap="changetitle" data-title='0'>
+            <view class="dropdown-text">🕙 最新</view>
+          </view>
+
+          <!-- 下面显示举报，点击可举报 -->
+          <view class="jubao dropdown-item" bindtap="gameover" bindtap="changetitle" data-title='1'>
+            <view class="dropdown-text">🔥 最热</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 搜索 -->
+<view class="search-wrap">
+  <input bindinput="getValue" type="text" placeholder="搜索该词条下的关键词，找到自己需要的信息... " value="{{search}}" confirm-type="send" bindconfirm="search" />
+  <image wx:if="{{!search}}" class="fdj" src="/images/fangdajin1.png"></image>
+  <image wx:if="{{search}}" bindtap="shuaxin" class="fdj" src="/images/shanchu.png"></image>
+</view>
+
+<!-- 发帖 -->
+<movable-area class="movable-area" style="height:{{movehight}}px;">
+  <movable-view class="moveview movable-view" direction="all" x="500" y="{{movehight2-80}}">
+    <image src="/images/add.png" bindtap="addnews" class="goTop" mode="widthFix"></image>
+    <image src="/images/zhuanye333.png" bindtap="blackindex" class="goTop" mode="widthFix"></image>
+  </movable-view>
+</movable-area>
+
+<view class="A posts-container">
+  <block wx:for="{{ss_xx}}" wx:key="index0" wx:for-item="item0" wx:for-index="index0">
+    <post-item 
+      item="{{item0}}" 
+      index="{{index0}}" 
+      openid="{{item0._openid}}"
+      bind:itemtap="onPostTap"
+      bind:avatarlongpress="onPostAvatarLongPress"
+      bind:topictap="onPostTopicTap"
+      bind:like="onPostLike"
+      bind:imageload="onPostImageLoad"
+      bind:imageerror="onPostImageError"
+      bind:mazhu="onPostMazhu"
+    />
+  </block>
+</view>
+
+<!-- 底部加载动画 -->
+<view class="bottom-loading">
+  <image src="/images/loading2.gif" mode="widthFix" class="bottom-loading-img" />
+</view>
+
+<!-- 发布弹窗 -->
+<view data-weui-theme="{{theme}}" wx:if="{{istrue}}" class="modal-bg">
+  <view class="weui-demo-dialog {{istrue ? 'weui-demo-dialog_show' : ''}}">
+    <view class="weui-mask" bindtap="closeDialog"></view>
+    <view class="weui-half-screen-dialog modal-content" catchtap="stopEvent">
+      <view class="modal-options">
+        <view bindtap="neworder">
+          <view class="modal-option-icon-bg">
+            <image src="/images/imageoder.png" class="modal-option-icon"></image>
+          </view>
+          <view class="modal-option-text">派单</view>
+        </view>
+
+        <view bindtap="addnews">
+          <view class="modal-option-icon-bg">
+            <image src="/images/postnr.png" class="modal-option-icon"></image>
+          </view>
+          <view class="modal-option-text">帖子</view>
+        </view>
+      </view>
+
+      <view bindtap="closeDialog" class="modal-close-btn" style="transform:rotate({{istrue?'45':'0'}}deg)">
+        <image src="/images/add.png" class="modal-close-icon" />
+      </view>
+    </view>
+  </view>
+</view>
+
+<view class="kobai"> .</view>
+<view class="kobai"> .</view>
+<view class="kobai"> .</view>

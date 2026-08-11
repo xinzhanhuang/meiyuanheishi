@@ -1,0 +1,107 @@
+
+
+var timeChn =  {
+  getDateTime: function (value, type = 0) {
+      //不能使用 new Date()
+      var time = getDate(value);
+      var year = time.getFullYear();
+      var month = time.getMonth() + 1;
+      var date = time.getDate();
+      var hour = time.getHours();
+      var minute = time.getMinutes();
+      var second = time.getSeconds();
+      month = month < 10 ? "0" + month : month;
+      date = date < 10 ? "0" + date : date;
+      hour = hour < 10 ? "0" + hour : hour;
+      minute = minute < 10 ? "0" + minute : minute;
+      second = second < 10 ? "0" + second : second;
+      var arr = [
+          year + "-" + month + "-" + date,
+          year + "-" + month + "-" + date + " " + hour + ":" + minute + ":" + second,
+          year + "年" + month + "月" + date + " " + hour + ":" + minute + ":" + second,
+          year + "年" + month + "月" + date,
+          hour + ":" + minute + ":" + second
+      ]
+      return arr[type];
+  },
+  when: function (val) {
+    var realTime = getDate(val).getTime()
+    var nowTime = getDate().getTime()
+    var diffValue = nowTime - realTime
+    var _min = diffValue / (60 * 1000)
+    //console.log("时间：",_min)
+    if (_min < 1) {
+      return '刚刚'
+    } else if (_min >= 1 && _min < 60) {
+      return Math.ceil(_min)+'分钟前'
+    } else if (_min >= 60 && _min < 60 * 24) {
+      return Math.floor(_min / 60) + '小时前'
+    } else if (_min >= 60 * 24 && _min < 60 * 24 * 30) {
+      return Math.floor(_min / (60 * 24)) + '天前'
+    } else if(_min >= 60 * 24 * 30 && _min < 60 * 24 * 30 * 12){
+      return Math.floor(_min / (60 * 24 * 30)) + '月前'
+    }else if(_min >= 60 * 24 * 30 * 12 ){
+      return Math.floor(_min / (60 * 24 * 30 * 12)) + '年前'
+    }
+  }
+  }
+
+
+var getVoteOptionLetter = function(index) {
+  var letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
+  return letters[index] || "";
+}
+
+var processTopName = function (name) {
+  if (!name) return "";
+  if (name.length > 11) {
+    return name.substring(0, 11) + "...";
+  }
+  return name;
+}
+
+var processSubName = function (name) {
+  if (!name) return "";
+  var l = name.length;
+  if (l <= 15) return name;
+
+  var wz = name.indexOf("回复");
+  if (wz > 4) {
+    var qian = name.substring(0, 4) + "...回复 ";
+    var hou = name.substring(wz + 2, l);
+    var newName = qian + hou;
+
+    if (newName.length > 15) {
+      return newName.substring(0, 15) + "...";
+    }
+    return newName;
+  } else {
+    return name.substring(0, 15) + "...";
+  }
+}
+
+
+var getZileiName = function(zilei) {
+  if (zilei === 0 || zilei === '0') return '资料';
+  if (zilei === 1 || zilei === '1') return '店铺';
+  if (zilei === 2 || zilei === '2') return '课程';
+  return '帖子';
+}
+
+
+var sub = function(str, start, end) {
+  if (!str) return '';
+  if (end === undefined) {
+    return str.substring(start);
+  }
+  return str.substring(start, end);
+}
+
+module.exports = {
+  timeChn: timeChn,
+  getVoteOptionLetter: getVoteOptionLetter,
+  processTopName: processTopName,
+  processSubName: processSubName,
+  getZileiName: getZileiName,
+  sub: sub
+}

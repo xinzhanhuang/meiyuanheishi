@@ -1,0 +1,211 @@
+<!--index.wxml-->
+
+<!-- Template for Card Item -->
+<template name="itemCard">
+  <view class="card-item" bindtap="xiangqing" data-id="{{item._id}}" data-love="{{item.love}}" data-index="{{index}}">
+    
+    <!-- Image Top -->
+    <view class="card-img-box">
+      <block wx:if="{{item.ss_xx.tp[0]}}">
+        <image class="card-img" mode="aspectFill" lazy-load="true" src="{{item.ss_xx.tp[0]}}" bindload="imageOnLoad" data-index="{{index}}" hidden="{{!item.loaded}}"></image>
+        <image class="card-img" mode="aspectFill" src="/images/loading8.gif" wx:if="{{!item.loaded}}"></image>
+      </block>
+      <view wx:else class="card-img" style="background-color: {{item.bgColor}}; display: flex; justify-content: center; align-items: center; color: #fff; font-size: 32rpx; font-weight: bold; padding: 20rpx; box-sizing: border-box; text-align: center;">
+        {{item.ss_xx.jg || item.ss_xx.zbtitle}}
+      </view>
+    </view>
+
+    <!-- Content Bottom -->
+    <view class="card-info">
+      <view class="card-title">{{item.ss_xx.jg || item.ss_xx.zbtitle}}</view>
+      
+      <!-- Address -->
+      <!-- Address or Attachment -->
+      <view class="card-address" wx:if="{{moduleIndex == 0 && item.ss_xx.weizhi}}">
+        <image class="address-icon" src="/images/message/位置1.png"></image> 
+        <text>{{item.ss_xx.weizhi}}</text>
+      </view>
+      <block wx:if="{{moduleIndex == 1}}">
+        <view class="card-address" wx:if="{{item.ss_xx.fujian.length > 0}}">
+          <image class="address-icon" src="/images/folder4.png" style="width: 30rpx; height: 28rpx;margin-right:8rpx; "></image> 
+          <text style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 400rpx; display: inline-block; vertical-align: middle;"> {{item.ss_xx.fujian[0].name || '附件'}}</text>
+        </view>
+        <view class="card-address" wx:elif="{{item.ss_xx.link}}">
+          <image class="address-icon" src="/images/lianjie.png" style="width: 40rpx; height: 40rpx;margin-left:-5rpx; "></image> 
+          <text style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 400rpx; display: inline-block; vertical-align: middle;">{{item.ss_xx.link}}</text>
+        </view>
+      </block>
+
+      <view class="card-bottom">
+          <!-- Stars -->
+          <view class="stars">
+            <view class="star" wx:for="{{stars}}" wx:key="index" wx:for-item="starItem">
+              <view class="icon_red" wx:if="{{index < item.ss_xx.int}}" style="width: 100%;">
+                <image src="{{starItem.bgfImg}}"></image>
+              </view>
+              <view class="icon_red" wx:if="{{index == item.ss_xx.int}}" style="width: {{item.ss_xx.percent}}%">
+                <image src="{{starItem.bgfImg}}"></image>
+              </view>
+              <view class="icon_grey">
+                <image src="{{starItem.bgImg}}"></image>
+              </view>
+            </view>
+            <view class="score-text">{{item.ss_xx.remark_num}}</view>
+          </view>
+
+          <!-- Like -->
+          <view class="like-box" catchtap="handleLike" data-index="{{index}}" data-id="{{item._id}}">
+            <image class="cart-icon" src="/images/icon/zan1.png" wx:if="{{!item.love}}"></image>
+            <image class="cart-icon" src="/images/icon/zan2.png" wx:if="{{item.love}}"></image>
+            <text class="like-count">{{item.ss_xx.dianzannb}}</text>
+          </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<!-- 加载动画 -->
+<view class="juzho">
+  <view class="load_circle1" hidden="{{loadingHidden1}}">
+    <image src="/images/loading2.gif" mode="widthFix" style="width:50rpx;margin-top:170rpx;height:auto" />
+  </view>
+</view>
+
+<view class='contents fade_in' wx:if="{{showList}}">
+  <view class="container">
+    
+    <!-- Search Bar -->
+    <!-- <view  bindtap="add" class="search-bar">
+      <view class="search-input-wrap">
+        <icon type="search" size="16" color="#999"></icon>
+        <text class="search-placeholder">新品火热发售中</text>
+      </view>
+      <view class="search-icons">
+        <view class="icon-circle">...</view>
+        <view class="icon-circle">◎</view>
+      </view>
+    </view> -->
+
+    <!-- Banner -->
+    <swiper class="swiper_wrapper" vertical="true" indicator-dots autoplay circular indicator-active-color="#fff">
+      <block wx:for="{{bannerList}}" wx:key="index">
+        <swiper-item class="swiper_item">
+          <image  src="{{item.cover}}" class="slide_image" bindtap="toBannerDetail" data-Appid="{{item.Appid}}" data-type="{{item.type}}" data-title="{{item.title}}" mode="aspectFill" />
+        </swiper-item>
+      </block>
+    </swiper>
+    
+    <!-- Module Navigation (Database, Shops, Courses) -->
+    <view class="module-nav">
+      <view wx:for="{{moduleTabs}}" wx:key="index" class="module-item {{moduleIndex == index ? 'active' : ''}}" bindtap="changeModule" data-index="{{index}}">
+        {{item.zileititle}}
+      </view>
+    </view>
+
+    <!-- 顶部导航栏 & Filter Bar Sticky Wrapper -->
+    <view class="sticky-header">
+      <view style="background-color: #fff; width: 100%;">
+        <scroll-view scroll-x scroll-with-animation class="tab-view" scroll-left="{{scrollLeft}}">
+          <!-- Removed inner flex container to allow items to flow horizontally -->
+          <view wx:for="{{tabbar}}" wx:key="index" class="tab-bar-item {{currentTab==index ? 'active' : ''}}" data-current="{{index}}" catchtap="swichNav">
+            <text class="tab-bar-title">{{item}}</text>
+            <view class="tab-line" wx:if="{{currentTab==index}}"></view>
+          </view>
+        </scroll-view>
+
+        <!-- Filter Bar -->
+        <view class="filter-bar">
+          <view class="filter-item {{sortType == 'comprehensive' ? 'active' : ''}}" bindtap="changeSort" data-type="comprehensive">
+            <text>综合</text>
+          </view>
+          <view class="filter-item {{sortType == 'rating' ? 'active' : ''}}" bindtap="changeSort" data-type="rating">
+            <text>评分</text>
+          </view>
+          <view class="filter-item {{sortType == 'comments' ? 'active' : ''}}" bindtap="changeSort" data-type="comments">
+            <text>评论</text>
+          </view>
+          <view class="filter-item {{sortType == 'time' ? 'active' : ''}}" bindtap="changeSort" data-type="time">
+            <text>时间</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 内容 -->
+    <view class="tab-content">
+      <view class="scoll-y">
+          
+        <view class="grid-container">
+          <!-- 空状态 -->
+       
+
+          <!-- Items -->
+          <block wx:for="{{listData[currentTab]}}" wx:key="index" wx:for-item="item" wx:for-index="index">
+            <template is="itemCard" data="{{item, index, stars, moduleIndex}}"/>
+          </block>
+        </view>
+
+        <!-- 底部加载动画 -->
+        <view class="bottom-loading">
+            <image src="/images/loading2.gif" mode="widthFix" class="bottom-loading-img" />
+        </view>
+
+        <view class="kobai" style="height: 100rpx;"></view>
+      </view>
+    </view>
+  </view>
+  
+  <view class="add-btn-container">
+    <movable-area class="movable-area" style="height:{{movehight}}px;">
+      <movable-view class="moveview movable-view" style="height:{{yincang?220:'100'}}rpx;" direction="all" x="500" y="{{movehight2-80}}" hidden="{{istrue}}">
+        <image src="/images/add.png" bindtap="add" class="goTop" mode="widthFix"></image>
+        <image src="/images/topup.png" bindtap="goTop" class="goTop" mode="widthFix" hidden="{{!yincang}}"></image>
+      </movable-view>
+    </movable-area>
+  </view>
+</view>
+
+
+<!-- 发布弹窗 -->
+
+
+
+<!-- 发布弹窗 -->
+<!-- 发布弹窗 -->
+<page-container 
+  show="{{istrue}}" 
+  position="bottom" 
+  round="true" 
+  bind:clickoverlay="closeDialog"
+  custom-style="background-color: #e6f3ff; height: auto; padding-bottom: 50rpx;"
+>
+  <view class="publish-content">
+      <view class="publish-options">
+        <view bindtap="neworder">
+          <view class="publish-option-icon-bg">
+            <image src="/images/postnr.png" class="publish-option-icon"></image>
+          </view>
+          <view class="publish-option-text">好店</view>
+        </view>
+        <view bindtap="addnews" class="publish-option-item">
+          <view class="publish-option-icon-bg">
+            <image src="/images/imageoder.png" class="publish-option-icon"></image>
+          </view>
+          <view class="publish-option-text">资料</view>
+        </view>
+        <view bindtap="addclass" class="publish-option-item">
+          <view class="publish-option-icon-bg">
+            <image src="/images/kecheng.png" class="publish-option-icon"></image>
+          </view>
+          <view class="publish-option-text">课程</view>
+        </view>
+      </view>
+      <view bindtap="closeDialog" class="publish-close-btn" style="transform:rotate({{istrue?'45':'0'}}deg)">
+        <image src="/images/add.png" class="publish-close-icon" />
+      </view>
+  </view>
+</page-container>
+
+
+
+

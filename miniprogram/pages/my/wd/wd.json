@@ -1,4 +1,7 @@
 {
   "usingComponents": {},
-  "navigationBarTitleText": "个人中心"
+  "navigationBarTitleText": "天美黑市",
+  "enablePullDownRefresh": true,
+  "backgroundColor":"#eeeeee",
+  "backgroundTextStyle":"dark"
 }

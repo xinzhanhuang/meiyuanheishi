@@ -1,0 +1,215 @@
+/* 全局背景 */
+page {
+  background-color: #f7f8fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica,
+    Segoe UI, Arial, Roboto, 'PingFang SC', 'miui', 'Hiragino Sans GB', 'Microsoft Yahei',
+    sans-serif;
+}
+
+/* 统计信息样式 */
+.statistics {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin: 20rpx;
+  padding: 30rpx;
+  background:rgb(151, 151, 151) ;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(118, 75, 162, 0.3);
+  color: #fff;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-num {
+  font-size: 40rpx;
+  font-weight: bold;
+  margin-bottom: 10rpx;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  opacity: 0.9;
+}
+
+/* 搜索框样式 */
+.search-wrap {
+  display: flex;
+  align-items: center;
+  margin: 20rpx;
+  padding: 0 20rpx;
+  height: 80rpx;
+  background-color: #fff;
+  border-radius: 40rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  border: 1px solid #eee;
+}
+
+.search-input {
+  flex: 1;
+  margin-left: 20rpx;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.fdjk {
+  width: 40rpx;
+  height: 40rpx;
+  opacity: 0.6;
+}
+
+/* 列表标题 */
+.section-title {
+  margin: 30rpx 20rpx 20rpx;
+  font-size: 28rpx;
+  color: #888;
+  text-align: center;
+  position: relative;
+}
+
+.section-title::before,
+.section-title::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 100rpx;
+  height: 1px;
+  background-color: #ddd;
+}
+
+.section-title::before {
+  left: 50%;
+  margin-left: -180rpx;
+}
+
+.section-title::after {
+  right: 50%;
+  margin-right: -180rpx;
+}
+
+/* 用户列表样式 */
+.user-list {
+  padding: 0 20rpx;
+}
+
+.user-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+  background-color: #fff;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.02);
+  transition: all 0.3s ease;
+}
+
+.user-item:active {
+  transform: scale(0.98);
+  background-color: #fafafa;
+}
+
+.avatar {
+  width: 90rpx;
+  height: 90rpx;
+  border-radius: 50%;
+  margin-right: 20rpx;
+  border: 2rpx solid #f0f0f0;
+}
+
+.user-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.username {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6rpx;
+}
+
+.last-online {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 在线状态 */
+.status-container {
+  display: flex;
+  align-items: center;
+  font-size: 24rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 30rpx;
+}
+
+.status-online {
+  background-color: rgba(26, 128, 0, 0.1);
+  color: #1a8000;
+}
+
+.status-offline {
+  background-color: rgba(128, 0, 0, 0.05);
+  color: #999;
+}
+
+.status-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  margin-right: 8rpx;
+}
+
+.dot-online {
+  background-color: #1a8000;
+}
+
+.dot-offline {
+  background-color: #ccc;
+}
+
+/* Admin Entry Card */
+.manage-entry {
+  margin: 20rpx;
+  padding: 30rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.06);
+}
+
+.entry-icon {
+  width: 80rpx;
+  height: 80rpx;
+  margin-right: 24rpx;
+}
+
+.entry-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.entry-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.entry-desc {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.entry-arrow {
+  font-size: 32rpx;
+  color: #ccc;
+  font-weight: bold;
+}

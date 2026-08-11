@@ -1,0 +1,42 @@
+<wxs module="tools" src="/utils/filter.wxs" />
+
+<view class="del" catchtap="alldelete">全部已读</view>
+
+<view wx:if="{{message.length>0}}">
+  <view wx:for="{{message}}" wx:key="idex" wx:for-item="item0" wx:for-index="index0">
+    <mp-slideview buttons="{{slideButtons}}" bindbuttontap="slideButtonTap" data-ssid="{{item0.ssid}}" data-id="{{item0.id}}" data-index="{{index0}}">
+      <view class="content" bindtap="chakan" data-ssid="{{item0.ssid}}" data-subtype="{{item0.subtype}}" data-id="{{item0.id}}" data-type="{{item0.type}}" data-liuyan="{{item0.liuyan}}">
+        <view class="left">
+          <!-- 第一部分图片 -->
+          <view class="avatar-container">
+            <image class="avatar" wx:if="{{item0.type!='jubao'&&item0.type!='jubaoplus'}}" src="{{item0.photo}}" />
+            <!-- 举报特殊图标 -->
+            <image class="avatar square" wx:if="{{item0.type=='jubao'||item0.type=='jubaoplus'}}" src="/images/icon/feng.png" />
+          </view>
+          <!-- 第二部分,回复及对应ss -->
+          <view class="info-container">
+            <view class="header-row">
+              <view class="huifuren">{{item0.name}}</view>
+              <view class="time">{{tools.timeChn.getDateTime(item0.time)}}</view>
+            </view>
+            
+            <vier style="{{item0.isorder?'background-color:#f2f8ff;border-radius: 15rpx;padding: 10rpx;':''}}">
+            <view class="action-row">
+              <view class="wbnr" wx:if="{{item0.type==='dianzan'}}">👍 赞了你的{{item0.zilei!=null?tools.getZileiName(item0.zilei):item0.isorder?'订单':'帖子'}}</view>
+              <view class="wbnr" wx:if="{{item0.type==='pldianzan'}}">👍 赞了你{{item0.zilei!=null?'在'+tools.getZileiName(item0.zilei)+'的评论':item0.isorder?'在订单的评论':'在帖子的评论'}}</view>
+            </view>
+
+           
+            <view class=" sub-title" wx:if="{{item0.type==='dianzan'}}">{{tools.getZileiName(item0.zilei)}}：{{item0.zbtitle?item0.zbtitle:item0.ywnr}}</view>
+            <view class=" sub-title" wx:if="{{item0.type==='pldianzan'}}">评论：{{item0.bhfpl}}</view>
+          </vier>
+          </view>
+        </view>
+      </view>
+    </mp-slideview>
+  </view>
+</view>
+
+
+<view wx:else class="empty-tip">
+  暂无点赞</view>

@@ -1,0 +1,626 @@
+<page-meta page-style="{{ istrue || showDialog ? 'overflow: hidden;' : '' }}" />
+<wxs module="tools" src="/utils/filter.wxs" />
+
+<!-- 加载动画 -->
+<view class="juzho">
+  <view class="load_circle1" hidden="{{loadingHidden}}">
+    <!-- 动图 -->
+    <image src="/images/loading2.gif" mode="widthFix" class="loading-img" />
+  </view>
+</view>
+
+<view hidden="{{!loadingHidden}}">
+  <!-- 下面是整个页面，不失效则展示 -->
+  <view wx:if="{{ss_xx.ss_xx.orderdetail.ordertitle}}" class="header-warning">
+    <view class="warning-text">注意：接单后，请及时与派单同学取得联系。为保障同学们权益,注意辨别信息真伪。</view>
+  </view>
+
+  <!-- 通知栏 -->
+  <view wx:if="{{zuiress_xx1.length>1}}">
+    <view wx:if="{{!ss_xx.ss_xx.orderdetail.ordertitle}}" class="container broadcast-container" style="margin-top:{{navHeight+5}}px;">
+      <swiper class="broadcastList" vertical="true" autoplay="true" circular="true" interval="3000">
+        <block wx:for="{{zuiress_xx1}}" wx:key="index" wx:for-item="item0" wx:for-index="index0" wx:if="{{index0<=5}}">
+          <swiper-item>
+            <view class="broadcast-item" catchtap="xiangqing" data-id="{{item0._id}}" data-love="{{item0.love}}" data-index="{{index0}}" data-reping="1111">
+              <view class="broadcast-index">
+                <image lazy-load="true" src="/images/plhotmax.gif" class="broadcast-icon" />0{{index0+1}}
+              </view>
+              <view class="broadcast-content"> {{item0.ss_xx.nr}} <text wx:if="{{!item0.ss_xx.nr}}">[图片]</text> </view>
+              <view class="broadcast-look">{{item0.ss_xx.look}}围观</view>
+            </view>
+          </swiper-item>
+        </block>
+      </swiper>
+    </view>
+  </view>
+
+  <!-- 下面 -->
+  <movable-area class="movable-area" style="height:{{movehight}}px;">
+    <movable-view class="moveview movable-view" direction="all" x="500" y="{{movehight2-80}}">
+      <image src="/images/zhuanye333.png" bindtap="blackindex" class="goTop" mode="widthFix"></image>
+    </movable-view>
+  </movable-area>
+
+  <view style="margin-top:{{zuiress_xx1.length>0?'80':'0'}}rpx;" wx:if="{{ss_xx!=0}}">
+    <!-- 下面为整个说说及评论区 -->
+    <view class="A">
+      <!-- 下面为说说主体 -->
+      <view class="B" wx:if="{{liuyan==false}}">
+        <!-- B1为头像 -->
+        <view class="B1" bindtap="checkuser" data-id="{{ss_xx.ss_xx.lzid}}">
+          <image class="photo" src="{{ss_xx.ss_xx.userphoto}}"></image>
+        </view>
+
+        <!-- B2为其他内容 -->
+        <view class="user-info-container">
+          <!-- 第一部分 -->
+          <view class="B21">
+            <view class="qian">
+              <view class="user-name">
+                <text> {{ss_xx.ss_xx.username}}</text>
+                <image wx:if="{{ss_xx.ss_xx.gender=='女生♀'}}" lazy-load="true" src="/images/icon/women.png" class="gender-icon" />
+                <image wx:if="{{ss_xx.ss_xx.gender=='男生♂'}}" lazy-load="true" src="/images/icon/man.png" class="gender-icon" />
+                <text class="gender-text-female" wx:if="{{ss_xx.ss_xx.gender=='女生⚢'}}">⚢</text>
+                <text class="gender-text-male" wx:if="{{ss_xx.ss_xx.gender=='男生⚣'}}">⚣</text>
+              </view>
+              <!-- 下面显示时间 -->
+              <view class="time time-text">{{ss_xx.ss_xx.zhuanye[0]}}-{{ss_xx.ss_xx.zhuanye[1]}}
+                <view wx:if="{{ss_xx.ss_xx.isover}}" class="over-text">·活动结束</view>
+              </view>
+            </view>
+
+            <!-- 右上角箭头 -->
+            <view>
+              <!-- 以下style样式均为实现动画效果 -->
+              <view bindtap="show" class="timePicker">
+                <image src="/images/xiahua.png" class="imagexx arrow-image" style="transform:rotate({{show?'90':'0'}}deg)" />
+              </view>
+
+              <view class="modal-mask" bindtap="show" wx:if="{{show}}"></view>
+
+              <!-- style 其中40*4 40为列表格的固定高度，单位为px，4为列表格数量 -->
+              <view class="box menu-box" style="height:{{show?40*3:'0'}}px;">
+                <!-- 展示行 -->
+                <view>
+                  <!-- 下面显示举报，点击可举报 -->
+                  <view class="jubao menu-item-container" bindtap="jubao" data-id="{{ss_xx._id}}" data-jubao="{{ss_xx.ss_xx.jubao}}">
+                    <view class="menu-item-text">⚠️举报{{ss_xx.ss_xx.jubao[1]}}</view>
+                  </view>
+
+                  <!-- 底部弹窗 -->
+                  <view bindtap="openchangeinformation" class="menu-item-text-change">🔧内容修改</view>
+
+                  <!-- 下面显示状态修改 -->
+                  <view class="jubao menu-item-container">
+                    <view bindtap="deleteistrue" data-id="{{ss_xx._id}}" class="menu-item-text">🚫状态修改</view>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </view>
+
+
+
+          <!-- 第二部分 -->
+          <view class="B22">
+            <!-- 接单详情 -->
+            <view wx:if="{{ss_xx.ss_xx.orderdetail.openlocationtitle}}" class="order-detail-container">
+              <view class="order-title-row">
+                <view class="order-title-text">
+                  {{ss_xx.ss_xx.orderdetail.openlocationtitle}}
+                </view>
+                <view class="order-price-text" wx:if="{{ss_xx.ss_xx.orderdetail.jg}}">
+                  酬金：{{ss_xx.ss_xx.orderdetail.jg}}
+                </view>
+              </view>
+
+              <view class="order-content-container">
+                <view class="order-subtitle">{{ss_xx.ss_xx.orderdetail.ordertitle}}</view>
+                <view class="order-content" user-select="auto">{{ss_xx.ss_xx.nr}}</view>
+
+                <view>
+                  <!-- 位置 -->
+                  <view wx:if="{{ss_xx.ss_xx.orderdetail.starPOINT}}" class="neirong1"> [取货地址] <text user-select="auto">{{ss_xx.ss_xx.orderdetail.starPOINT}} </text></view>
+                  <view wx:if="{{ss_xx.ss_xx.orderdetail.endPOINT}}" class="neirong1"> [送货地址] <text user-select="auto">{{ss_xx.ss_xx.orderdetail.endPOINT}} </text> </view>
+
+                  <!-- 联系 -->
+                  <view wx:if="{{orderlzid}}">
+                    <view class="neirong1" wx:if="{{ss_xx.ss_xx.orderdetail.weixin}}" bindtap="fuzhi" data-item="{{ss_xx.ss_xx.orderdetail.weixin}}"> <text class="contact-info">[微信] {{ss_xx.ss_xx.orderdetail.weixin}} </text> <text class="contact-hint">（点击复制）</text></view>
+                    <view class="neirong1" wx:if="{{ss_xx.ss_xx.orderdetail.lianxi}}" bindtap="callphone" data-phone="{{ss_xx.ss_xx.orderdetail.lianxi}}"> <text class="contact-info">[电话] {{ss_xx.ss_xx.orderdetail.lianxi}} </text> <text class="contact-hint">（点击拨打）</text></view>
+                  </view>
+
+                  <view class="neirong1" wx:else="{{!orderlzid}}"> <text class="contact-info">[联系方式] 仅接单人可查看 </text> </view>
+
+                  <view class="spacer">.</view>
+
+                  <!-- 接单人信息 -->
+                  <view wx:if="{{orderlzid}}">
+                    <view wx:if="{{ss_xx.ss_xx.orderdetail.takeorderphone}}">
+                      <view class="take-order-title">接单用户信息</view>
+                      <view class="neirong1"> <text class="contact-info">[接单用户] {{ss_xx.ss_xx.orderdetail.takeordername}} </text> <text class="contact-hint"></text></view>
+                      <view class="neirong1" bindtap="fuzhi" data-item="{{ss_xx.ss_xx.orderdetail.takeorderphone}}"> <text class="contact-info">[联系方式] {{ss_xx.ss_xx.orderdetail.takeorderphone}} </text> <text class="contact-hint">（点击复制）</text></view>
+                    </view>
+                  </view>
+
+                  <view class="spacer">.</view>
+
+                  <!-- 接单按钮 -->
+                  <view wx:if="{{!ss_xx.ss_xx.orderdetail.takeorder}}">
+                    <button bindtap="kaishixuanze" class="take-order-btn" sizi="mini">
+                      <view class="btn-text">接单</view>
+                    </button>
+                  </view>
+
+                  <view wx:else="{{ss_xx.ss_xx.orderdetail.takeorder}}">
+                    <button class="taken-order-btn" sizi="mini">
+                      <view class="btn-text">已接</view>
+                    </button>
+                  </view>
+
+                  <view class="spacer">.</view>
+                </view>
+              </view>
+            </view>
+
+            <view class="B22233 post-content-text" wx:if="{{!ss_xx.ss_xx.orderdetail.openlocationtitle}}">
+              <text user-select="auto">
+                <text catchtap="tiaozhuan" data-choosetitle="{{ss_xx.ss_xx.choosetitle}}" wx:if="{{ss_xx.ss_xx.choosetitle}}" class="topic-tag">
+                  <text class="topic-hash">#</text>{{ss_xx.ss_xx.choosetitle}}<text class="topic-hash"> #</text>
+                </text> {{ss_xx.ss_xx.nr}}</text>
+            </view>
+
+            <view wx:if="{{ss_xx.ss_xx.urltitle}}" bindtap="toBannerDetail" data-title="{{ss_xx.ss_xx.urltitle}}" class="url-title">[点击阅读公众号原文]</view>
+          </view>
+
+          <view class="kobai">.</view>
+
+          <!-- 第三部分 -->
+          <view class="B23" wx:if="{{!ss_xx.ss_xx.tuswiper}}">
+            <!-- 第一种 -->
+            <view wx:if="{{ss_xx.ss_xx.tp.length==1}}" class="img2 single-img-container">
+              <image class="danzhang single-img" src="{{ss_xx.ss_xx.tp[0]}}" bindtap="previewImg" data-tp="{{[index,ss_xx.ss_xx.tp]}}" mode="aspectFill" bindload="imageOnLoad" data-index="{{0}}" hidden="{{!ss_xx.ss_xx.tp2[0].loaded}}" />
+              <image lazy-load="true" src="/images/loading8.gif" wx:if="{{!ss_xx.ss_xx.tp2[0].loaded}}" mode="aspectFill" style="width: 260rpx; height: 260rpx;" />
+            </view>
+            <!-- 第二种 -->
+            <view wx:if="{{ss_xx.ss_xx.tp.length>1}}" class="img2 multi-img-container">
+              <view class="multi-img-item" wx:for="{{ss_xx.ss_xx.tp}}" wx:key="index" wx:for-item="item1">
+                <image class="duozhang multi-img" src="{{item1}}" mode="aspectFill" data-tp="{{[index,ss_xx.ss_xx.tp]}}" bindtap="previewImg" bindload="imageOnLoad" data-index="{{index}}" hidden="{{!ss_xx.ss_xx.tp2[index].loaded}}" />
+                <image lazy-load="true" src="/images/loading8.gif" wx:if="{{!ss_xx.ss_xx.tp2[index].loaded}}" mode="widthFix" class="loading-img-small-multi" style="width: 185rpx; height: 185rpx;" />
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- ////投票 -->
+      <view class="vote-section">
+        <view wx:if="{{options}}">
+          <view class="vote-option vote-option-container">
+            <view class="option" wx:for="{{options}}" wx:key="subIndex" wx:for-index="subIndex" wx:for-item="subItem" data-num="1" data-bool="{{item.isEnd}}" data-obj="{{subItem}}" data-index='{{subIndex}}' style="{{subIndex===colorIndex? 'border: 3rpx solid #5faaff':'border: 3rpx solid #e2e2e2'}}" type="default" bindtap="genghuan">
+              <view data-index='1'>
+                <view class="vote-option-content">
+                  <view>
+                    <text class="vote-option-index">{{option11111[subIndex]}}、</text>
+                    <text class="vote-option-value">{{subItem.voteOption.option}}</text>
+                  </view>
+                  <view wx:if="{{already22}}" class="vote-count">  {{subItem.voteNumber}}票</view>
+                </view>
+
+                <!-- 进度条 -->
+                <view class="progress-container" wx:if="{{already22}}">
+                  <progress percent="{{subItem.voteNumber/ss_xx.votepeopleNumber*100|Int}}" backgroundColor="" activeColor="#b4d2ff" hight="100rpx" duration="10" stroke-width="37" stroke-hight="10" border-radius="20" bindtap="progress" show-info active>
+                  </progress>
+                </view>
+              </view>
+            </view>
+          </view>
+
+          <button class="vote-btn" wx:if="{{already}}" bindtap="vote"><text class="vote-btn-text">投票</text></button>
+
+          <view wx:if="{{ss_xx.votepeopleNumber}}" class="voteanniu">
+            <view class="vote-people-count">{{ss_xx.votepeopleNumber}}人参与投票</view>
+          </view>
+        </view>
+
+        <!-- 四个组件 -->
+        <view class="grid-container">
+          <view class="grid-item grid-item-look">
+            <view class="look-text"> <text>围观数{{ss_xx.ss_xx.look}}</text> </view>
+          </view>
+
+          <view class="grid-item">
+            <view wx:if="{{liuyan==false}}" class="grid-item-center" catchtap="mazhu" data-id="{{ss_xx._id}}" data-dianzanid="{{ss_xx.ss_xx.dianzanid}}">
+              <image class="tp action-icon" wx:if="{{PDMazhu}}" src="/images/icon/mazhu1.png"></image>
+              <image class="tp action-icon" wx:if="{{!PDMazhu}}" src="/images/icon/mazhu.png"></image>
+              <view class="wz action-text-active" wx:if="{{PDMazhu}}"> 弃坑</view>
+              <view class="wz action-text" wx:if="{{!PDMazhu}}"> 马住</view>
+            </view>
+          </view>
+
+          <view class="grid-item">
+            <view wx:if="{{liuyan==false}}" class="grid-item-center" catchtap="dianzan" data-id="{{ss_xx._id}}" data-dianzanid="{{ss_xx.ss_xx.dianzanid}}">
+              <image class="tp action-icon" wx:if="{{dianzan}}" src="/images/icon/zan2.png"></image>
+              <image class="tp action-icon" wx:if="{{!dianzan}}" src="/images/icon/zan1.png"></image>
+              <view class="wz action-text-red" wx:if="{{dianzan}}"> {{ss_xx.ss_xx.dianzannb}}</view>
+              <view class="wz action-text" wx:if="{{ss_xx.ss_xx.dianzannb==0}}"> 点赞</view>
+              <view class="wz action-text" wx:if="{{!dianzan&&ss_xx.ss_xx.dianzannb>0}}"> {{ss_xx.ss_xx.dianzannb}}</view>
+            </view>
+          </view>
+
+          <view class="grid-item">
+            <button style="background-color: #ffffff; display:flex;justify-content:center;align-items:center;margin-top: -5rpx;" size="mini" class="share-btn" open-type="share">
+              <image class="tp action-icon" src="/images/icon/zhuanfa.png"></image>
+              <view class="wz share-text"> 分享</view>
+            </button>
+          </view>
+        </view>
+
+        <!-- 上面B的附属展示点赞与转发 -->
+
+        <!-- 加入天美黑市群聊，实时互动链接万人校友！ -->
+        <view wx:if="{{heishiweixin}}" catchtap="noticet" class="group-chat-container">
+          <view class="group-chat-text">
+            加入天美黑市群聊，实时互动链接万人校友！
+          </view>
+          <view class="group-chat-btn">
+            进入群聊
+          </view>
+        </view>
+
+        <!-- 点赞 转发 -->
+        <view class="comments-header" wx:if="{{ss_xx.ss_xx.huifunr.length>0}}">
+          <view class="comments-header-content">
+            <view class="reply-count">回复{{ss_xx.ss_xx.huifunb}}</view>
+            <view>
+              <text bindtap="changeSortMethod" style="{{!sortMethod?color:'color:#6d6d6d;'}}" data-value="{{1}}">点赞</text>
+              <text>｜</text>
+              <text bindtap="changeSortMethod" style="{{sortMethod?color:'color:#6d6d6d;'}}" data-value="{{2}}">时间</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+
+
+
+
+
+      <!-- 下面说啊说评论区 -->
+      <view class="comments-list-container">
+
+        <!-- 下面为评论数据空白时的图片 -->
+        <view class="kong1 empty-container" wx:if="{{ss_xx.ss_xx.huifunr.length<=0}}">
+          <image class="kong2 empty-image" src="/images/kong.png" mode="widthFix" />
+        </view>
+
+
+        <!-- 额外加个倒序 -->
+        <view class="daoxu reverse-container" wx:if="{{ss_xx.ss_xx.huifunr.length>0}}">
+
+          <!-- 第二部分,遍历所有评论 -->
+          <view class="C2 comment-item" id="comment-{{index0}}" wx:for="{{ss_xx.ss_xx.huifunr}}" wx:key="index0" wx:for-item="item0" wx:for-index="index0" catchlongpress="showCommentMenu" data-item="{{item0}}" data-index0="{{index0}}" data-type="main">
+            <!-- 头像部分 -->
+            <view class="C21 avatar-container">
+              <image bindtap="checkuser" data-id="{{item0.plrid}}" class="photo avatar-img" src="{{item0.photo}}" mode=""></image>
+            </view>
+
+            <!-- 头像右边所有 -->
+            <view class="C22 comment-content-container">
+
+              <!-- name及楼主标识-->
+              <view class="C221 name-row">
+
+                <!-- name及 -->
+                <view>
+                  <view class="name-text-container">
+                    <view bindtap="checkuser" data-id="{{item0.plrid}}">
+                      <text>{{tools.processTopName(item0.name)}} </text>
+                      <text class="gender-text-female" wx:if="{{item0.gender=='女生⚢'}}">⚢</text>
+                      <text class="gender-text-male" wx:if="{{item0.gender=='男生⚣'}}">⚣</text>
+                      <image wx:if="{{item0.gender=='女生♀'}}" lazy-load="true" src="/images/icon/women.png" class="gender-icon-small" />
+                      <image wx:if="{{item0.gender=='男生♂'}}" lazy-load="true" src="/images/icon/man.png" class="gender-icon-small" />
+                    </view>
+                  </view>
+                  <view class="comment-time-container">
+                    <text class="comment-time-text"> {{tools.timeChn.when(item0.time)}}</text>
+                  </view>
+                </view>
+
+
+                <view wx:if="{{item0.pinglunID}}">
+                  <!-- 🔥热评 -->
+                  <view class="hot-comment-icon-container">
+                    <image wx:if="{{index0>=ss_xx.ss_xx.huifunr.length-3&&item0.pldianzannb>9}}" lazy-load="true" src="/images/plhotmax.gif" class="broadcast-icon" />
+                    <text wx:if="{{index0>=ss_xx.ss_xx.huifunr.length-3&&item0.pldianzannb>9}}" class="hot-comment-text">热评 </text>
+                  </view>
+                  <button style="width: 180rpx;" class="dianzan like-btn" bindtap="pldianzan" data-plnr="{{item0.wbnr}}" data-pllzid="{{item0.plrid}}" data-plid="{{item0.pinglunID}}" data-id="{{ss_xx._id}}" data-index0="{{index0}}">
+                    <view class="wz like-count"> {{item0.pldianzannb}}</view>
+                    <image class="tp like-icon" wx:if="{{item0.pllove}}" src="/images/icon/zan2.png"></image>
+                    <image class="tp like-icon" wx:if="{{!item0.pllove}}" src="/images/icon/zan1.png"></image>
+                  </button>
+                </view>
+
+              </view>
+
+
+              <!-- 发布内容 -->
+
+              <view class="comment-img-container">
+                <image wx:if="{{item0.tp[0]}}" catchtap="previewImg" data-tp="{{[index,item0.tp]}}" src="{{item0.tp[0]}}" mode="heightFix" class="comment-img" bindload="imageOnLoadComment" data-index0="{{index0}}" hidden="{{!item0.tp2[0].loaded}}"> </image>
+                <image lazy-load="true" src="/images/loading8.gif" wx:if="{{item0.tp[0] && !item0.tp2[0].loaded}}" mode="heightFix" class="loading-img-small" />
+              </view>
+              <view catchtap="huifu" data-xx="{{item0}}" data-index="{{index0}}" class="comment-text-container" hover-class="comment-hover" id="comment-content-{{index0}}">
+
+                <text class="comment-text" wx:if="{{item0.wbnr}}">{{item0.wbnr}}</text>
+
+                <!-- 发布时间及回复 -->
+                <view class="wai reply-row">
+                  <view class="C223">
+                    {{item0.zhuanye[0]}}-{{item0.zhuanye[1]}}
+                    <text catchtap="huifu" data-xx="{{item0}}" data-index="{{index0}}" class="reply-action"> 回复 </text>
+                  </view>
+                </view>
+
+              </view>
+
+
+              <!-- 评论的评论展开 -->
+
+              <view class="zhankai" wx:if="{{item0.huifu.length>0}}">
+                <view class="sub-reply-container">
+                  <view wx:for="{{item0.huifu}}" wx:key="index1" wx:for-index="index1" wx:for-item="item1" class="sub-reply-item {{activeReplyId == 'sub-comment-' + index0 + '-' + index1 ? 'comment-highlight' : ''}}" id="sub-comment-{{index0}}-{{index1}}" wx:if="{{index1<=2}}" data-id0="{{item0.plrid}}" data-index="{{index0}}" data-time="{{item0.time}}" data-index1="{{index1}}" data-id1="{{item1.plrid}}" data-time1="{{item1.time}}" catchlongpress="showCommentMenu" hover-class="comment-hover"  data-item="{{item1}}" data-parentitem="{{item0}}" data-type="sub">
+                   <view bindtap="huifu" data-xx="{{item0}}" data-xx1="{{item1}}" data-index="{{index0}}" data-index1="{{index1}}" data-info="{{item1.wbnr}}">
+                    <!-- <评论> -->
+                    <view class="name11">
+                      <text catchtap="checkuser" data-id="{{item1.plrid}}">{{tools.processSubName(item1.name)}} : </text>
+                      <text catchtap="previewImg"  wx:if="{{item1.tp[0]}}" data-tp="{{[index,item1.tp]}}" class="sub-reply-img-tag" data-index0="{{index0}}" data-index1="{{index1}}">图片</text>
+                      <text class="sub-reply-text-justify"> {{item1.wbnr}} </text>
+                    </view>
+                    <!-- 时间戳和回复 -->
+                    <view class="sub-reply-time-row">
+                      <text bindtap="huifu" data-xx="{{item0}}" data-xx1="{{item1}}" data-index="{{index0}}" data-index1="{{index1}}" class="sub-reply-time">{{tools.timeChn.when(item1.riqi)}} <text class="sub-reply-reply-text">回复</text> </text>
+                    </view>
+                  </view>
+                  </view>
+
+                  
+                  <!-- 评论展开 -->
+                  <view hidden="{{!item0.zhankai}}">
+                    <view wx:for="{{item0.huifu}}" wx:key="index1" wx:for-index="index1" wx:for-item="item1" class="sub-reply-item {{activeReplyId == 'sub-comment-' + index0 + '-' + index1 ? 'comment-highlight' : ''}}" id="sub-comment-{{index0}}-{{index1}}" wx:if="{{index1>2}}" data-id0="{{item0.plrid}}" data-index="{{index0}}" data-time="{{item0.time}}" data-index1="{{index1}}" data-id1="{{item1.plrid}}" data-time1="{{item1.time}}" catchlongpress="showCommentMenu" hover-class="comment-hover" data-item="{{item1}}" data-parentitem="{{item0}}" data-type="sub">
+                      <view bindtap="huifu" data-xx="{{item0}}" data-xx1="{{item1}}" data-index="{{index0}}" data-index1="{{index1}}" data-info="{{item1.wbnr}}">
+                      <!-- name及 -->
+                      <view class="name11">
+                        <text bindtap="checkuser" data-id="{{item1.plrid}}">{{tools.processSubName(item1.name)}} : </text>
+                        <text wx:if="{{item1.tp[0]}}" catchtap="previewImg" data-tp="{{[index,item1.tp]}}" class="sub-reply-img-tag" data-index0="{{index0}}" data-index1="{{index1}}">图片</text>
+                        <text bindtap="huifu" data-xx="{{item0}}" data-xx1="{{item1}}" data-index="{{index0}}" data-index1="{{index1}}" data-info="{{item1.wbnr}}" class="sub-reply-text-justify"> {{item1.wbnr}} </text>
+
+                      </view>
+                      <!-- 时间戳和回复/删除 -->
+                      <view class="sub-reply-time-row">
+                        <text bindtap="huifu" data-xx="{{item0}}" data-xx1="{{item1}}" data-index="{{index0}}" data-index1="{{index1}}" class="sub-reply-time">{{tools.timeChn.when(item1.riqi)}} <text class="sub-reply-reply-text">回复</text> </text>
+                      </view>
+
+                      </view> 
+                    </view>
+                  </view>
+
+                  <!-- 评论主题👆 -->
+                </view>
+                <view class="wai collapse-expand-text" bindtap="shouqi" data-index="{{index0}}" wx:if="{{item0.zhankai}}">收起回复</view>
+                <view wx:if="{{item0.huifu.length>3}}" bindtap="zhankai" data-index="{{index0}}" hidden="{{item0.zhankai}}" class="collapse-expand-text">展开{{item0.huifu.length-3}}条回复</view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 底部提示 -->
+      <view class="footer-tip">——— {{dibutitle}} ———</view>
+
+
+      <!-- 底部广告轮播图 -->
+      <view class="container1" wx:if="{{bannerList2}}">
+        <swiper hidden="{{search}}" class="swiper_wrapper" duration="400" indicator-dots autoplay circular>
+          <block wx:for="{{bannerList2}}" wx:key="index" wx:for-item="item">
+            <swiper-item>
+              <image class="slide-image1" src="{{item.cover}}" bindtap="toBannerDetail" data-Appid="{{item.Appid}}" data-type="{{item.type}}" data-title="{{item.title}}" />
+            </swiper-item>
+          </block>
+        </swiper>
+      </view>
+
+      <view wx:else class="empty-footer">-</view>
+
+
+    </view>
+  </view>
+
+
+
+
+
+
+  <!-- 上面是评论框 -->
+
+
+  <view class="kobai">.</view>
+  <view class="kobai">.</view>
+
+  <!-- 输入框 -->
+
+
+
+
+  <!-- 上面是整个页面，不失效则展示 -->
+
+  <!-- 下面为失效状态 -->
+  <view class="shixiao invalid-state" wx:if="{{ss_xx==0}}">
+    <image src="/images/shixiao.png" mode="widthFix" class="invalid-image"></image>
+    <text class="invalid-text">这条动态消失了~~</text>
+  </view>
+
+
+
+  <!-- 上面为失效状态 -->
+  <view class="kobai">.</view>
+  <view class="kobai">.</view>
+  <view class="kobai">.</view>
+  <view class="kobai">.</view>
+
+
+
+
+  <!-- 修改内容弹窗 (Custom WeUI Style 2) -->
+
+  <view wx:if="{{istrue}}" aria-role="dialog" aria-modal="true" aria-labelledby="js_dialog1_title" catchtouchmove="preventTouchMove">
+    <view class="weui-mask {{istrue1 ? 'weui-animate_fade-in' : 'weui-animate_fade-out'}}" bindtap="closeDialog" catchtouchmove="preventTouchMove"></view>
+    <view class="weui-half-screen-dialog {{istrue1 ? 'weui-animate_slide-up' : 'weui-animate_slide-down'}}">
+
+
+      <view class="weui-half-screen-dialog__hd" >
+
+        <view style="height: 4px; border-radius: 2px;margin-left: 280rpx;" class="weui-half-screen-dialog__slide-icon">
+                  <view style="opacity: 0;" class="weui-icon-arrow"></view>
+                </view>
+
+        <view class="weui-half-screen-dialog__hd__side">
+          <view aria-role="button" bindtap="closeDialog" class="weui-btn_icon weui-wa-hotarea">关闭<i class="weui-icon-slide-down"></i></view>
+        </view>
+
+      
+
+        <view class="weui-half-screen-dialog__hd__main" >
+          <!-- <strong class="weui-half-screen-dialog__title" id="js_dialog5_title">1</strong> -->
+          
+        </view>
+
+
+        <view class="weui-half-screen-dialog__hd__side">
+          <view class="weui-half-screen-dialog__hd__action-group">
+            <view bindtap="changewbnrtijiao" aria-role="button" class="weui-half-screen-dialog__hd__action weui-btn weui-btn_primary weui-btn_xmini">完成</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="weui-half-screen-dialog__bd" style="padding-top: 0; height: auto;">
+
+        <!-- 订单内容 -->
+        <block wx:if="{{ss_xx.ss_xx.orderdetail.openlocationtitle}}">
+          <!-- 电话 -->
+          <view class="weui-cell weui-cell_active">
+            <view class="weui-cell__hd">
+              <label class="weui-label">手机号码</label>
+              <view class="weui-cell__desc">仅接单人可见</view>
+            </view>
+            <view class="weui-cell__bd">
+              <input class="weui-input" placeholder="请输入电话" placeholder-class="weui-input__placeholder" value="{{ss_xx.ss_xx.orderdetail.lianxi}}" data-field="lianxi" bindinput="bindFieldInput" type="number" maxlength="11" />
+            </view>
+          </view>
+
+          <!-- 微信 -->
+          <view class="weui-cell weui-cell_active">
+            <view class="weui-cell__hd">
+              <label class="weui-label">微信号</label>
+              <view class="weui-cell__desc">仅接单人可见</view>
+            </view>
+            <view class="weui-cell__bd">
+              <input class="weui-input" placeholder="请输入微信" placeholder-class="weui-input__placeholder" value="{{ss_xx.ss_xx.orderdetail.weixin}}" data-field="weixin" bindinput="bindFieldInput" />
+            </view>
+          </view>
+
+          <!-- 赏金 -->
+          <view class="weui-cell weui-cell_active">
+            <view class="weui-cell__hd">
+              <label class="weui-label">赏金(元)</label>
+              <view class="weui-cell__desc">最少2元</view>
+            </view>
+            <view class="weui-cell__bd">
+              <input style="color: rgb(196, 17, 17);" class="weui-input" placeholder="最少2元" placeholder-class="weui-input__placeholder" value="{{ss_xx.ss_xx.orderdetail.jg}}" data-field="jg" bindinput="bindFieldInput" type="number" maxlength="6" />
+            </view>
+          </view>
+
+          <!-- 标题 -->
+          <view class="weui-cell weui-cell_active">
+            <view class="weui-cell__hd">
+              <label class="weui-label">标题</label>
+              <view class="weui-cell__desc">用于转发</view>
+
+            </view>
+            <view class="weui-cell__bd">
+              <input class="weui-input" placeholder="请输入标题" placeholder-class="weui-input__placeholder" value="{{ss_xx.ss_xx.orderdetail.ordertitle}}" data-field="ordertitle" bindinput="bindFieldInput" maxlength="20" />
+            </view>
+          </view>
+
+        </block>
+
+        <!-- 描述 -->
+
+        <!-- <view class="weui-cells weui-cells_form"> -->
+        <view class="weui-cell">
+          <view class="weui-cell__bd">
+            <textarea style="color: #474747;font-size: 28rpx; height: 400rpx; background-color: #f7f7f7; padding: 20rpx; border-radius: 10rpx; box-sizing: border-box;" class="weui-textarea" value="{{ss_xx.ss_xx.nr}}" bindinput="changewbnr" placeholder="内容" placeholder-class="weui-input__placeholder" rows="3" maxlength="599"></textarea>
+            <view aria-role="option" class="weui-textarea-counter">{{sy}}</view>
+          </view>
+        </view>
+        <!-- </view> -->
+
+
+
+
+      </view>
+    </view>
+  </view>
+
+
+
+
+
+
+  <!-- 黑市微信弹窗 -->
+  <view style="color: rgb(0, 0, 0);font-weight: 500;" catchtouchmove="ture">
+
+    <modal title="💡" hidden="{{modalHidden111}}" confirm-text="知道了" bindconfirm="modalConfirm" no-cancel="{{cancelanniu}}">
+
+      <image hidden="{{modalHidden111}}" class="imagetc" show-menu-by-longpress="true" src="{{heishiweixin}}"></image>
+
+    </modal>
+  </view>
+
+
+  <!-- 下面是用于图片压缩的画布 -->
+  <scroll-view enable-flex="true" scroll-y>
+    <view style="left: 0;overflow-x:0"><canvas type="2d" id="huabu" class="canvas-style" style="width: {{Cwidth}}px; height: {{Cheight}}px; position: absolute; left: -9999px; top: 0;"></canvas></view>
+
+  </scroll-view>
+
+  
+
+</view>
+
+<!-- 键盘遮罩层 -->
+<view wx:if="{{showKeyboardMask}}" class="keyboard-mask" bindtap="hideKeyboard" catchtouchmove="preventTouchMove"></view>
+
+<!-- 输入框 (Moved to Root) -->
+  <view hidden="{{istrue}}" class="input-panel" style="bottom:{{keyboardHeight}}px">
+
+  <view hidden="{{imgs.length>0}}">
+    <view bindtap="chooseImg">
+      <image src="/images/上传图片.png" class="choose-img-icon"></image>
+    </view>
+    <view bindtap="chooseImg"> <text class="choose-img-text">图片</text></view>
+  </view>
+
+  <image bindtap="deleteImg" wx:if="{{imgs.length>0}}" src="{{imgs[0]}}" mode="aspectFill" class="preview-img-input"> </image>
+  <input adjust-position="{{false}}" hold-keyboard="{{true}}" bindinput="wbnr" value="{{wbnr}}" type="text" placeholder="{{input}}" focus="{{focus}}" placeholder-style="color:#8b8b8b;" maxlength="150" confirm-type="send" bindconfirm="fasong"></input>
+
+  <view class="send-btn-container" hidden="{{keyboardwidth}}">
+    <view bindtap="fasong"> <text class="send-btn-text">发送</text></view>
+  </view>
+
+</view>
+
+
+<!-- 评论操作菜单 -->
+<!-- 评论操作菜单 (mp-actionSheet) -->
+<mp-actionSheet bindactiontap="btnClick" bindclose="closeCommentMenu" show="{{showDialog}}" actions="{{groups}}" title="">
+</mp-actionSheet>

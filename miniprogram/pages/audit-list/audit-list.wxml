@@ -1,0 +1,39 @@
+<view class="container">
+  <block wx:if="{{list.length > 0}}">
+    <view class="card" wx:for="{{list}}" wx:key="_id">
+      <view class="card-body" bindtap="goDetail" data-id="{{item._id}}">
+        <view class="header">
+          <image class="avatar" src="{{item.ss_xx.userphoto}}" mode="aspectFill"></image>
+          <view class="info">
+            <text class="name">{{item.ss_xx.username}}</text>
+            <text class="time">{{item.time}}</text>
+          </view>
+          <view class="tag">
+            {{item.ss_xx.zilei == 0 ? '资料库' : (item.ss_xx.zilei == 2 ? '课程详情' : '周边好店')}}
+          </view>
+        </view>
+        <view class="content">
+          <text class="text">{{item.ss_xx.nr}}</text>
+          <image wx:if="{{item.ss_xx.tp && item.ss_xx.tp.length > 0}}" class="thumb" src="{{item.ss_xx.tp[0]}}" mode="aspectFill"></image>
+        </view>
+      </view>
+      <view class="actions">
+        <!-- 传 index 以便前端直接移除 -->
+        <block wx:if="{{item.ss_xx.checked == 2}}"  >
+
+          <view><text style="color: red; font-size: 28rpx;">已拒绝</text></view> 
+          <view><button class="btn" style="background-color: #a0a0a0; color: white;" catchtap="deletePost" data-id="{{item._id}}" data-index="{{index}}">删除</button>
+</view> 
+        </block>
+        <block wx:else>
+            <button class="btn reject" catchtap="reject" data-id="{{item._id}}" data-index="{{index}}">拒绝</button>
+            <button class="btn delete" style="background-color: #a0a0a0; color: white;" catchtap="deletePost" data-id="{{item._id}}" data-index="{{index}}">删除</button>
+            <button class="btn pass" catchtap="pass" data-id="{{item._id}}" data-index="{{index}}">发布</button>
+        </block>
+      </view>
+    </view>
+  </block>
+  <view wx:else class="empty">
+    <text>暂无待审核帖子</text>
+  </view>
+</view>

@@ -1,37 +1,89 @@
-<view class="user">
-  <view class="user-infor"> 
-    <image src="{{ userphoto }}" style="border:5 solid #ffffff"/>
-    <text class="name" wx:if="{{login==true}}">{{username}}</text>
-    <button class="denglu" wx:if="{{login==false}}" open-type="getUserInfo" bindgetuserinfo="GetUserInfo">
-        微信登录
-    </button>
-  </view>
-  
-  <view wx:if="{{login==true}}" class="wd-list">
-    <navigator url="../wd-bianjixinxi/wd-bianjixinxi" hover-class="navigator-hover">
-      <view class="wdlist">
-       <view class="wdlist-nr">编辑我的信息</view>
-       <text class="iconfont iconarrow-right"></text>
+<view class="user"  >
+   
+  <view class="quan">
+    <view class="user-info-container">
+     
+        <image class="userinfo-avatar" bindtap="chakantouxiang" src="{{userphoto}}"></image>
+
+      <view class="you1 user-details">
+
+      <view>
+        <text bindtap="getather" wx:if="{{username=='未登陆'}}" class="name">点击登录</text>
+        <text wx:else class="name">{{username}}</text>
+      
+        <image wx:if="{{gender=='男生♂'}}" lazy-load="true" src="/images/icon/man.png" class="gender-icon gender-icon-man" />
+        <image wx:if="{{gender=='女生♀'}}" lazy-load="true" src="/images/icon/women.png" class="gender-icon" />
+        <text class="gender-text-man" wx:if="{{gender=='男生⚣'}}">⚣</text>
+        <text class="gender-text-woman" wx:if="{{gender=='女生⚢'}}">⚢</text>
+
+      </view>
+        
+        <text class="name1" wx:if="{{zhuanye}}">{{zhuanye[0]}}-{{zhuanye[1]}}</text>
+        <text class="name1" wx:if="{{!zhuanye}}">未认证</text>
+
+        <button class="denglu auth-button" wx:if="{{login==false && phone==999}}" open-type="getPhoneNumber" bindgetphonenumber="GetUserInfo">
+            授权手机
+        </button>
+      </view>
     </view>
-    </navigator>
     
-    <navigator url="../wd-fabudeneirong/wd-fabudeneirong" hover-class="navigator-hover">
-      <view class="wdlist">
-        <view class="wdlist-nr">我发布的内容</view>
-        <text class="iconfont iconarrow-right"></text>
-      </view>
-    </navigator>
 
-    <navigator url="../wd-fankui/wd-fankui" hover-class="navigator-hover">
-      <view class="wdlist">
-        <view class="wdlist-nr">向客服反馈信息</view>
-        <text class="iconfont iconarrow-right"></text>
-      </view>
-    </navigator>
-
-
-
+    <view wx:if="{{login==true}}" class="nav-container">
+      <navigator class="fj" url="../../plate3/plate3?canshu=fabude&ISorder=1">
+        <view class="tt">📢 已发布</view>
+      </navigator>
+      
+      <navigator class="fj" url="../../message/dianzan/dianzan">
+        <view class="tt">👍 赞</view>
+        <view class="wdlist-nr1" wx:if="{{dzmessagenumber!=0}}">
+        <text class="wdlist-nr2">{{dzmessagenumber}}</text></view>
+      </navigator>
+      <navigator class="fj" url="../../message/xiaoxi/xiaoxi">
+        <view class="tt">✉️ 消息</view>
+        
+        <view class="wdlist-nr1" wx:if="{{messagenumber!=0}}">
+        <text class="wdlist-nr2">{{messagenumber}}</text></view>
+      </navigator>
+    </view>
   </view>
 
+  <view wx:if="{{login==true}}" class="wd-list">
+    <navigator url="../set/set">
+      <view class="wdlist">
+        <view class="zuo">
+          <view class="list-icon">🙋‍♂️</view>
+          <view class="wdlist-nr">我的信息</view>
+        </view>
+        <image class="you arrow-icon" src="/images/icon/you.png" mode="widthFix"></image>
+      </view>
+    </navigator>
+   
+    <navigator url="../about/about">
+      <view class="wdlist">
+        <view class="zuo">
+           <view class="list-icon">⚠️</view>
+          <view class="wdlist-nr">关于天美黑市</view>
+        </view>
+        <image class="you arrow-icon" src="/images/icon/you.png" mode="widthFix"></image>
+      </view>
+    </navigator>
+
+    <navigator wx:if="{{isgl}}" url="/pages/Bgd_control/Bgd_control">
+      <view class="wdlist">
+        <view class="zuo">
+           <view class="list-icon">⚙️</view>
+          <view class="wdlist-nr">管理后台</view>
+        </view>
+        <image class="you arrow-icon" src="/images/icon/you.png" mode="widthFix"></image>
+      </view>
+    </navigator>
+
+  </view>
+  <view wx:if="{{heishiweixin}}" class="wd-list">
+  <image class="official-account-img" show-menu-by-longpress="true" src="{{heishiweixin}}"></image>
+  </view>
+
+  <button class="denglu login-button" wx:if="{{login==false}}" bindtap="getather">
+点击登陆        </button>
 
 </view>

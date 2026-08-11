@@ -1,0 +1,10 @@
+{
+  "usingComponents": {
+    "Tabs": "../../zujian/Tabs/Tabs",
+    "post-item": "/components/post-item/post-item"
+  },
+  "enablePullDownRefresh": true,
+  "onReachBottomDistance": 900,
+  "navigationStyle": "custom",
+  "initialRenderingCache": "static"
+}

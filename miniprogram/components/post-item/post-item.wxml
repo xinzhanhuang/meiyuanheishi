@@ -1,0 +1,178 @@
+<wxs module="tools" src="/utils/filter.wxs" />
+
+<view class="B" bindtap="onItemTap">
+
+  <!-- B1为头像 -->
+  <view class="B1" catchlongpress="onAvatarLongPress">
+    <image wx:if="{{!item.ss_xx.niming1}}" class="photo" src="{{item.ss_xx.userphoto}}"></image>
+    <image wx:else class="photo" src="cloud://tafaheishi-1gs4bxsvcf864035.7461-tafaheishi-1gs4bxsvcf864035-1316611774/标签/匿名(1).png" mode="widthFix"></image>
+  </view>
+
+  <!-- B2为其他内容 -->
+  <view class="B2">
+    <!-- 第一部分 -->
+    <view class="B21">
+      <view>
+        <view class="name" wx:if="{{item.ss_xx.niming1}}">
+          匿名
+        </view>
+
+        <view class="name user-name-container">
+          <text>{{item.ss_xx.username}}</text>
+          <text class="gender-icon-text gender-icon-female" wx:if="{{item.ss_xx.gender=='女生⚢'}}">⚢</text>
+          <text class="gender-icon-text gender-icon-male" wx:if="{{item.ss_xx.gender=='男生⚣'}}">⚣</text>
+          <image wx:if="{{item.ss_xx.gender=='女生♀'}}" lazy-load="true" src="/images/icon/women.png" class="gender-icon-img" />
+          <image wx:if="{{item.ss_xx.gender=='男生♂'}}" lazy-load="true" src="/images/icon/man.png" class="gender-icon-img" />
+        </view>
+      </view>
+
+
+      <!-- 是否接单 -->
+      <view wx:if="{{item.ss_xx.orderdetail.openlocationtitle}}">
+        <view wx:if="{{!item.ss_xx.orderdetail.takeorder}}" class="order-status-untaken">
+          <view class="order-status-text">未接单</view>
+        </view>
+        <view wx:else="{{item.ss_xx.orderdetail.takeorder}}" class="order-status-taken">
+          <view class="order-status-text">已接单</view>
+        </view>
+      </view>
+    </view>
+
+
+    <!-- 活动结束 -->
+    <image wx:if="{{item.ss_xx.isover}}" src="/images/帖子活动结束(公章)_oto(2)(1).png" class="activity-over-img" />
+
+    <!-- 第二部分 -->
+    <!-- 专业 -->
+    <view wx:if="{{item.ss_xx.zhuanye}}" class="major-text">
+      {{item.ss_xx.zhuanye[0]}}
+    </view>
+
+    <!-- 接单详情 -->
+    <view wx:if="{{item.ss_xx.orderdetail.openlocationtitle}}" class="order-detail-box">
+      <view class="order-detail-header">
+        <view class="order-location">
+          {{item.ss_xx.orderdetail.openlocationtitle}}
+        </view>
+
+        <view>
+          <view class="order-price" wx:if="{{item.ss_xx.orderdetail.jg}}">
+            酬金：{{item.ss_xx.orderdetail.jg}}
+          </view>
+        </view>
+      </view>
+
+      <view class="order-title">
+        {{item.ss_xx.orderdetail.ordertitle}}
+      </view>
+    </view>
+
+    <!-- 轮播图 -->
+
+    <swiper wx:if="{{item.ss_xx.tuswiper}}" class="swiper_wrapper" autoplay circular>
+      <block wx:for="{{item.ss_xx.tuswiper}}" wx:key="index" wx:for-item="item1">
+        <swiper-item>
+          <image class="post-swiper-img" src="{{item1}}" />
+        </swiper-item>
+      </block>
+    </swiper>
+
+
+    <view class="B22233 post-content-text" wx:if="{{!item.ss_xx.orderdetail.openlocationtitle}}">
+      <text catchtap="onTopicTap" data-choosetitle="{{item.ss_xx.choosetitle}}" wx:if="{{item.ss_xx.choosetitle}}" class="topic-tag">
+        <text class="topic-hash">#</text>{{item.ss_xx.choosetitle}}<text class="topic-hash"> #</text>
+      </text>
+      {{item.ss_xx.nr}}
+    </view>
+
+
+
+
+
+
+    <view class="B23" wx:if="{{!item.ss_xx.tuswiper}}">
+      <!-- 第一种 -->
+      <view wx:if="{{item.ss_xx.tp.length==1}}" class="img1 single-img-container">
+        <image catchtap="previewImg" data-tp="{{[0,item.ss_xx.tp]}}" hidden="{{!item.ss_xx.tp2[0].loaded}}" src="{{item.ss_xx.tp[0]}}" class="single-img" mode="heightFix" bindload="imageOnLoad2" binderror="imageOnLoadError" data-index0="{{index}}" data-index1="{{0}}"></image>
+        <image lazy-load="true" src="{{'/images/loading8.gif'}}" wx:if="{{!item.ss_xx.tp2[0].loaded}}" mode="widthFix" class="loading-img-small"></image>
+      </view>
+
+      <!-- 大于4张 -->
+      <view wx:if="{{item.ss_xx.tp.length>1 && item.ss_xx.tp.length!=4}}" class="img2 multi-img-container">
+        <view class="xunhuan multi-img-item" wx:for="{{item.ss_xx.tp}}" wx:key="index" wx:for-item="item1" wx:for-index="index1">
+          <image catchtap="previewImg" data-tp="{{[index1,item.ss_xx.tp]}}" hidden="{{!item.ss_xx.tp2[0].loaded}}" src="{{item1}}" class="multi-img" mode="aspectFill" bindload="imageOnLoad2" binderror="imageOnLoadError" data-index0="{{index}}" data-index1="{{index1}}"></image>
+          <image lazy-load="true" src="{{'/images/loading8.gif'}}" wx:if="{{!item.ss_xx.tp2[0].loaded}}" class="loading-img-multi" mode="aspectFill"></image>
+        </view>
+      </view>
+
+      <!-- 图片=4张 -->
+      <view wx:if="{{item.ss_xx.tp.length==4}}" class="img2 multi-img-container grid-2x2">
+        <view class="xunhuan multi-img-item-4" wx:for="{{item.ss_xx.tp}}" wx:key="index" wx:for-item="item1" wx:for-index="index1">
+          <image catchtap="previewImg" data-tp="{{[index1,item.ss_xx.tp]}}" hidden="{{!item.ss_xx.tp2[0].loaded}}" src="{{item1}}" class="multi-img-4" mode="aspectFill" bindload="imageOnLoad2" binderror="imageOnLoadError" data-index0="{{index}}" data-index1="{{index1}}"></image>
+          <image lazy-load="true" src="{{'/images/loading8.gif'}}" wx:if="{{!item.ss_xx.tp2[0].loaded}}" class="loading-img-multi-4" mode="aspectFill"></image>
+        </view>
+      </view>
+    </view>
+
+    <!-- ////投票 -->
+    <view class="vote-container">
+      <view class="option {{subIndex===colorIndex? 'vote-option-selected':'vote-option-default'}}" wx:if="{{item.voteOption}}" wx:for="{{item.voteOption}}" wx:key="subIndex" wx:for-index="subIndex" wx:for-item="subItem" data-index='{{subIndex}}' type="default">
+        <view class="vote-text-container">
+          <view>
+            <text class="vote-index">{{tools.getVoteOptionLetter(subIndex)}}、</text>
+            <text class="vote-content">{{subItem.option}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+
+    <!-- 评论区 -->
+    <view class="zhankai" wx:if="{{item.ss_xx.huifunr.length>0}}">
+      <view class="comment-container">
+        <view wx:for="{{item.ss_xx.huifunr}}" wx:for-index="index1" wx:key="index1" wx:for-item="item1" class="comment-item" wx:if="{{index1<=2}}">
+          <view class="comment-content-container">
+            <!-- name及 -->
+            <view class="B22233 comment-text-box">
+              <!-- 🔥热评 -->
+              <image wx:if="{{index1==0&&item1.pldianzannb>9}}" lazy-load="true" src="/images/plhotmax.gif" class="hot-comment-icon" />
+              <text wx:if="{{index1==0&&item1.pldianzannb>9}}" class="hot-comment-text">热评 </text>
+              <text class="comment-user">{{item1.name}} : </text>
+              <text wx:if="{{item1.tp[0]}}" catchtap="previewImg" data-tp="{{[0,item1.tp]}}" class="comment-img-tag">图片</text>
+              <text class="comment-content"> {{item1.wbnr}} </text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部 -->
+
+
+    <!-- 第四部分 -->
+    <view class="B24">
+      <!-- 下面显示时间 -->
+      <view class="dzpl action-bar">
+        <view class="time time-text">{{tools.timeChn.when(item.ss_xx.firsttime)}}</view>
+      </view>
+
+      <view class="dzpl action-bar">
+        <!-- 下面显示点赞， -->
+        <!-- 下面显示点赞， -->
+        <view class="love action-item" catchtap="onLikeTap" data-index="{{index}}" data-id="{{item._id}}">
+          <image lazy-load="true" wx:if="{{!item.love}}" src="/images/icon/zan1.png" class="action-icon" />
+          <image lazy-load="true" wx:if="{{item.love}}" src="/images/icon/zan2.png" class="action-icon" />
+          <view class="dianzannb action-count">{{item.ss_xx.dianzannb}}</view>
+        </view>
+        <!-- 下面显示回复， -->
+        <image lazy-load="true" src="/images/icon/pinglun.png" class="action-icon-margin" />
+        <view class="huifunb action-count">{{item.ss_xx.huifunb}}</view>
+        <!-- 下面显示浏览， -->
+        <image lazy-load="true" src="/images/icon/look.png" class="action-icon-margin" />
+        <view class="dianzannb action-count">{{item.ss_xx.look}}</view>
+      </view>
+    </view>
+
+
+  </view>
+</view>

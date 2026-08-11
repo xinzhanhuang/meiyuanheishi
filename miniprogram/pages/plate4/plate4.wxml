@@ -1,0 +1,110 @@
+<wxs module="tools" src="/utils/filter.wxs" />
+
+<!-- 加载动画 -->
+<view class="juzho">
+  <view class="load_circle1" hidden="{{loadingHidden}}">
+    <!-- 动图 -->
+    <image src="/images/loading2.gif" mode="widthFix" class="loading-img" />
+  </view>
+</view>
+
+<!-- 搜索栏 (Moved Outside to avoid clipping) -->
+<view class="search-fixed-container">
+  <view class="search-wrap">
+    <input bindinput="getValue" bindfocus="onSearchFocus" bindblur="onSearchBlur" type="text" placeholder="租房、兼职、论文、订单、出国、考研... " value="{{search}}" confirm-type="send" bindconfirm="search" />
+    <image hidden="{{search}}" class="fdj" src="/images/fangdajin1.png"></image>
+    <image hidden="{{!search}}" bindtap="clearinput" class="fdjk" src="/images/shanchu.png"></image>
+  </view>
+    
+  <!-- 搜索联想列表 (Full Width) -->
+  <view class="suggestion-container" hidden="{{!zhankaisearch2 || !search || suggestionList.length === 0}}">
+    <scroll-view scroll-y="true" class="suggestion-list">
+      <view class="suggestion-item" wx:for="{{suggestionList}}" wx:key="keyword" bindtap="tapSuggestion" data-keyword="{{item.keyword}}">
+        <view class="suggestion-left">
+          <image class="suggestion-icon" src="/images/fangdajin1.png"></image>
+          <rich-text nodes="{{item.richText}}"></rich-text>
+        </view>
+        <view class="suggestion-right">
+            <text class="arrow-icon">↖</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+</view>
+
+<scroll-view enable-flex="true" hidden="{{!showList}}" class='contents fade_in' style="padding-top: 70px;">
+  <view class="movable-container">
+    <movable-area class="movable-area" style="height:{{movehight}}px;">
+      <movable-view class="moveview movable-view-item" style="height:{{yincang?220:'100'}}rpx;" direction="all" x="500" y="{{movehight2-80}}">
+        <image hidden="{{!zhankaisearch2}}" src="/images/zhuanye333.png" bindtap="Backoff" class="goTop" mode="widthFix"></image>
+        <image hidden="{{zhankaisearch2}}" class="goTop go-top-img" style="transform:rotate({{zhankaisearch2?'0':'45'}}deg)" src="/images/add.png" bindtap="zhankaisearchoff" mode="widthFix"></image>
+        <image hidden="{{zhankaisearch2}}" src="/images/topup.png" bindtap="goTop" class="goTop" mode="widthFix" hidden="{{!yincang}}"></image>
+      </movable-view>
+    </movable-area>
+  </view>
+
+  <view hidden="{{!zhankaisearch2 || search.length > 0}}">
+
+      <!-- 标签 -->
+    <view class="search-tags-container" style="margin-top:{{navHeight+30}}px;">
+      <text class="search-tags-title">历史记录</text>
+      <view>
+        <scroll-view scroll-x="true" class="scroll-view_search">
+          <view class="scroll-item_search" wx:for="{{mysearch}}" wx:key="index" wx:for-item="hotsearckeys" catchtap="hotkeys" data-hotkeys="{{hotsearckeys}}">
+            <text class="search-tag-item">{{hotsearckeys}}</text>
+          </view>
+        </scroll-view>
+      </view>
+
+      <text class="search-tags-title">热门搜索</text>
+      <view>
+        <scroll-view scroll-x="true" class="scroll-view_search">
+          <view class="scroll-item_search" wx:for="{{hotsearckeys}}" wx:key="index" wx:for-item="hotsearckeys" catchtap="hotkeys" data-hotkeys="{{hotsearckeys._id}}">
+            <text class="search-tag-item">{{hotsearckeys._id}}</text>
+          </view>
+        </scroll-view>
+      </view>
+
+      <view class="search-section-header">
+        <text class="search-tags-title" style="color: rgb(212, 9, 9);" >热门标签</text>
+        <image class="hot-icon" src="/images/plhotmax.gif" mode="heightFix"></image>
+        <image class="hot-icon" src="/images/plhotmax.gif" mode="heightFix"></image>
+        <image class="hot-icon" src="/images/plhotmax.gif" mode="heightFix"></image>
+      </view>
+      <view class="hot-tags-container">
+        <view class="hot-tag-box" catchtap="tiaozhuan" data-choosetitle="{{itemtitle.title11}}" wx:key="index" wx:for-item="itemtitle" wx:for="{{choosetitle}}">
+          <view class="hot-tag-title"> {{itemtitle.title11}} </view>
+          <view class="hot-tag-count">
+            <text class="blink-text blink-arrow">↑</text>{{itemtitle.postCount || 0}}
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 主页 -->
+  <view class="zhuye" hidden="{{zhankaisearch2}}">
+    <!-- 说说显示所有 -->
+    <view class="A posts-container">
+      <view class="daoxu" wx:for="{{ss_xx}}" wx:key="index" wx:for-item="item0" wx:for-index="index0">
+        <post-item 
+          item="{{item0}}" 
+          index="{{index0}}" 
+          openid="{{item0._openid}}"
+          bind:itemtap="onPostTap"
+          bind:avatarlongpress="onPostAvatarLongPress"
+          bind:topictap="onPostTopicTap"
+          bind:like="onPostLike"
+          bind:imageload="onPostImageLoad"
+          bind:imageerror="onPostImageError"
+          bind:mazhu="onPostMazhu"
+        />
+      </view>
+    </view>
+
+    <!-- 底部加载动画 -->
+    <view class="bottom-loading" hidden="{{zhankaisearch2}}">
+      <image src="/images/loading2.gif" mode="widthFix" class="bottom-loading-img" />
+    </view>
+  </view>
+</scroll-view>

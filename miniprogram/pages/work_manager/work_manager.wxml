@@ -1,0 +1,47 @@
+<view class="container">
+  <!-- Tabs -->
+  <view class="tabs">
+    <view class="tab {{currentTab === 0 ? 'active' : ''}}" bindtap="switchTab" data-index="0">采集链接🔗 ({{workList.length}})</view>
+    <view class="tab {{currentTab === 1 ? 'active' : ''}}" bindtap="switchTab" data-index="1">审核发布🔍 ({{pendingList.length}})</view>
+  </view>
+
+  <!-- Tab 1: Work Articles -->
+  <view class="tab-content" wx:if="{{currentTab === 0}}">
+    <view class="input-section">
+      <input class="url-input" placeholder="输入文章链接 (https://mp.weixin.qq.com/...)" value="{{inputUrl}}" bindinput="onUrlInput" />
+      <button class="btn-add" bindtap="onAddAndGenerate" loading="{{aiLoading}}">立即生成</button>
+    </view>
+    <scroll-view scroll-y class="list-scroll">
+      <view wx:for="{{workList}}" wx:key="_id" class="list-item">
+        <view class="item-header">
+          <text class="item-source">[{{item.source_name || '未分类'}}]</text>
+          <text class="item-time">{{item.post_time_str}}</text>
+        </view>
+        <view class="item-title" bindtap="copyUrl" data-url="{{item.url}}">{{item.title}}</view>
+        <view class="item-url">{{item.url}}</view>
+        <view class="item-actions">
+          <button class="btn-action btn-generate" size="mini" bindtap="onRunAI" data-id="{{item._id}}">生成</button>
+          <button class="btn-action btn-delete" size="mini" bindtap="onDeleteArticle" data-id="{{item._id}}">删除</button>
+        </view>
+      </view>
+      <view wx:if="{{workList.length === 0}}" class="empty-tip">暂无内容</view>
+    </scroll-view>
+  </view>
+
+  <!-- Tab 2: Pending Review -->
+  <view class="tab-content" wx:if="{{currentTab === 1}}">
+    <scroll-view scroll-y class="list-scroll">
+      <view wx:for="{{pendingList}}" wx:key="_id" class="review-item">
+        <!-- Preview Card: 1. Click to jump -->
+        <post-item item="{{item}}" index="{{index}}" openid="{{openid}}" bind:itemtap="onPostTap"></post-item>
+        
+        <!-- Review Actions -->
+        <view class="review-actions">
+          <button class="btn-approve" bindtap="onApprovePost" data-id="{{item._id}}">通过发布</button>
+          <button class="btn-reject" bindtap="onDeletePost" data-id="{{item._id}}">删除</button>
+        </view>
+      </view>
+      <view wx:if="{{pendingList.length === 0}}" class="empty-tip">暂无内容</view>
+    </scroll-view>
+  </view>
+</view>

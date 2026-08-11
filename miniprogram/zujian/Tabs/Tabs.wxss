@@ -1,0 +1,16 @@
+.active{
+  
+  border-bottom:4px solid rgb(0, 38, 255);
+  
+}
+.title1{
+    color:#313131;
+    font-size: 26rpx;
+    font-weight: 500;
+    
+}
+.wai{
+    
+    background-color:rgb(255, 255, 255);
+  width: 170rpx;
+}

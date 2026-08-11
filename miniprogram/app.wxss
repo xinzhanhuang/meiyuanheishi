@@ -1,10 +1,32 @@
 /**app.wxss**/
-@import"style/iconfont/iconfont.wxss";
+@import'/pages/style/weui.wxss';
 
-page{
-  --zhutise:#175167;
-  --zhutihui:#B0B2BF;
-  --qianhui:#F3F4F9;
+page {
+  --zhutise: #000000;
+  --zhutihui: #ffffff;
+  --qianhui: #ffffff;
+  background-color: #EDEDED;
 }
 
+.bankuai1 {
+  display: flex;
+  justify-content: space-around;
+  padding-top: 40rpx;
+  border-radius: 15rpx;
+
+  background-color: #ffffff;
+}
+
+.bankuaiimg {
+
+  border-radius: 20%;
+  box-shadow: 0px 1px 2px 1px #DDDDDD;
+  border-width: 0rpx;
+}
+
+.wai23 {
+
+  background-color: #ffffff;
+
+}
 

@@ -1,0 +1,7 @@
+{
+  "usingComponents": {},
+  "navigationBarTitleText": "天美周边",
+  "backgroundColor": "#eeeeee",
+  "initialRenderingCache": "static",
+  "enablePullDownRefresh": true
+}

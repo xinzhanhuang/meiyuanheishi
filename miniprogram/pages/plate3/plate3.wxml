@@ -1,0 +1,58 @@
+
+
+<wxs module="tools" src="/utils/filter.wxs"/>
+
+
+<view class="img empty-container" wx:if="{{wenzhang.length==0}}">
+  <image class="kong empty-image" src="/images/kong.png" mode="widthFix"></image>
+</view>
+
+<view class="wd-fb-hf">
+  <view class="daoxu list-container">
+    <view class="xunhuan" wx:for="{{wenzhang}}" wx:key="idex" wx:for-item="item0" wx:for-index="index0" >
+
+
+  <mp-slideview  buttons="{{slideButtons}}" bindbuttontap="slideButtonTap" data-id="{{item0.id}}" data-type="{{item0.type}}" data-index="{{index0}}">
+    <view class="content content-item" bindtap="chakan" data-ssid="{{item0.id}}" data-type="{{item0.type}}">
+      <!-- 左边！！！！！！！！！ -->
+      <view class="yc item-layout">
+        <view class="A image-container">
+          <image 
+            wx:if="{{item0.tp && item0.tp.length > 0}}" 
+            class="pl" 
+            src="{{item0.tp[0]?item0.tp[0]:'/images/loading8.gif'}}" 
+            mode="aspectFill" 
+            bindload="imageOnLoad" 
+            data-index="{{index0}}" 
+            hidden="{{!item0.loaded}}" 
+          />
+          <block wx:if="{{(item0.tp && item0.tp.length > 0 && !item0.loaded) || !(item0.tp && item0.tp.length > 0)}}">
+            <image wx:if="{{item0.weigui!=true}}" class="pl" src="{{item0.type=='zhoubiantype'?'/images/user/'+tools.getZileiName(item0.zilei)+'.png':item0.type=='order'?'/images/user/dindan.png':'/images/user/fabude.png'}}" />
+            <image wx:if="{{item0.weigui==true}}" class="pl" src="/images/icon/feng.png" />
+          </block>
+        </view>
+
+        <!-- 第二部分,类别及对应ss -->
+        <view class="B info-container">
+          <view class="weigui header-row">
+            <view class="header-left">
+              <view class="wodetiezi post-type">{{item0.type=='zhoubiantype'?tools.getZileiName(item0.zilei):item0.type=='order'?'订单：':'帖子：'}}</view>
+              <!-- <view wx:if="{{canshu==true&&item0.type}}" class="wodetiezi" style="color:#C0C0C0;font-size:80%">店铺：</view> -->
+              <view class="weiguibiaozhi violation-tag" wx:if="{{item0.weigui==true}}">违规被封帖</view>
+            </view>
+            <view class="time time-label">{{tools.timeChn.getDateTime(item0.time)}}</view>
+          </view>
+          <view wx:if="{{item0.type=='order'}}" class="wbnr order-content" >{{item0.nr}}</view>
+          <view wx:else class="wbnr normal-content" >{{item0.type=='zhoubiantype'?item0.zbtitle:item0.nr}}</view>
+        </view>
+      </view>
+    </view>
+  </mp-slideview>
+</view>
+</view>
+</view>
+
+
+<view class="footer-tip">
+  左滑可删除帖子
+</view>

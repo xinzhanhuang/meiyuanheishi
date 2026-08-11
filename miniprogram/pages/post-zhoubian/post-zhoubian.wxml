@@ -1,0 +1,181 @@
+
+<!-- 提示区 (固定顶部) -->
+<view class="notice-bar-default" style="width: 100%; position: fixed; top: 0; left: 0; z-index: 1000;">
+  <view class="notice-text">{{tipContent}}</view>
+</view>
+
+<scroll-view enable-flex="true" scroll-y style="height: 100vh; padding-top: 110rpx; box-sizing: border-box;">
+<!--内容发布页面-->
+<view class="waiceng">
+<form bindsubmit="tijiao">
+
+
+    
+
+            <!-- 第四部分，添加图片 -->
+            <view class="container">
+          <block wx:for="{{imgs}}" wx:for-item="item0" wx:for-index="index0" wx:key="*this">
+            <view class="image-container">
+              <image src="{{item0}}" mode="aspectFill" class="image" />
+              <image src="/images/post/dlt.png" bindtap="deleteImg" class="delete-icon" data-index="{{index0}}" />
+            </view>
+          </block>
+          <view bindtap="chooseImg" wx:if="{{imgs.length<9}}">
+            <image src="/images/添加.png" mode="aspectFill" class="add-img-icon" />
+          </view>
+        </view>
+      
+      <text wx:if="{{tishi}}" style=" display: flex;margin-left: 30rpx;margin-top: 10rpx; margin-bottom: 20rpx; color: gray; font-size: 25rpx;" >*首图将作为封面展示</text>
+
+    <!-- 输入列表区域 -->
+
+
+          <!-- 分类 (Picker) -->
+          <picker mode="multiSelector" name="fenlei" bindchange="xuanzewanbi" bindcolumnchange="kaishixuanze" value="{{zilei}}" range="{{heji}}">
+        <view class="topic-selector">
+          <view class="topic-label">投至板块</view>
+          <view class="topic-value">
+            {{heji[0][index[0]]}}-{{heji[1][index[1]]}} ＞
+          </view>
+        </view>
+      </picker>
+      
+    <!-- Upload Progress Bar (Top Position) -->
+    <!-- <view wx:if="{{isUploading}}" style="width: 750rpx; background-color: rgb(189, 137, 137); "> -->
+        <progress percent="{{uploadPercent}}" stroke-width="3" activeColor="#1900ff" backgroundColor="#EBEBEB" />
+
+
+    <view style="width:750rpx; background-color: #fff;margin-bottom: 20rpx;">
+ 
+        <!-- 文件上传 (仅资料库显示) -->
+        <view class="oderdetail" wx:if="{{postType == 'database'}}" bindtap="chooseFile">
+            <view>
+                 <view style="font-weight: 500;margin-top: 25rpx;">上传文件</view>
+            </view>
+            <view style="margin-top: 10rpx; width: 70%; display: flex; justify-content: flex-end; align-items: center;">
+                 <!-- File Name Row -->
+                 <view style="display: flex; justify-content: flex-end; align-items: center; width: 100%;">
+                    <view style="font-size: 25rpx; color: {{files.length > 0 ? '#1900ff' : 'rgb(202, 202, 202)'}}; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 450rpx;">
+                        <block wx:if="{{files.length > 0}}"><text style="font-size: 20rpx; color: #9b9b9b;" >{{uploadPercent}}% </text> {{files[0].name}}</block>
+                        <block wx:else>点击从微信选择文件(选填)</block>
+                    </view>
+                    <view wx:if="{{files.length > 0}}" catchtap="deleteFile" data-index="0" style="margin-left: 20rpx; display: flex; align-items: center;; ">
+                        <image src="/images/post/dlt.png" style="width: 30rpx; height: 30rpx;border-radius:40%" />
+                    </view>
+                 </view>
+            </view>
+        </view>
+          
+        <!-- 链接 (仅资料库显示) -->
+        <view class="oderdetail" wx:if="{{postType == 'database'}}">
+            <view>
+                 <view style="font-weight: 500;margin-top: 25rpx;">相关链接</view>
+            </view>
+            <view style="margin-top: 25rpx; width: 70%;">
+                 <input class="input1" value="{{link}}" name="link" placeholder="粘贴网页链接(选填)" placeholder-class="phcolor"></input>
+            </view>
+        </view>
+
+        <!-- 联系作者 (仅资料库显示) -->
+        <view class="oderdetail" wx:if="{{postType == 'database'}}">
+            <view>
+                 <view style="font-weight: 500;margin-top: 25rpx;">联系作者</view>
+            </view>
+            <view style="margin-top: 25rpx; width: 70%;">
+                 <input class="input1" value="{{lianxi}}" name="lianxi" placeholder="电话/微信(选填)" placeholder-class="phcolor"></input>
+            </view>
+        </view>
+
+      <!-- 商家名称 / 资料名称 / 课程名称 -->
+      <view class="oderdetail">
+        <view>
+          <view style="font-weight: 500;margin-top: 25rpx;">
+             {{postType == 'database' ? '资料名称' : (postType == 'course' ? '课程名称' : '商家名称')}}
+          </view>
+        </view>
+        <view style="margin-top: 25rpx; width: 70%;">
+          <input class="input1" value="{{zbtitle}}" name="zbtitle" maxlength="30" 
+            placeholder="{{postType == 'database' ? '*资料名称' : (postType == 'course' ? '*课程名称' : '*商家名称')}}" 
+            placeholder-class="phcolor"></input>
+        </view>
+      </view>
+
+      <!-- 商家地址 (店铺/课程显示) -->
+      <view class="oderdetail" wx:if="{{postType == 'shop' || postType == 'course'}}">
+        <view>
+          <view style="font-weight: 500;margin-top: 25rpx;">{{postType == 'course' ? '上课地点' : '商家地址'}}</view>
+        </view>
+        
+        <!-- 隐藏经纬度输入框 -->
+        <input style="display:none" value="{{latitude}}" name="latitude"></input>
+        <input style="display:none" value="{{longitude}}" name="longitude"></input>
+
+        <view style="margin-top: 25rpx; width: 70%; display: flex; justify-content: flex-end; align-items: center;">
+             <input class="input1" value="{{receiver_address}}" name="weizhi" placeholder="*点击获取位置" placeholder-class="phcolor" bindtap="$chooselocation" disabled="true"></input>
+             <!-- <image src="/images/地图2.png" style='width:30rpx;height:30rpx;margin-left: 10rpx;'></image> -->
+        </view>
+      </view>
+
+      <!-- 联系方式 (店铺/课程显示) -->
+      <view class="oderdetail" style="border-bottom: none;" wx:if="{{postType == 'shop' || postType == 'course'}}">
+        <view>
+          <view style="font-weight: 500;margin-top: 25rpx;">联系方式</view>
+        </view>
+        <view style="margin-top: 25rpx; width: 70%;">
+          <input class="input1" value="{{lianxi}}" name="lianxi" maxlength="50" placeholder="[选填] {{postType == 'course' ? '课程群/联系人' : '商家联系方式'}}" placeholder-class="phcolor"></input>
+        </view>
+      </view>
+
+    </view>
+
+
+    <!-- 描述需求 -->
+    <view style="width: 750rpx; background-color: rgb(255, 255, 255);height: 500rpx; ">
+      <view style="font-size: 28rpx;margin: 0 0 0 30rpx; height: 80rpx; width: 90%; justify-content: space-between; display: flex;">
+        <view>
+          <view style="font-weight: 500;margin-top: 30rpx;">
+            {{postType == 'database' ? '资料说明' : (postType == 'course' ? '课程详情' : '详细介绍')}}
+          </view>
+        </view>
+      </view>
+
+      <view class="wd-list" style="padding:20rpx;">
+        <textarea placeholder-class='phcolor' name="wbnr" 
+          placeholder="{{postType == 'database' ? '介绍一下资料...' : (postType == 'course' ? '课程要求，时长，作业考核等...' : '介绍一下店铺业务...')}}" 
+          bindinput="wbnr" value='{{wbnr}}' style="width:100%;" maxlength="500" />
+        <view class="zs" style="display:flex;flex-direction:row-reverse;margin-right:15rpx">
+          <text class="sy" style="font-size:85%;color:#b6b6b6">{{sy}}</text>
+        </view>
+      </view>
+
+    </view>
+
+
+    <!-- 底部固定面板 -->
+
+    <view class="input-panel">
+   
+
+      <!-- 发布按钮 -->
+     
+        <button form-type="submit" class="submitsend" style="width: 80%; height: 45%; display: flex; align-items: center; justify-content: center; border-radius: 40rpx;">{{isEdit ? '重新发布' : '立即发布'}}</button>     
+    </view>
+    
+    <!-- 占位符，防止内容被底部固定栏遮挡 -->
+    <view style="height: 200rpx;"></view>
+
+ </form>
+
+
+<!-- 下面是用于图片压缩的画布 -->
+<canvas type="2d" id="huabu" class="canvas-style" style="width: {{Cwidth}}px; height: {{Cheight}}px; position: absolute; left: -9999px; top: 0;"></canvas>
+
+
+
+</view>
+
+</scroll-view>
+
+
+
+

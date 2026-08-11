@@ -1,0 +1,335 @@
+
+.header {
+  /* padding-top: 10rpx; */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  /* margin-block-end: 20rpx; */
+  align-items: center;
+  background: white;
+  border-radius: 24rpx;
+  
+}
+.buttonavatar{
+
+    background: white;
+
+
+}
+.userinfo-avatar {
+  
+  border-radius: 128rpx;
+  width: 150rpx;
+  height: 150rpx;
+  margin-block-start: 10px;
+
+  
+}
+
+.userinfo-nickname {
+  color:   gray;
+  margin-top: 10rpx;
+  font-size: 38rpx;
+}
+
+
+
+/* new */
+.top-bg {
+    position: absolute;
+    top: 0rpx;
+    left: 0rpx;
+    width: 100%;
+    height: 460rpx;
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+
+.contain {
+    position: absolute;
+   
+    top: 60rpx;
+    left: 0rpx;
+    width: 100%;
+    padding: 0rpx 40rpx 0rpx 40rpx;
+    box-sizing: border-box;
+}
+
+.card {
+    border-radius: 32rpx;
+    width: 100%;
+    background: #fff;
+    padding: 30rpx 30rpx;
+    box-sizing: border-box;
+    box-shadow: 0 0 10rpx #eee;
+}
+
+.title {
+    width: 100%;
+    text-align: center;
+    font-size: 40rpx;
+    font-weight: 600;
+    letter-spacing: 6rpx;
+}
+
+.phone {
+    justify-content: space-between;
+    margin-top: 20rpx;
+    width: 100%;
+    height: 92rpx;
+    background: #f1f3f8;
+    border-radius: 10rpx;
+    text-align: left;
+    padding: 0 20rpx 0 36rpx;
+    box-sizing: border-box;
+   font-weight: 300;
+    display: flex;
+    align-items: center;
+    color: #8c9aa8;
+    border: none;
+}
+
+.phone::after {
+    border: none;
+}
+
+.campus {
+    margin-top: 24rpx;
+    width: 100%;
+    height: 92rpx;
+    background: #f1f3f8;
+    border-radius: 10rpx;
+    text-align: left;
+    padding: 0 20rpx 0 36rpx;
+    box-sizing: border-box;
+    font-weight: 300;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #8c9aa8;
+}
+
+.right {
+    width: 30rpx;
+    height: 30rpx;
+    display: flex;
+    margin-right: 20rpx;
+}
+
+.contact {
+    margin-top: 24rpx;
+    width: 100%;
+    height: 92rpx;
+    background: #f1f3f8;
+    border-radius: 10rpx;
+    text-align: left;
+    padding: 0 36rpx;
+    box-sizing: border-box;
+    font-weight: 300;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #8c9aa8;
+}
+
+.contact input {
+    width: 100%;
+    height: 100%;
+    font-weight: 300;
+}
+
+.pache {
+    font-size: 32rpx;
+    color: #8c9aa8;
+}
+
+.confirm {
+    margin-top: 40rpx;
+    margin-block-end: 80rpx;
+    width: 100%;
+    height: 100rpx;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background:  #bdb8ad;
+    border-radius: 60rpx;
+    color: #fff;
+    font-size: 40rpx;
+    letter-spacing: 4rpx;
+    box-shadow: 0 0 20rpx #eee;
+    border: none;
+}
+.confirm::after {
+    border: none;
+}
+.shen_title{
+    margin-top: 40rpx;
+    font-size: 30rpx;
+    margin-left: 15rpx;
+    letter-spacing: 2rpx;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+.about{
+    width: 32rpx;
+    height: 32rpx;
+    padding-right: 10rpx;
+}
+.des{
+    padding-left: 30rpx;
+    padding-top: 20rpx;
+    font-size: 26rpx;
+    color: #acacac;
+    letter-spacing: 2rpx;
+    line-height: 42rpx;
+}
+
+.quiz-card{
+    margin-top: 32rpx;
+    padding: 28rpx;
+    background: #fdf9ef;
+    border-radius: 24rpx;
+    box-sizing: border-box;
+}
+.quiz-title{
+    font-size: 32rpx;
+    font-weight: 600;
+    color: #333;
+}
+.quiz-desc{
+    display: block;
+    margin-top: 8rpx;
+    font-size: 26rpx;
+    color: #8c8c8c;
+    line-height: 36rpx;
+}
+.quiz-question{
+    margin-top: 24rpx;
+    font-size: 30rpx;
+    color: #333;
+    font-weight: 500;
+    line-height: 40rpx;
+}
+.quiz-options{
+    margin-top: 12rpx;
+    display: flex;
+    flex-direction: column;
+}
+.quiz-option{
+    display: flex;
+    align-items: center;
+    padding: 10rpx 0;
+    font-size: 26rpx;
+    color: #4b4b4b;
+}
+.quiz-option radio{
+    transform: scale(0.9);
+    margin-right: 16rpx;
+}
+.quiz-option-text{
+    line-height: 36rpx;
+}
+
+/* dark */
+
+/* 
+@media (prefers-color-scheme:dark) {
+
+
+.buttonavatar{
+
+    background: rgb(48, 48, 48);
+
+
+}
+
+    .card {
+        border-radius: 32rpx;
+        width: 100%;
+        background: rgb(48, 48, 48);
+        padding: 30rpx 30rpx;
+        box-sizing: border-box;
+        box-shadow: 0 0 10rpx rgb(0, 0, 0);
+    }
+    
+.header {
+    
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background:  rgb(48, 48, 48);
+    border-radius: 24rpx;
+    
+  }
+  .userinfo-nickname {
+    color:   rgb(0, 255, 13);
+    margin-top: 20rpx;
+    font-size: 38rpx;
+  }
+  .phone {
+    justify-content: space-between;
+    margin-top: 20rpx;
+    width: 100%;
+    height: 92rpx;
+    background: #464646;
+    border-radius: 10rpx;
+    text-align: left;
+    padding: 0 20rpx 0 36rpx;
+    box-sizing: border-box;
+   font-weight: 300;
+    display: flex;
+    align-items: center;
+    color: #8c9aa8;
+    border: none;
+}
+
+.campus {
+    margin-top: 24rpx;
+    width: 100%;
+    height: 92rpx;
+    background: #464646;
+    border-radius: 10rpx;
+    text-align: left;
+    padding: 0 20rpx 0 36rpx;
+    box-sizing: border-box;
+    font-weight: 300;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #8c9aa8;
+}
+
+.contact {
+    margin-top: 24rpx;
+    width: 100%;
+    height: 92rpx;
+    background: #464646;
+    border-radius: 10rpx;
+    text-align: left;
+    padding: 0 36rpx;
+    box-sizing: border-box;
+    font-weight: 300;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #8c9aa8;
+}
+.confirm {
+    margin-top: 40rpx;
+    margin-block-end: 80rpx;
+    width: 100%;
+    height: 100rpx;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background:  #373a3b;
+    border-radius: 60rpx;
+    color: rgb(0, 255, 13);
+    font-size: 40rpx;
+    letter-spacing: 4rpx;
+    box-shadow: 0 0 20rpx rgb(0, 0, 0);
+    border: none;
+}
+} */

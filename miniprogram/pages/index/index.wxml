@@ -1,58 +1,210 @@
-<view class="zhuye" >
-<view class="guanggao" >
-  <swiper class="guanggao1" indicator-dots="true" autoplay="true" interval="2000" circular="true">
-    <swiper-item wx:for="{{guanggaotu}}"  wx:key="index">
-      <navigator >
-        <image src="{{item}}"></image>
-      </navigator>
-    </swiper-item>
-  </swiper>
+<wxs module="tools" src="/utils/filter.wxs" />
+
+
+<!-- 加载动画 -->
+<view class="juzho" hidden="{{loadingHidden}}">
+  <view class="load_circle1">
+    <!-- 动图 -->
+    <image src="/images/loading2.gif" mode="widthFix" class="loading-img" />
+  </view>
 </view>
 
-<view class="gonggao">
-  <view class="bt">
-    <view class="btnr">公告</view>
-    <text class="iconfont iconicon-test" style='margin-top:10rpx;color:#FD7B21;'></text>
+
+
+<scroll-view enable-flex="true" hidden="{{!showList}}" class='contents fade_in'>
+  <!-- 提示添加小程序 -->
+  <home-add-tips top="{{navHeight-15}}" />
+
+
+  <view class="add-btn-container">
+    <movable-area class="movable-area" style="height:{{movehight}}px;">
+      <movable-view class="moveview movable-view" style="height:{{yincang?220:'100'}}rpx;" direction="all" x="500" y="{{movehight2-80}}" hidden="{{istrue}}">
+        <image src="/images/add.png" bindtap="add" class="goTop" mode="widthFix"></image>
+        <image src="/images/topup.png" bindtap="goTop" class="goTop" mode="widthFix" hidden="{{!yincang}}"></image>
+      </movable-view>
+    </movable-area>
   </view>
+
+
+
+  <!--搜索-->
+  <view class="container">
+    <view class="nav-container" style="height:{{navHeight+5}}px;">
+
+      <view catchtap="zhankaisearch" class="search-bar" style="margin-top:{{searchMarginTop+5}}px;height:{{searchHeight}}px;">
+        <swiper class="broadcastList" vertical="true" autoplay="true" circular="true" interval="3000">
+          <block wx:for="{{hotsearckeys}}" wx:key="index">
+            <swiper-item>
+              <view class="search-text">
+                🔍 {{item._id}}
+              </view>
+            </swiper-item>
+          </block>
+        </swiper>
+      </view>
+      <view class="tabs-container" style=" margin-top:{{searchMarginTop}}px; height: {{searchHeight}}px;width: {{searchWidth-120}}px;">
+        <Tabs bindchange="changetitle"></Tabs>
+      </view>
+
+    </view>
+  </view>
+
+
+  <!-- 主页 -->
+  <view class="zhuye main-content" style="margin-top:{{navHeight+10}}px;">
+    <!-- 广告 -->
+    <view class="top0" hidden="{{search}}">
+      <view class="recommend-top-itemshijian1" bindtap="qiandao">
+        <view class="banner-height">
+          <block wx:for="{{bannerList1}}" wx:for-item="item" wx:key="index" wx:if="{{index==3}}">
+            <image class="slide_image banner-img-large" src="{{item.cover}}" bindtap="toBannerDetail" data-title="{{item.title}}" data-type="1" />
+          </block>
+          <block wx:for="{{bannerList1}}" wx:for-item="item" wx:key="index" wx:if="{{index==2}}">
+            <image class="slide_image banner-img-small" src="{{item.cover}}" bindtap="toBannerDetail" data-title="{{item.title}}" data-type="1" />
+          </block>
+        </view>
+      </view>
+
+
+      <view class="recommend-top-itemshijian2">
+        <view class="banner-height">
+          <view class="hot-title-container">
+            <view class="hot-title-inner">
+              <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+              <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+              <text class="hot-text">全校热帖</text>
+            </view>
+          </view>
+
+
+          <view class="hot-list-container">
+            <view wx:for="{{ss_xx1}}" wx:key="index" wx:for-item="item0" wx:for-index="index0" bindtap="xiangqing" data-id="{{item0._id}}" data-openid="{{item0._openid}}" data-love="{{item0.love}}" data-index="{{index0}}" data-openlocationtitle="{{item0.ss_xx.orderdetail.openlocationtitle}}" data-reping="1111">
+              <view class="B22255"> <text class="hot-item-index">{{index0+1}}. </text>
+                <text>{{item0.ss_xx.nr}}</text> <text wx:if="{{!item0.ss_xx.nr}}">[图片]</text>
+              </view>
+              <view class="hot-item-look">{{item0.ss_xx.look}}围观</view>
+            </view>
+          </view>
+
+          <view hidden="{{ss_xx1.nr}}" bindtap="zuiretiezi" class="more-hot-posts">➡️ 更多校内热帖>></view>
+
+        </view>
+      </view>
+    </view>
+
+
+
+    <!-- 热门分类 -->
+    <view class="choosetitle-container" wx:if="{{choosetitle && choosetitle.length > 0}}">
+      <scroll-view scroll-x="true" class="choosetitle-scroll">
+        <view class="choosetitle-item" wx:for="{{choosetitle}}" wx:key="index" bindtap="tiaozhuan" data-choosetitle="{{item.title11}}">
+          <view class="choosetitle-circle">
+            <text class="choosetitle-icon">{{item._icon}}</text>
+          </view>
+          <text class="choosetitle-text">{{item._label}}</text>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 通知条 -->
+    <view class="broadcastbox">
+      <swiper class="broadcastList" vertical="true" autoplay="true" circular="true" interval="3000">
+        <block wx:for="{{bannerList1}}" wx:key="index" wx:if="{{index>3}}">
+          <swiper-item>
+            <view class='broadcastListInde' data-jumptype="{{item.jumptype}}" data-title="{{item.title}}" data-id="{{item.title}}" data-type="1" bindtap="xiangqing">
+              <view class="broadcastheadimgurl"><text>00</text></view>
+              <view class='broadcastContent'>{{item.gonggao}}</view>
+            </view>
+          </swiper-item>
+        </block>
+      </swiper>
+    </view>
+
+<!-- 热点 -->
+    <view class="container content-container" style="margin-top:{{navHeight+5}}px;">
+      <view wx:if="{{ss_xx1.length>0}}" class="hot-swiper-container" hidden="{{!yincang}}">
+        <swiper class="broadcastList" vertical="true" autoplay="true" circular="true" interval="3000">
+          <block wx:for="{{ss_xx1}}" wx:key="index" wx:for-item="item0" wx:for-index="index0" wx:if="{{index0<=5}}">
+            <swiper-item>
+              <view class="hot-swiper-item" catchtap="xiangqing" data-id="{{item0._id}}" data-love="{{item0.love}}" data-index="{{index0}}" data-reping="1111">
+                <view class="hot-swiper-index">
+                  <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />0{{index0+1}}
+                </view>
+                <view class="hot-swiper-text"> {{item0.ss_xx.nr}} <text wx:if="{{!item0.ss_xx.nr}}">[图片]</text></view>
+                <view class="hot-swiper-look">{{item0.ss_xx.look}}围观</view>
+              </view>
+            </swiper-item>
+          </block>
+        </swiper>
+      </view>
+    </view>
+
+
+    <!-- 说说显示所有 -->
+    <view class="A posts-container">
+      <view class="daoxu" wx:for="{{ss_xx}}" wx:key="index" wx:for-item="item0" wx:for-index="index0">
+        <!-- 广告轮播图 -->
+        <view hidden="{{!bannerList2}}" class="container1" wx:if="{{index0==5||index0==15||index0==25||index0==35||index0==35||index0==45}}">
+          <swiper class="swiper_wrapper" duration="400" indicator-dots autoplay circular>
+            <block wx:for="{{bannerList2}}" wx:key="index" wx:for-item="item">
+              <swiper-item>
+                <image class="slide-image1" src="{{item.cover}}" bindtap="toBannerDetail" data-Appid="{{item.Appid}}" data-type="{{item.type}}" data-title="{{item.title}}" />
+              </swiper-item>
+            </block>
+          </swiper>
+        </view>
+
+
+        <post-item 
+          item="{{item0}}" 
+          index="{{index0}}" 
+          openid="{{item0._openid}}"
+          bind:itemtap="onPostTap"
+          bind:avatarlongpress="onPostAvatarLongPress"
+          bind:topictap="onPostTopicTap"
+          bind:like="onPostLike"
+          bind:imageload="onPostImageLoad"
+          bind:imageerror="onPostImageError"
+        />
+      </view>
+    </view>
+
+
+  <!-- 底部加载动画 -->
+  <view class="bottom-loading">
+      <image src="/images/loading2.gif" mode="widthFix" class="bottom-loading-img" />
+    </view>
   
-  <swiper class="ggnr" autoplay="true" vertical="true" interval="1000" circular="true" >
-   <block wx:for="{{gonggaonr}}" wx:key="index">
-     <swiper-item>
-      <view>{{item}}</view>
-     </swiper-item>
-   </block>
-  </swiper>
+  </view>
+</scroll-view>
 
-  <view bindtap="showgonggaoxiangqing" class="xq">详情</view>
-</view>
 
-<view class="bankuai">
-  <view bindtap="tiaozhuan" class="bankuainr">
-    <text class="iconfont icontrust" style='color:#FD215D;margin: -60rpx;font-size: 360%;'></text>
-    <text>交友</text>
+<!-- 发布弹窗 -->
+<!-- 发布弹窗 -->
+<page-container 
+  show="{{istrue}}" 
+  position="bottom" 
+  round="true" 
+  bind:clickoverlay="closeDialog"
+  custom-style="background-color: #e6f3ff; height: auto; padding-bottom: 50rpx;"
+>
+  <view class="publish-content">
+      <view class="publish-options">
+        <view bindtap="neworder">
+          <view class="publish-option-icon-bg">
+            <image src="/images/imageoder.png" class="publish-option-icon"></image>
+          </view>
+          <view class="publish-option-text">派单</view>
+        </view>
+        <view bindtap="addnews" class="publish-option-item">
+          <view class="publish-option-icon-bg">
+            <image src="/images/postnr.png" class="publish-option-icon"></image>
+          </view>
+          <view class="publish-option-text">帖子</view>
+        </view>
+      </view>
+      <view bindtap="closeDialog" class="publish-close-btn" style="transform:rotate({{istrue?'45':'0'}}deg)">
+        <image src="/images/add.png" class="publish-close-icon" />
+      </view>
   </view>
-  <view class="bankuainr">
-    <text class="iconfont icontool" style='color:#12403B;margin: -60rpx;font-size: 360%;'></text>
-    <text>兼职</text>
-  </view>
-  <view class="bankuainr">
-    <text class="iconfont iconCustomermanagement" style='color:#FD7B21;margin: -60rpx;font-size: 360%;'></text>
-    <text>互助</text>
-  </view>
-
-  <view class="bankuainr">
-    <text class="iconfont iconconsumption" style='color:#FDE921;margin: -60rpx;font-size: 360%;'></text>
-    <text>交易</text>
-  </view>
-
-  <view class="bankuainr">
-    <text class="iconfont iconatm-away" style='color:#BD53E0;margin: -60rpx;font-size: 360%;'></text>
-    <text>闲谈</text>
-  </view>
-
-  <view class="bankuainr">
-    <text class="iconfont iconlisting-content-fill" style='color:#2194FD;margin: -60rpx;font-size: 360%;'></text>
-    <text>游戏</text>
-  </view>
-</view>
-</view>
+</page-container>

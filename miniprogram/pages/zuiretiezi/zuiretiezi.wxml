@@ -1,0 +1,112 @@
+<wxs module="tools" src="/utils/filter.wxs" />
+
+<!-- 加载动画 -->
+<view class="juzho">
+  <view class="load_circle1" hidden="{{loadingHidden}}">
+    <!-- 动图 -->
+    <image src="/images/loading2.gif" mode="widthFix" class="loading-img" />
+  </view>
+</view>
+
+<movable-area hidden="{{!loadingHidden}}" class="movable-area" style="height:{{movehight}}px;">
+  <movable-view class="moveview movable-view-item" direction="all" x="500" y="{{movehight2-80}}">
+    <image src="/images/zhuanye333.png" bindtap="blackindex" class="goTop" mode="widthFix"></image>
+  </movable-view>
+</movable-area>
+
+<scroll-view enable-flex="true" hidden="{{!showList}}">
+  <view class="zhuye">
+    <!-- 广告 -->
+    <view class="top0">
+      <view class="recommend-top-itemshijian2" bindtap="tozxxx_11">
+        <view class="recommend-top">
+          <viwe class="hot-title-container">
+            <view class="hot-title-inner">
+              <view class="hot-title-content">
+                <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+                <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+                <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+                <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+                <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+                <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+                <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+                <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+                <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+                <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+                <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+                <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+                <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+                <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+                <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+                <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+                <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+                <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+                <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+                <image lazy-load="true" src="/images/plhotmax.gif" class="hot-icon" />
+                <!-- <text class="hot-text">全校热帖</text> -->
+              </view>
+            </view>
+          </viwe>
+
+          <view class="hot-post-item" wx:for="{{ss_xx1}}" wx:key="index" wx:for-item="item0" wx:for-index="index0" bindtap="xiangqing" data-id="{{item0._id}}" data-love="{{item0.love}}" data-index="{{index0}}" wx:if="{{index0<=4}}" data-reping="3333">
+            <view class="B22255"> <text class="hot-item-index">{{index0+1}}. </text>{{item0.ss_xx.nr}}<text wx:if="{{item0.ss_xx.tp.length>0}}">[图片]</text></view>
+            <view class="hot-item-look">{{item0.ss_xx.look}}围观</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="filter-bar">
+      <view class="filter-content">
+        <view class="filter-label">时间</view>
+        <view>
+          <text bindtap="changetitle" style="{{zuixinorzuire==0?'color:#6d6d6d;font-weight:bold;':'color:#a3a3a3;'}}" data-value="{{0}}">本周</text>
+          <text>｜</text>
+          <text bindtap="changetitle" style="{{zuixinorzuire==1?'color:#6d6d6d;font-weight:bold;':'color:#a3a3a3;'}}" data-value="{{1}}">本月</text>
+          <text>｜</text>
+          <text bindtap="changetitle" style="{{zuixinorzuire==2?'color:#6d6d6d;font-weight:bold;':'color:#a3a3a3;'}}" data-value="{{2}}">历史</text>
+     </view>
+           </view>
+    </view>
+
+    <!-- 说说显示所有 -->
+    <view class="A posts-container">
+      <view class="daoxu" wx:for="{{ss_xx}}" wx:key="index" wx:for-item="item0" wx:for-index="index0">
+        <!-- 广告轮播图 -->
+        <view hidden="{{!bannerList2}}" class="container1" wx:if="{{index0==5||index0==15||index0==25||index0==35||index0==35||index0==45}}">
+          <swiper class="swiper_wrapper" duration="400" indicator-dots autoplay circular>
+            <block wx:for="{{bannerList2}}" wx:key="index" wx:for-item="item">
+              <swiper-item>
+                <image class="slide-image1" src="{{item.cover}}" bindtap="toBannerDetail" data-Appid="{{item.Appid}}" data-type="{{item.type}}" data-title="{{item.title}}" />
+              </swiper-item>
+            </block>
+          </swiper>
+        </view>
+
+        <post-item 
+          item="{{item0}}" 
+          index="{{index0}}" 
+          openid="{{item0._openid}}" 
+          bind:itemtap="xiangqing" 
+          bind:avatarlongpress="guanlifengtiezi" 
+          bind:topictap="tiaozhuan" 
+          bind:imageload="imageOnLoad2" 
+          bind:imageerror="imageOnLoadError" 
+          bind:like="dianzan" 
+          bind:mazhu="mazhu"
+          data-id="{{item0._id}}" 
+          data-love="{{item0.love}}" 
+          data-index="{{index0}}" 
+          data-openid="{{item0._openid}}" 
+          data-lzid="{{item0.ss_xx.lzid}}" 
+          data-reping="2222"
+        ></post-item>
+      </view>
+    </view>
+
+    <!-- 底部加载动画 -->
+    <view class="bottom-loading">
+      <image src="/images/loading2.gif" mode="widthFix" class="bottom-loading-img" />
+    </view>
+  </view>
+</scroll-view>

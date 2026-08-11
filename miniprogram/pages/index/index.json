@@ -1,4 +1,11 @@
 {
-  "usingComponents": {},
-  "navigationBarTitleText": "聊大社区"
+  "usingComponents": {
+    "Tabs": "../../zujian/Tabs/Tabs",
+    "home-add-tips": "components/home-add-tips/index",
+    "post-item": "/components/post-item/post-item"
+  },
+  "enablePullDownRefresh": true,
+  "onReachBottomDistance": 900,
+  "navigationStyle": "custom",
+  "initialRenderingCache": "static"
 }

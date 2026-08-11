@@ -1,0 +1,129 @@
+<!-- 
+    <view class="top-bg" style="background-image: url('/miniprogram/images/message/pinglun.png')"></view> -->
+<view class="contain">
+      <view class="card">
+
+
+
+            <view class="header">
+
+                  <button class="buttonavatar" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
+                        <image wx:if="{{tx}}" class="userinfo-avatar" src="{{tx}}"></image>
+                        <image wx:else="{{!tx}}" class="userinfo-avatar" src="/images/message/touxiang1.png"></image>
+                  </button>
+
+
+                  <!-- <image   bindtap="getUserProfile" class="userinfo-avatar" src="{{tx}}"></image> -->
+                  <text class="userinfo-nickname">{{nm}}</text>
+
+            </view>
+
+
+
+
+
+
+
+            <view class="contact">
+                  <input bind:change="getNickname" type="nickname" model:value="{{nickname}}" placeholder="请点击选择昵称"/>
+
+</view>
+
+            <button style="width:100%" class="phone" open-type="getPhoneNumber" bindgetphonenumber="getPhoneNumber">
+                  <block wx:if="{{!phone}}"> 请点击获取您的手机号</block>
+                  <block wx:if="{{phone}}"> {{phone}}</block>
+                  <image class="right" src="cloud://tafaheishi-1gs4bxsvcf864035.7461-tafaheishi-1gs4bxsvcf864035-1316611774/标签/l_right.png" />
+            </button>
+
+
+
+            <picker mode="multiSelector" bindchange="PickerChange" bindcolumnchange="PickerColumnChange" value="{{multiIndex}}" range="{{multiArray}}">
+                  <view class="campus">
+                        <block> {{multiArray[0][multiIndex[0]]}}-{{multiArray[1][multiIndex[1]]}} </block>
+                        <image class="right" src="cloud://tafaheishi-1gs4bxsvcf864035.7461-tafaheishi-1gs4bxsvcf864035-1316611774/标签/l_down.png" />
+                  </view>
+            </picker>
+
+
+
+            <view>
+
+                  <view bindtap="genderchoose1" class="campus">
+                        <view>
+
+                              <view wx:if="{{gender=='女生♀'}}">
+                                    <text>女生</text>
+                                    <image lazy-load="true" src="/images/icon/women.png" style="width:30rpx;height:30rpx;" />
+                              </view>
+
+
+                              <view wx:if="{{gender=='男生♂'}}">
+                                    <text>男生</text>
+                                    <image lazy-load="true" src="/images/icon/man.png" style="width:30rpx;height:30rpx;" />
+                              </view>
+
+                              <view wx:if="{{gender=='女生⚢'}}">女生⚢</view>
+                              <view wx:if="{{gender=='男生⚣'}}">男生⚣</view>
+
+                              <view wx:if="{{!gender}}">
+                                    <text>性别</text>
+                              </view>
+
+
+                        </view>
+
+                        <view>
+                              <image class="right" src="cloud://tafaheishi-1gs4bxsvcf864035.7461-tafaheishi-1gs4bxsvcf864035-1316611774/标签/l_down.png" />
+
+                        </view>
+
+                  </view>
+
+            </view>
+
+
+
+
+
+            <view wx:if="{{isFirstRegistration}}" class="quiz-card">
+                  <text class="quiz-title">首次注册验证</text>
+                  <text class="quiz-desc">请认真完成下列3道选择题，全部答对才能提交注册。</text>
+                  <block wx:for="{{quizQuestions}}" wx:key="id">
+                        <view class="quiz-question">{{index+1}}. {{item.title}}</view>
+                        <radio-group class="quiz-options" data-question-id="{{item.id}}" bindchange="onSelectQuizOption">
+                              <label wx:for="{{item.options}}" wx:key="value" class="quiz-option">
+                                    <radio value="{{item.value}}" checked="{{quizAnswers[item.id]===item.value}}"></radio>
+                                    <text class="quiz-option-text">{{item.value}}. {{item.label}}</text>
+                              </label>
+                        </radio-group>
+                  </block>
+            </view>
+
+            <!-- 弹窗 -->
+            <!-- 弹窗 -->
+            <mp-actionSheet bindactiontap="btnClick" show="{{showDialog}}" actions="{{groups}}" title="">
+            </mp-actionSheet>
+
+      </view>
+
+
+      <!--底部确认-->
+      <button class="confirm" bindtap="tijiao">提交</button>
+
+
+
+
+
+      <view class="tishi" style="font-size:75%;color:#B6B9BA;padding: 3rpx 35rpx 0rpx 35rpx; " wx:for="{{about.shuoming}}" wx:for-item="item" wx:for-index="index" wx:key="index">{{item}}</view>
+
+      <view class="tishi" style="font-size:75%;color:#a5a5a5;padding: 3rpx 35rpx 0rpx 35rpx;margin-top: 20rpx;">
+            {{about.beiantext[1]}}
+      </view>
+
+      <view class="tishi" style="font-size:75%;color:#a5a5a5;padding: 3rpx 35rpx 0rpx 35rpx; ">
+            <image style="width:30rpx;height:40rpx;;margin-block-end:-6rpx;" src="{{about.beianimage}}"></image>
+            {{about.beiantext[0]}}
+      </view>
+
+
+</view>

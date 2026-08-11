@@ -1,0 +1,9 @@
+{
+  "triggers": [
+    {
+      "name": "everyDay4pmTrigger",
+      "type": "timer",
+      "config": "0 0 16 * * *"
+    }
+  ]
+}

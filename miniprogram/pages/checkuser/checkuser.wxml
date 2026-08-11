@@ -1,0 +1,110 @@
+<view class="container" wx:for="{{userdata}}" wx:key="index" wx:for-item="item" wx:for-index="index">
+  
+  <!-- 用户资料卡片 -->
+  <view class="card profile-card">
+    <view class="profile-header">
+      <image src="{{item.userinfo.userphoto}}" class="avatar"></image>
+      <view class="profile-info">
+        <view class="name-row">
+          <text class="username">{{item.userinfo.username}}</text>
+          <text class="vip-tag" wx:if="{{item.userinfo.isVIP}}">VIP</text>
+        </view>
+        <text class="major">{{item.userinfo.zhuanye[0]}}-{{item.userinfo.zhuanye[1]}}</text>
+        <view class="status-row">
+          <text class="status-tag {{item.online ? 'online' : 'offline'}}">{{item.online ? '在线' : '离线'}}</text>
+          <text class="phone" bindtap="copyUserInfo" data-info="{{item.phone}}">📞 {{item.phone}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 数据统计卡片 -->
+  <view class="card stats-card">
+    <view class="card-title">数据统计</view>
+    <view class="stats-grid">
+      <view class="stat-item">
+        <text class="stat-value violation">{{item.weiguinb}}</text>
+        <text class="stat-label">违规次数</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{item.wenzhang.length}}</text>
+        <text class="stat-label">发帖数</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{item.pinglunguode.length}}</text>
+        <text class="stat-label">回帖数</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 权限管理卡片 -->
+  <view class="card management-card">
+    <view class="card-title">权限管理</view>
+    <view class="action-row">
+      <view class="permission-status">
+        <text class="label">当前状态：</text>
+        <text class="value {{quanxian ? 'banned' : 'normal'}}">{{quanxian ? '已禁言' : '正常'}}</text>
+      </view>
+      <switch checked="{{switch1Checked}}" bindchange="switch1Change" color="#e74c3c"></switch>
+    </view>
+  </view>
+
+  <!-- 搜索记录 -->
+  <view class="card list-card">
+    <view class="card-title">最近搜索</view>
+    <view class="list-content" wx:if="{{item.search.length > 0}}">
+      <view wx:for="{{item.search}}" wx:key="index0" wx:for-item="item0" wx:for-index="index0" class="list-item">
+        <text class="index">{{index0 + 1}}</text>
+        <view class="item-main">
+          <text class="content">{{item0}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="empty-tip" wx:else>无搜索记录</view>
+  </view>
+
+  <!-- 浏览记录 -->
+  <view class="card list-card">
+    <view class="card-title">最近浏览</view>
+    <view class="list-content" wx:if="{{item.lookhistory.length > 0}}">
+      <view wx:for="{{item.lookhistory}}" wx:key="index0" wx:for-item="item0" wx:for-index="index0" class="list-item clickable" bindtap="xiangqing" data-id="{{item0.id}}" data-index="{{index0}}" data-openid="{{item0._openid}}" data-lzid="{{item0.ss_xx.lzid}}" data-reping="2222">
+        <text class="index">{{index0 + 1}}</text>
+        <view class="item-main">
+          <text class="content">{{item0.nr}}</text>
+        </view>
+        <text class="timestamp">{{item0.timestamp}}</text>
+      </view>
+    </view>
+    <view class="empty-tip" wx:else>无浏览记录</view>
+  </view>
+
+  <!-- 发布记录 -->
+  <view class="card list-card">
+    <view class="card-title">发布帖子</view>
+    <view class="list-content" wx:if="{{item.wenzhang.length > 0}}">
+      <view wx:for="{{item.wenzhang}}" wx:key="index0" wx:for-item="item0" wx:for-index="index0" class="list-item clickable" bindtap="xiangqing" data-id="{{item0.id}}" data-index="{{index0}}" data-openid="{{item0._openid}}" data-lzid="{{item0.ss_xx.lzid}}" data-reping="2222">
+        <text class="index">{{index0 + 1}}</text>
+        <view class="item-main">
+          <text class="content">{{item0.nr}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="empty-tip" wx:else>无发布记录</view>
+  </view>
+
+  <!-- 评论记录 -->
+  <view class="card list-card">
+    <view class="card-title">评论记录</view>
+    <view class="list-content" wx:if="{{item.pinglunguode.length > 0}}">
+      <view wx:for="{{item.pinglunguode}}" wx:key="index1" wx:for-item="item1" wx:for-index="index1" class="list-item clickable" bindtap="xiangqing" data-id="{{item1.id}}" data-index="{{index1}}" data-openid="{{item1._openid}}" data-lzid="{{item1.ss_xx.lzid}}" data-reping="2222">
+        <text class="index">{{index1 + 1}}</text>
+        <view class="item-main">
+          <text class="content">回复：{{item1.plnr}}</text>
+          <text class="sub-content">原贴：{{item1.nr}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="empty-tip" wx:else>无评论记录</view>
+  </view>
+
+</view>

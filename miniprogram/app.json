@@ -1,67 +1,73 @@
 {
-  "pages": [
-    "pages/index/index",
-    "pages/my/wd/wd",
-    "pages/plate/jiaoyou/jiaoyou",
-    "pages/plate/jianzhi/jianzhi",
-    "pages/plate/huzhu/huzhu",
-    "pages/plate/jiaoyi/jiaoyi",
-    "pages/plate/xiantan/xiantzn",
-    "pages/plate/peiwan/peiwan",
-    "pages/index/guanggaoxiangqing/guanggaoxiangqing",
-    "pages/index/gonggaoxiangqing/gonggaoxiangqing",
-    "pages/message/xiaoxi/xiaoxi",
-    "pages/post/post",
-    "pages/tuijian/tuijian",
-    "pages/my/wd-bianjixinxi/wd-bianjixinxi",
-    "pages/my/wd-fabudeneirong/wd-fabudeneirong",
-    "pages/my/wd-fankui/wd-fankui",
-    "pages/my/wd-bianjixinxi/bianjiusername/bianjiusername",
-    "pages/my/wd-bianjixinxi/bianjitouxiang/bianjitouxiang"
-  ],
-  "window": {
-    "backgroundColor": "#000000",
-    "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor":"#175167",
-    "navigationBarTitleText": "聊大社区",
-    "navigationBarTextStyle": "white"
-  },
-  "tabBar": {
-    "color": "#B0B2BF",
-    "selectedColor": "#000000",
-    "list": [
-      {
-        "pagePath": "pages/index/index",
-        "text": "主页",
-        "iconPath": "images/tabBar/主页灰.png",
-        "selectedIconPath": "images/tabBar/主页彩.png"
-      },
-      {
-        "pagePath": "pages/tuijian/tuijian",
-        "text": "推荐",
-        "iconPath": "images/tuijian/推荐灰.png",
-        "selectedIconPath": "images/tuijian/推荐彩.png"
-      },
-      {
-        "pagePath": "pages/post/post",
-        "text": "发布",
-        "iconPath": "images/post/add灰.png",
-        "selectedIconPath": "images/post/add彩.png"
-      },
-      {
-        "pagePath": "pages/message/xiaoxi/xiaoxi",
-        "text": "消息",
-        "iconPath": "images/tabBar/消息灰空.png",
-        "selectedIconPath": "images/tabBar/消息彩空.png"
-      },
-      {
-        "pagePath": "pages/my/wd/wd",
-        "text": "我的",
-        "iconPath": "images/tabBar/我的灰.png",
-        "selectedIconPath": "images/tabBar/我的彩.png"
-      }
-    ]
-  },
-  "sitemapLocation": "sitemap.json",
-  "style": "v2"
+    "pages": [
+        "pages/index/index",
+        "pages/tools/tools",
+        "pages/my/wd/wd",
+        "pages/message/xiaoxi/xiaoxi",
+        "pages/message/dianzan/dianzan",
+        "pages/Bgd_control/Bgd_control",
+        "pages/post/post",
+        "pages/plate1/plate1",
+        "pages/plate2/plate2",
+        "pages/plate3/plate3",
+        "pages/plate4/plate4",
+        "pages/my/about/about",
+        "pages/my/set/set",
+        "pages/bannerDetail/bannerDetail",
+        "pages/post-zhoubian/post-zhoubian",
+        "pages/plate-zhoubian/plate-zhoubian",
+        "pages/zuiretiezi/zuiretiezi",
+        "pages/checkuser/checkuser",
+        "pages/work_manager/work_manager",
+        "pages/audit-list/audit-list"
+    ],
+    "requiredPrivateInfos": [
+        "chooseLocation",
+        "chooseAddress"
+    ],
+    "window": {
+        "backgroundColor": "#ffffff",
+        "backgroundTextStyle": "dark",
+        "navigationBarBackgroundColor": "#ffffff",
+        "navigationBarTitleText": "天美黑市",
+        "navigationBarTextStyle": "black"
+    },
+    "tabBar": {
+        "color": "#a1a1a1",
+        "selectedColor": "#384f8f",
+        "backgroundColor": "#ffffff",
+        "list": [
+            {
+                "pagePath": "pages/index/index",
+                "text": "首页",
+                "iconPath": "images/tabBar/zhuye0.png",
+                "selectedIconPath": "images/tabBar/zhuye1.png"
+            },
+            {
+                "pagePath": "pages/tools/tools",
+                "text": "点评",
+                "iconPath": "images/tabBar/xingxing1.png",
+                "selectedIconPath": "images/tabBar/xingxing0.png"
+            },
+            {
+                "pagePath": "pages/my/wd/wd",
+                "text": "我的",
+                "iconPath": "images/tabBar/wode0.png",
+                "selectedIconPath": "images/tabBar/wode1.png"
+            }
+        ]
+    },
+    "sitemapLocation": "sitemap.json",
+    "darkmode": false,
+    "__usePrivacyCheck__": true,
+    "style": "v2",
+    "lazyCodeLoading": "requiredComponents",
+    "permission": {
+        "scope.userLocation": {
+            "desc": "aaa"
+        }
+    },
+    "useExtendedLib": {
+        "weui": true
+    }
 }

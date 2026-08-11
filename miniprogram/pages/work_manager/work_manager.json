@@ -1,0 +1,6 @@
+{
+    "usingComponents": {
+        "post-item": "../../components/post-item/post-item"
+    },
+    "navigationBarTitleText": "文章管理 & 审核"
+}

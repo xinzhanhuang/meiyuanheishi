@@ -1,0 +1,10 @@
+{
+  "usingComponents": {
+    "Tabs": "../../zujian/Tabs/Tabs",
+    "post-item": "/components/post-item/post-item"
+  },
+  "navigationBarTitleText": "天美热榜",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark",
+  "onReachBottomDistance": 100
+}

@@ -1,0 +1,15 @@
+{
+    "name": "getnewlines",
+    "version": "1.0.0",
+    "description": "Fetch new articles from Dajiala",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "axios": "^0.27.2",
+        "wx-server-sdk": "latest"
+    }
+}

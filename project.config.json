@@ -1,75 +1,112 @@
 {
-  "miniprogramRoot": "miniprogram/",
-  "cloudfunctionRoot": "cloudfunctions/",
-  "setting": {
-    "urlCheck": false,
-    "es6": true,
-    "enhance": false,
-    "postcss": true,
-    "preloadBackgroundData": false,
-    "minified": true,
-    "newFeature": false,
-    "coverView": true,
-    "nodeModules": false,
-    "autoAudits": false,
-    "showShadowRootInWxmlPanel": true,
-    "scopeDataCheck": false,
-    "uglifyFileName": false,
-    "checkInvalidKey": true,
-    "checkSiteMap": true,
-    "uploadWithSourceMap": true,
-    "compileHotReLoad": false,
-    "useMultiFrameRuntime": true,
-    "useApiHook": true,
-    "useApiHostProcess": true,
-    "babelSetting": {
-      "ignore": [],
-      "disablePlugins": [],
-      "outputPath": ""
-    },
-    "bundle": false,
-    "useIsolateContext": true,
-    "useCompilerModule": true,
-    "userConfirmedUseCompilerModuleSwitch": false,
-    "userConfirmedBundleSwitch": false,
-    "packNpmManually": false,
-    "packNpmRelationList": [],
-    "minifyWXSS": true
-  },
-  "appid": "wx116e9ce5a20357e4",
-  "projectname": "%E8%81%8A%E5%A4%A7%E7%A4%BE%E5%8C%BA",
-  "libVersion": "2.14.1",
-  "condition": {
-    "plugin": {
-      "list": []
-    },
-    "game": {
-      "list": []
-    },
-    "gamePlugin": {
-      "list": []
-    },
-    "miniprogram": {
-      "list": [
-        {
-          "id": -1,
-          "name": "db guide",
-          "pathName": "pages/databaseGuide/databaseGuide",
-          "query": ""
+    "miniprogramRoot": "miniprogram/",
+    "cloudfunctionRoot": "cloudfunctions/",
+    "setting": {
+        "urlCheck": true,
+        "es6": false,
+        "enhance": true,
+        "postcss": true,
+        "preloadBackgroundData": false,
+        "minified": true,
+        "newFeature": false,
+        "coverView": true,
+        "nodeModules": false,
+        "autoAudits": false,
+        "showShadowRootInWxmlPanel": true,
+        "scopeDataCheck": false,
+        "uglifyFileName": false,
+        "checkInvalidKey": true,
+        "checkSiteMap": false,
+        "uploadWithSourceMap": true,
+        "compileHotReLoad": false,
+        "lazyloadPlaceholderEnable": false,
+        "useMultiFrameRuntime": true,
+        "babelSetting": {
+            "ignore": [],
+            "disablePlugins": [],
+            "outputPath": ""
         },
-        {
-          "name": "pages/my/wd-bianjixinxi/bianjiusername/bianjiusername",
-          "pathName": "pages/my/wd-bianjixinxi/bianjiusername/bianjiusername",
-          "query": "",
-          "scene": null
+        "useIsolateContext": true,
+        "userConfirmedBundleSwitch": false,
+        "packNpmManually": false,
+        "packNpmRelationList": [],
+        "minifyWXSS": true,
+        "disableUseStrict": false,
+        "minifyWXML": true,
+        "showES6CompileOption": false,
+        "useCompilerPlugins": false,
+        "ignoreUploadUnusedFiles": true,
+        "useStaticServer": true,
+        "condition": false
+    },
+    "condition": {
+        "plugin": {
+            "list": []
         },
-        {
-          "name": "发布",
-          "pathName": "pages/post/post",
-          "query": "",
-          "scene": null
+        "game": {
+            "list": []
+        },
+        "gamePlugin": {
+            "list": []
+        },
+        "miniprogram": {
+            "list": [
+                {
+                    "id": -1,
+                    "name": "db guide",
+                    "pathName": "pages/databaseGuide/databaseGuide",
+                    "query": ""
+                },
+                {
+                    "name": "板块内",
+                    "pathName": "pages\\plate1\\plate1",
+                    "query": "",
+                    "scene": null
+                },
+                {
+                    "name": "pages/tuijian/tuijian",
+                    "pathName": "pages/tuijian/tuijian",
+                    "query": "",
+                    "scene": null
+                },
+                {
+                    "name": "pages/post/post",
+                    "pathName": "pages/post/post",
+                    "query": "",
+                    "scene": null
+                },
+                {
+                    "name": "pages/tuijian/tuijian",
+                    "pathName": "pages/tuijian/tuijian",
+                    "query": "",
+                    "scene": null
+                },
+                {
+                    "name": "pages/tuijian/detail/detail",
+                    "pathName": "pages/tuijian/detail/detail",
+                    "query": "",
+                    "scene": null
+                },
+                {
+                    "name": "pages/message/xiaoxi/xiaoxi",
+                    "pathName": "pages/message/xiaoxi/xiaoxi",
+                    "query": "",
+                    "scene": null
+                }
+            ]
         }
-      ]
-    }
-  }
+    },
+    "compileType": "miniprogram",
+    "srcMiniprogramRoot": "miniprogram/",
+    "editorSetting": {
+        "tabIndent": "insertSpaces",
+        "tabSize": 4
+    },
+    "description": "项目配置文件，详见文档：https://developers.weixin.qq.com/miniprogram/dev/devtools/projectconfig.html",
+    "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",
+    "packOptions": {
+        "ignore": [],
+        "include": []
+    },
+    "appid": "wx3280f3d41b172606"
 }
