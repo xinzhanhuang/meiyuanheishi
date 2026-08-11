@@ -306,9 +306,12 @@ Page({
     try {
       this.watcher = db.collection('users').doc(_id).watch({
         onChange: function (e) {
-          console.log('监听user数据变化：', e.docs[0]);
-          app.userInfo = e.docs[0];
-          var message = e.docs[0].message;
+          var user = e.docs && e.docs[0];
+          if (!user) return;
+
+          console.log('监听user数据变化：', user);
+          app.userInfo = user;
+          var message = user.message || [];
           app.message = message;
           that.jiantingchuli(message);
         },
