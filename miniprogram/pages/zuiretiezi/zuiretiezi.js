@@ -71,14 +71,17 @@ Page({
     }
     console.log("hdhdhdhdhddhhd", bannerList2)
 
+    var systeminfo = wx.getWindowInfo()
+
     this.setData({
       bannerList2,
       fenxiang,
-      choosetitle1
+      choosetitle1,
+      movehight: systeminfo.windowHeight,
+      movehight2: systeminfo.windowHeight - 80
     })
 
     app.fenxiang = "false"
-    var systeminfo = wx.getWindowInfo()
 
     if (logined != true) {
       wx.cloud.callFunction({
@@ -127,12 +130,7 @@ Page({
       }
     }
 
-
     this.jiazai()
-    this.setData({
-      movehight: systeminfo.windowHeight,
-      movehight2: systeminfo.windowHeight - 80
-    })
     this.showListTimer = setTimeout(() => {
       this.setData({
         showList: true,

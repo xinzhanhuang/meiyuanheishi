@@ -121,24 +121,10 @@ Page({
     const systeminfo = wx.getWindowInfo()
     const menuButtonInfo = wx.getMenuButtonBoundingClientRect()
 
-    this.setData({
-      menuButtonInfo: menuButtonInfo
-    })
-
     console.log(menuButtonInfo)
     const { top, width, height, right } = menuButtonInfo
     const { statusBarHeight } = systeminfo
     const margin = top - statusBarHeight
-    this.setData({
-      navHeight: (height + statusBarHeight + (margin * 2)),
-      searchMarginTop: statusBarHeight + margin, // 状态栏 + 胶囊按钮边距
-      searchHeight: height,  // 与胶囊按钮同高
-      searchWidth: right - width - 20// 胶囊按钮右边坐标 - 胶囊按钮宽度 = 按钮左边可使用宽度
-    })
-
-
-
-
     if ((options.fenxiang === "true" || options.fenxiang === "ture") && logined != true) {
       /*调用云函数登录*/
       //   wx.showLoading({
@@ -205,8 +191,12 @@ Page({
     this.setData({
       choosetitle: String(choosetitle),
       choosetitle1,
-
       choosetitlezhuanfa: options.choosetitle1,
+      menuButtonInfo: menuButtonInfo,
+      navHeight: (height + statusBarHeight + (margin * 2)),
+      searchMarginTop: statusBarHeight + margin, // 状态栏 + 胶囊按钮边距
+      searchHeight: height,  // 与胶囊按钮同高
+      searchWidth: right - width - 20, // 胶囊按钮右边坐标 - 胶囊按钮宽度 = 按钮左边可使用宽度
       movehight: systeminfo.windowHeight,
       movehight2: systeminfo.windowHeight - 100
     })
