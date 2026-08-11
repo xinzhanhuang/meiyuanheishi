@@ -64,43 +64,24 @@ App({
 
   },
   onShow() {
+    this.checkUpdate()
     wx.cloud.callFunction({
-      name: 'login',
-      data: {}
-    }).then((res) => {
-      var openid = res.result.openid
-      this.checkUpdate()
-      var db = wx.cloud.database()
-      db.collection('users').where({ _openid: openid }).update({
-        data: {
-          online: true
-        }
-      })
-    });
+      name: 'updateUserPresence',
+      data: { online: true }
+    }).catch((err) => {
+      console.error('更新在线状态失败:', err)
+    })
 
 
   },
 
   //不在小程序中就下线
   onHide() {
-
     wx.cloud.callFunction({
-      name: 'login',
-      data: {}
-    }).then((res) => {
-
-      var openid = res.result.openid
-
-      var db = wx.cloud.database()
-
-      // if(this._id!=""){
-      console.log("下线")
-      db.collection('users').where({ _openid: openid }).update({
-        data: {
-          online: false
-        }
-      })
-      // }
+      name: 'updateUserPresence',
+      data: { online: false }
+    }).catch((err) => {
+      console.error('更新离线状态失败:', err)
     })
   },
 
