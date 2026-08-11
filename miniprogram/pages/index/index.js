@@ -326,13 +326,19 @@ Page({
     if (app.system1 == "" || app.system1 == undefined) {
       db.collection('system').where({ '_id': 'system01' })
         .get().then((res) => {
-          app.system1 = res.data[0]
-          app.glids = res.data[0].system.glids
-          app.glids_openid = res.data[0].glids_openid
+          const systemConfig = res.data && res.data[0]
+          if (!systemConfig || !systemConfig.system) {
+            console.warn('未找到系统配置')
+            return
+          }
 
-          if (res.data[0].system.ADcheck) {
-            app.bannerList2 = res.data[0].system.lunbotu
-            app.bannerListtool = res.data[0].system.lunbotutool
+          app.system1 = systemConfig
+          app.glids = systemConfig.system.glids
+          app.glids_openid = systemConfig.glids_openid
+
+          if (systemConfig.system.ADcheck) {
+            app.bannerList2 = systemConfig.system.lunbotu
+            app.bannerListtool = systemConfig.system.lunbotutool
             var bannerList2 = app.bannerList2.sort(() => Math.random() - 0.5);
 
           } else {
@@ -342,9 +348,11 @@ Page({
           }
 
           this.setData({
-            glids: res.data[0].system.glids,
+            glids: systemConfig.system.glids,
             bannerList2: bannerList2
           })
+        }).catch((err) => {
+          console.error('获取系统配置失败:', err)
         })
     }
 
@@ -383,6 +391,13 @@ Page({
         db.collection("users").where({
           _openid: res.result.openid
         }).get().then((res) => {
+          if (!res.data || !res.data[0]) {
+            console.warn('未找到当前用户记录')
+            this.jiazai()
+            wx.hideLoading()
+            return
+          }
+
           app.userInfo = Object.assign(app.userInfo, res.data[0]);
           // Sync message arrays
           app.message = app.userInfo.message || [];
@@ -403,7 +418,13 @@ Page({
             // 显式调用checkred以更新红点
             this.checkred();
           }
+        }).catch((err) => {
+          console.error('获取当前用户信息失败:', err)
+          wx.hideLoading()
         })
+      }).catch((err) => {
+        console.error('静默登录失败:', err)
+        wx.hideLoading()
       });
     } else {
       this.jiazai()
