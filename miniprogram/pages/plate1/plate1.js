@@ -145,7 +145,7 @@ Page({
 
 
 
-    if (options.fenxiang = "true" && logined != true) {
+    if ((options.fenxiang === "true" || options.fenxiang === "ture") && logined != true) {
       /*调用云函数登录*/
       //   wx.showLoading({
       //     title: '检查登录',

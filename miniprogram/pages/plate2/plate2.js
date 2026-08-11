@@ -942,7 +942,7 @@ Page({
     }
 
     // 使用 sort 方法和 Math.random 打乱数组顺序
-    if (options.fenxiang = 'true' && options.bannerList2) {
+    if ((options.fenxiang === 'true' || options.fenxiang === 'ture') && options.bannerList2) {
       var bannerList2 = JSON.parse(decodeURIComponent(options.bannerList2));
     } else {
       var bannerList1 = app.bannerList2;
@@ -1032,7 +1032,7 @@ Page({
     });
 
     // 判断是否为分享来的
-    if (options.fenxiang = "true") {
+    if (options.fenxiang === "true" || options.fenxiang === "ture") {
       console.log("登录");
       /* 调用云函数登录 */
       wx.cloud.callFunction({

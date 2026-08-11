@@ -52,7 +52,7 @@ Page({
 
 
     // 使用 sort 方法和 Math.random 打乱数组顺序
-    if (options.fenxiang = 'true' && options.bannerList2) {
+    if ((options.fenxiang === 'true' || options.fenxiang === 'ture') && options.bannerList2) {
 
 
       var bannerList2 = JSON.parse(decodeURIComponent(options.bannerList2))
@@ -484,7 +484,7 @@ Page({
       index = e.currentTarget.dataset.index
       reping = e.currentTarget.dataset.reping
     }
-    if (this.data.fenxiang = true) {
+    if (this.data.fenxiang === true || this.data.fenxiang === 'true' || this.data.fenxiang === 'ture') {
       var choosetitle1 = false
       var zuiress_xx1 = false
       var DONOT = '111'

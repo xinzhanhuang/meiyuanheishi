@@ -142,7 +142,7 @@ Page({
     }
 
     // Banner List
-    if (options.fenxiang = 'true' && options.bannerList2) {
+    if ((options.fenxiang === 'true' || options.fenxiang === 'ture') && options.bannerList2) {
       var bannerList2 = JSON.parse(decodeURIComponent(options.bannerList2));
     } else {
       var bannerList1 = app.bannerList2;
@@ -187,7 +187,7 @@ Page({
     })
 
     //判断是否为分享来的！！！！！！！！！！！！！
-    if (options.zhoubianfenxiang = "true") {
+    if (options.zhoubianfenxiang === "true" || options.zhoubianfenxiang === "ture") {
       console.log("登录")
 
       wx.cloud.callFunction({
