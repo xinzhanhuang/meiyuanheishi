@@ -444,8 +444,6 @@ Page({
             plxx.sort(function (a, b) {
               return b.pldianzannb - a.pldianzannb
             });
-            // plxx.forEach(function (item) { }) // Removed empty loop
-            // ss_xx[i].ss_xx.huifunr.push.apply(plxx) // REMOVED: This was duplicating comments!
           }
         }
 
