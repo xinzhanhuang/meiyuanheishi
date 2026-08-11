@@ -718,10 +718,15 @@ Page({
    * 生命周期函数--监听页面隐藏
    */
   onHide: function () {
+    if (this.watcherRetryTimer) {
+      clearTimeout(this.watcherRetryTimer);
+      this.watcherRetryTimer = null;
+    }
     if (this.watcher) {
       this.watcher.close();
       this.watcher = null;
     }
+    app.jianting = false;
   },
 
   /**
@@ -735,10 +740,15 @@ Page({
    * 生命周期函数--监听页面卸载
    */
   onUnload: function () {
+    if (this.watcherRetryTimer) {
+      clearTimeout(this.watcherRetryTimer);
+      this.watcherRetryTimer = null;
+    }
     if (this.watcher) {
       this.watcher.close();
       this.watcher = null;
     }
+    app.jianting = false;
   },
 
   /**
@@ -1186,7 +1196,8 @@ Page({
           }
 
           // 增加重试延迟到5秒，并增加计数
-          setTimeout(() => {
+          that.watcherRetryTimer = setTimeout(() => {
+            that.watcherRetryTimer = null;
             that.jianting(retryCount + 1);
           }, 5000);
         }

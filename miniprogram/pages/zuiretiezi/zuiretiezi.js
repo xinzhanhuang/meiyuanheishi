@@ -210,7 +210,12 @@ Page({
   onHide: function () { },
 
   //生命周期函数--监听页面卸载
-  onUnload: function () { },
+  onUnload: function () {
+    if (this.watcher) {
+      this.watcher.close();
+      this.watcher = null;
+    }
+  },
 
   //用户点击右上角分享
   onShareAppMessage: function () {

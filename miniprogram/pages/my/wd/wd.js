@@ -315,7 +315,8 @@ Page({
         onError: function (err) {
           console.error('监听出现问题！', err);
           // 监听出错时尝试重新初始化
-          setTimeout(() => {
+          that.watcherRetryTimer = setTimeout(() => {
+            that.watcherRetryTimer = null;
             if (app.userInfo._id) {
               that.jianting(app.userInfo._id);
             }
@@ -331,6 +332,10 @@ Page({
    * 生命周期函数--监听页面卸载
    */
   onUnload: function () {
+    if (this.watcherRetryTimer) {
+      clearTimeout(this.watcherRetryTimer);
+      this.watcherRetryTimer = null;
+    }
     if (this.watcher) {
       this.watcher.close();
       this.watcher = null;
@@ -342,6 +347,10 @@ Page({
    * 生命周期函数--监听页面隐藏
    */
   onHide: function () {
+    if (this.watcherRetryTimer) {
+      clearTimeout(this.watcherRetryTimer);
+      this.watcherRetryTimer = null;
+    }
     if (this.watcher) {
       this.watcher.close();
       this.watcher = null;
