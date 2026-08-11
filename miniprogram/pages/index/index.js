@@ -206,6 +206,11 @@ Page({
       'schooltype': '天津美术学院',
     }).get({
       success(res) {
+        if (!res.data || !res.data[0]) {
+          console.warn('未找到轮播图配置')
+          return
+        }
+
         console.log(res)
         var choosetitle = res.data[0].choosetile
         var bannerList = res.data[0].lunbotu[4].cover
@@ -250,6 +255,9 @@ Page({
           bannerList1,
           choosetitle: choosetitle
         })
+      },
+      fail(err) {
+        console.error('获取轮播图配置失败:', err)
       }
     })
   },
