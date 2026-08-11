@@ -1144,9 +1144,15 @@ Page({
     try {
       this.watcher = db.collection('users').doc(_id).watch({
         onChange: function (e) {
-          console.log('监听user数据变化：', e.docs[0]);
-          app.userInfo = e.docs[0];
-          var message = e.docs[0].message || []; // 确保message存在
+          var user = e.docs && e.docs[0]
+          if (!user) {
+            console.warn('监听user数据为空，跳过本次更新')
+            return
+          }
+
+          console.log('监听user数据变化：', user);
+          app.userInfo = user;
+          var message = user.message || []; // 确保message存在
           app.message = message;
           that.jiantingchuli(message);
 
