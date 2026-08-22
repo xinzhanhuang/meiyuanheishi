@@ -59,33 +59,20 @@ Page({
         // 创建新的消息数组，不包含要删除的消息
         var message = this.data.message.filter((msg, idx) => idx !== index)
 
-        //把本地改一下（立即更新UI，不等待数据库响应）
-        var zs = message.length
-        var x = []
-        for (var i = 0; i < zs; i++) {
-            x[i] = 0
-        }
-
-        this.setData({
-            message: message,
-            x: x,
-            xx: x
-        })
-
-        db.collection("users").doc(app.userInfo._id)
-            .update({
-                data: {
-                    dzmessage: db.command.pull({
-                        "id": db.command.eq(id)//这里不知道行不
-                    })
-                }
-            }).then((res) => {
+        wx.cloud.callFunction({
+            name: 'updateUserPresence',
+            data: { messageAction: 'remove', messageType: 'dzmessage', messageId: id }
+        }).then((res) => {
+                var zs = message.length
+                var x = []
+                for (var i = 0; i < zs; i++) x[i] = 0
+                this.setData({ message: message, x: x, xx: x })
                 console.log("删消息（已读）", res)
-                // 更新app中的消息数据
                 app.userInfo.dzmessage = message
-
                 app.refreshMessageBadge()
-
+            }).catch((err) => {
+                console.error('删除点赞消息失败:', err)
+                wx.showToast({ title: '删除失败，请稍后重试', icon: 'none' })
             })
     },
 
@@ -96,12 +83,10 @@ Page({
         var message = this.data.message
         if (message.length > 0) {
 
-            db.collection("users").doc(app.userInfo._id)
-                .update({
-                    data: {
-                        dzmessage: []
-                    }
-                }).then((res) => {
+            wx.cloud.callFunction({
+                name: 'updateUserPresence',
+                data: { messageAction: 'clear', messageType: 'dzmessage' }
+            }).then((res) => {
                     console.log("删消息（已读）", res)
                     // 更新app中的消息数据
                     app.userInfo.dzmessage = []
@@ -112,13 +97,10 @@ Page({
                         icon: 'none',
                         duration: 800
                     })
-                })
-
-
-
-            this.setData({
-                message: [],
-
+                    this.setData({ message: [] })
+            }).catch((err) => {
+                console.error('清空点赞消息失败:', err)
+                wx.showToast({ title: '清空失败，请稍后重试', icon: 'none' })
             })
 
 
