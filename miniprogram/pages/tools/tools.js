@@ -334,15 +334,6 @@ Page({
     var id = e.currentTarget.dataset.id;
     var love = e.currentTarget.dataset.love;
 
-    // Log view
-    wx.cloud.callFunction({
-      name: "look",
-      data: {
-        id: id,
-        type: 'tianmeizhoubian'
-      }
-    });
-
     // Save index for return update
     var index = e.currentTarget.dataset.index;
     this.setData({

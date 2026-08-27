@@ -917,16 +917,6 @@ Page({
     } else {
       console.log("点击索引:", index)
 
-      // 增加浏览量
-      wx.cloud.callFunction({
-        name: "look",
-        data: {
-          id: id,
-          type: 'ss',
-          num: 1
-        }
-      })
-
       // 重新计算热帖的点赞状态
       if (reping == 1111) {
         var item = this.data.ss_xx1[index]

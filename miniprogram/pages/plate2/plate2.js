@@ -925,7 +925,8 @@ Page({
       name: "look",
       data: {
         id: id,
-        type: 'ss'
+        type: target.liuyan ? 'tj' : 'ss',
+        num: 1
       }
     });
 
@@ -1383,14 +1384,6 @@ Page({
     var reping = e.currentTarget.dataset.reping;
 
     console.log("index:", index);
-    wx.cloud.callFunction({
-      name: "look",
-      data: {
-        id: id,
-        type: 'ss',
-        num: 1
-      }
-    });
 
     if (love) {
       love = 'true';

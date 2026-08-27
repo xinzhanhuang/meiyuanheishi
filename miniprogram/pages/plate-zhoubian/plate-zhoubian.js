@@ -189,6 +189,15 @@ Page({
       movehight2: systeminfo.windowHeight - 80
     })
 
+    wx.cloud.callFunction({
+      name: "look",
+      data: {
+        id,
+        type: target.liuyan ? 'tj' : 'tianmeizhoubian',
+        num: 1
+      }
+    })
+
     //判断是否为分享来的！！！！！！！！！！！！！
     if (isSharedEntry) {
       this.jiazai(id)
@@ -221,14 +230,6 @@ Page({
         _openid: _openid,
         _id: app.userInfo._id
       })
-      //console.log("iddd",options.id)
-      wx.cloud.callFunction({
-        name: "look",
-        data: {
-          id: id,
-          type: 'ss'
-        }
-      });
       this.jiazai(id)
     }
 

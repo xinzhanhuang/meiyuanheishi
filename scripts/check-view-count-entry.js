@@ -1,0 +1,17 @@
+const assert = require('assert');
+const fs = require('fs');
+
+const normal = fs.readFileSync('miniprogram/pages/plate2/plate2.js', 'utf8');
+const nearby = fs.readFileSync('miniprogram/pages/plate-zhoubian/plate-zhoubian.js', 'utf8');
+const normalLoad = normal.slice(normal.indexOf('onLoad: function (options)'), normal.indexOf('jiazai(id)', normal.indexOf('onLoad: function (options)')));
+const nearbyLoad = nearby.slice(nearby.indexOf('onLoad: function (options)'), nearby.indexOf('//判断是否有了glid'));
+assert.strictEqual((normalLoad.match(/name: "look"/g) || []).length, 1);
+assert(normalLoad.includes("type: target.liuyan ? 'tj' : 'ss'"));
+assert.strictEqual((nearbyLoad.match(/name: "look"/g) || []).length, 1);
+assert(nearbyLoad.includes("type: target.liuyan ? 'tj' : 'tianmeizhoubian'"));
+['index', 'plate1', 'plate4', 'zuiretiezi', 'checkuser', 'tools'].forEach(name => {
+  const source = fs.readFileSync(`miniprogram/pages/${name}/${name}.js`, 'utf8');
+  const routes = source.split('xiangqing');
+  assert(routes.slice(1).every(section => !section.slice(0, section.indexOf('\n  },')).includes('name: "look"')), `${name} counts before detail`);
+});
+console.log('view count entry checks passed');

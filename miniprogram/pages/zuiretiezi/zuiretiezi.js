@@ -481,15 +481,6 @@ Page({
     }
 
     console.log("index:", index)
-    wx.cloud.callFunction({
-      name: "look",
-      data: {
-        id: id,
-        type: 'ss',
-        num: 1
-      }
-    })
-
     if (love) {
       love = 'true'
     } else {

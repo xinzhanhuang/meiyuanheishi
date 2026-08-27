@@ -353,15 +353,6 @@ Page({
     var index = e.currentTarget.dataset.index
     app.choosetitle1 = this.data.choosetitle1
 
-    wx.cloud.callFunction({
-      name: "look",
-      data: {
-        id: id,
-        type: 'ss'
-      }
-    })
-
-
     if (love) {
       love = 'true'
     } else {
