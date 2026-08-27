@@ -1050,6 +1050,12 @@ Page({
           app.userInfo = Object.assign(app.userInfo, res.data[0]);
           var _openid = app.userInfo._openid;
           if (_openid == "") {
+            app.setPendingPostTarget({
+              postId: id,
+              postType: liuyan === 'true' ? 'tj' : 'ss',
+              commentId: this.commentId,
+              source: 'share'
+            });
             /* 如果没有登录信息则跳转到wd */
             wx.showToast({
               title: '还未登录',

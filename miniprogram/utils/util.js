@@ -282,6 +282,19 @@ const util = {
       source: source.source || ''
     };
   },
+  getPostTargetUrl(target) {
+    const type = target.postType || 'ss';
+    const page = type === 'ss' ? '/pages/plate2/plate2' : '/pages/plate-zhoubian/plate-zhoubian';
+    const params = [
+      `id=${encodeURIComponent(target.postId)}`,
+      `postId=${encodeURIComponent(target.postId)}`,
+      `postType=${encodeURIComponent(type)}`,
+      `source=${encodeURIComponent(target.source || 'login')}`
+    ];
+    if (target.commentId) params.push(`commentId=${encodeURIComponent(target.commentId)}`);
+    if (type === 'tj') params.push('liuyan=true');
+    return `${page}?${params.join('&')}`;
+  },
   cancel(oid, name, cb) {
     this.post('help/update/state', {
       state: 4,

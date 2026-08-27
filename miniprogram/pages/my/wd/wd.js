@@ -1,6 +1,7 @@
 // miniprogram/pages/wd/wd.js
 const app = getApp()
 const db = wx.cloud.database()
+const utils = require('../../../utils/util.js')
 
 Page({
   /**
@@ -24,6 +25,13 @@ Page({
     messagenumber: 0,
     dzmessagenumber: 0, // 点赞消息数量
     adload: true
+  },
+
+  resumePendingPost() {
+    const target = app.consumePendingPostTarget()
+    if (!target) return false
+    wx.navigateTo({ url: utils.getPostTargetUrl(target) })
+    return true
   },
 
   /**
@@ -210,6 +218,8 @@ Page({
 
               this.logintime() // 更新登录时间
 
+              if (this.resumePendingPost()) return
+
               // 处理分享跳转
               if (app.fenxiang == "ture") {
                 app.fenxiang = "false"
@@ -259,6 +269,8 @@ Page({
       }
       this.getgl()
       this.checkred() // 刷新红点
+
+      if (this.resumePendingPost()) return
 
       if (app.fenxiang == "ture") {
         app.fenxiang = "false"

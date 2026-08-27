@@ -1,5 +1,6 @@
 var db = wx.cloud.database()
 var app = getApp()
+var utils = require('../../../utils/util.js')
 // let rewardedVideoAd = null
 // var caozuo=0
 const defaultAvatarUrl = 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'
@@ -605,7 +606,10 @@ Page({
       })
     })
 
-    if (app.fenxiang == "ture") {
+    var target = app.consumePendingPostTarget()
+    if (target) {
+      wx.navigateTo({ url: utils.getPostTargetUrl(target) })
+    } else if (app.fenxiang == "ture") {
       // console.log("sssss1",app.fenxiang)
       app.fenxiang = "false"
       wx.navigateTo({

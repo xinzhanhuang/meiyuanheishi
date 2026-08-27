@@ -19,6 +19,7 @@ App({
     this.shuaxin = false
     this.fenxiang = "false"
     this.fxssid = ""
+    this.pendingPostTarget = null
     this.jianting = false
 
 
@@ -122,6 +123,19 @@ App({
     this.hongdian = total > 0
     wx.setStorageSync('badgeCount', total)
     return total
+  },
+
+  setPendingPostTarget(target) {
+    if (!target || !target.postId) return
+    this.pendingPostTarget = Object.assign({}, target, { expiresAt: Date.now() + 30 * 60 * 1000 })
+    wx.setStorageSync('pendingPostTarget', this.pendingPostTarget)
+  },
+
+  consumePendingPostTarget() {
+    const target = this.pendingPostTarget || wx.getStorageSync('pendingPostTarget')
+    this.pendingPostTarget = null
+    wx.removeStorageSync('pendingPostTarget')
+    return target && target.postId && target.expiresAt > Date.now() ? target : null
   },
 
   setUserWatcherListener(listener) {
