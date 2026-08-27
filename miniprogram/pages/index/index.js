@@ -838,6 +838,7 @@ Page({
         }
 
         var ss_xx_new = []
+        var postStartIndex = 0
         if (shuaxin == true) {
           // 真刷新状态
           ss_xx_new = await this.love(res.data)
@@ -845,12 +846,13 @@ Page({
           // 加载并加入
           var ss_xx = this.data.ss_xx
           var xx = await this.love(res.data)
+          postStartIndex = ss_xx.length
           ss_xx.push.apply(ss_xx, xx)
           ss_xx_new = ss_xx
         }
 
-        // 处理回复排序
-        for (var i = 0; i < ss_xx_new.length; i++) {
+        // 已加载的帖子此前已排过序；加载更多时只处理新增帖子。
+        for (var i = postStartIndex; i < ss_xx_new.length; i++) {
           // 注意：这里原逻辑似乎有问题，huifunr.push.apply(plxx) 会导致重复添加，但为了保持逻辑不变，我保留原样，只做注释
           // 原逻辑：plxx是引用，sort后plxx变化，然后又push.apply到自身？
           // 实际上 ss_xx[i].ss_xx.huifunr 是一个数组，plxx 也是引用这个数组。
