@@ -191,48 +191,30 @@ Page({
 
     //判断是否为分享来的！！！！！！！！！！！！！
     if (isSharedEntry) {
-      console.log("登录")
-
       this.jiazai(id)
-
-      wx.cloud.callFunction({
+      if (app.userInfo._openid) {
+        this.setData({ _openid: app.userInfo._openid, id, _id: app.userInfo._id })
+      } else {
+        wx.cloud.callFunction({
         name: 'login',
         data: {}
       }).then((res) => {
-        //console.log(res)
-        db.collection("users").where({
+        return db.collection("users").where({
           _openid: res.result.openid
-        }).get().then((res) => {
-          //console.log(res.data[0]);
-          app.userInfo = Object.assign(app.userInfo, res.data[0]);
-          var _openid = app.userInfo._openid
-          // wx.hideLoading()
-          if (_openid == "") {
-            app.setPendingPostTarget({
-              postId: id,
-              postType: 'zhoubian',
-              commentId: this.commentId,
-              source: 'share',
-              liuyan: liuyan === 'true'
-            })
-            /*如果没有登录信息则跳转到wd*/
-            wx.showToast({
-              title: '还未登录',
-              icon: "none",
-              duration: '1500'
-            })
-            app.zhoubianfenxiang = "true"
-          } else {
-            console.log("取到openid")
-            this.setData({
-              _openid: _openid,
-              id,
-              _id: app.userInfo._id
-            })
-
-          }
         })
+      }).then((res) => {
+        if (res.data[0]) app.userInfo = Object.assign(app.userInfo, res.data[0])
+        if (app.userInfo._openid) {
+          this.setData({ _openid: app.userInfo._openid, id, _id: app.userInfo._id })
+          return
+        }
+        app.setPendingPostTarget({ postId: id, postType: 'zhoubian', commentId: this.commentId, source: 'share', liuyan: liuyan === 'true' })
+        wx.showToast({ title: '还未登录', icon: 'none', duration: 1500 })
+        app.zhoubianfenxiang = "true"
+      }).catch((err) => {
+        console.warn('周边分享入口登录状态读取失败', err)
       })
+      }
     } else {
       var _openid = app.userInfo._openid
       this.setData({

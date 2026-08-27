@@ -1036,77 +1036,41 @@ Page({
       this.setChatListHeight();
     });
 
-    // 判断是否为分享来的
-    if (options.fenxiang === "true" || options.fenxiang === "ture") {
-      console.log("登录");
-      /* 调用云函数登录 */
-      wx.cloud.callFunction({
-        name: 'login',
-        data: {}
-      }).then((res) => {
-        db.collection("users").where({
-          _openid: res.result.openid
-        }).get().then((res) => {
-          app.userInfo = Object.assign(app.userInfo, res.data[0]);
-          var _openid = app.userInfo._openid;
-          if (_openid == "") {
-            app.setPendingPostTarget({
-              postId: id,
-              postType: 'ss',
-              commentId: this.commentId,
-              source: 'share',
-              liuyan: liuyan === 'true'
-            });
-            /* 如果没有登录信息则跳转到wd */
-            wx.showToast({
-              title: '还未登录',
-              icon: "none",
-              duration: '1500'
-            });
-          } else {
-            if (lzid == app.userInfo._id || takeorderid1 == app.userInfo._id) {
-              var orderlzid = true;
-            }
-            console.log("取到openid");
-            // 判断是否是管理员
-            var mine = false;
-            var myid = app.userInfo._id;
-            for (var ii = 0; ii < app.glids.length; ii++) {
-              if (app.glids[ii] == myid) {
-                mine = true;
-                break;
-              }
-            }
-            this.setData({
-              _openid: _openid,
-              id,
-              _id: app.userInfo._id,
-              orderlzid,
-              isAdmin: mine
-            });
-          }
-        });
-      });
-    } else {
-      var _openid = app.userInfo._openid;
-      if (lzid == app.userInfo._id || takeorderid1 == app.userInfo._id) {
-        var orderlzid = true;
-      }
-      // 判断是否是管理员
-      var mine = false;
-      var myid = app.userInfo._id;
-      for (var ii = 0; ii < app.glids.length; ii++) {
-        if (app.glids[ii] == myid) {
-          mine = true;
-          break;
-        }
-      }
+    const applyUserState = () => {
+      var orderlzid = lzid == app.userInfo._id || takeorderid1 == app.userInfo._id;
+      var mine = app.glids.indexOf(app.userInfo._id) !== -1;
       this.setData({
-        _openid: _openid,
+        _openid: app.userInfo._openid,
+        id,
         _id: app.userInfo._id,
         orderlzid,
         isAdmin: mine
       });
+    };
+
+    // 判断是否为分享来的
+    if (options.fenxiang === "true" || options.fenxiang === "ture") {
+      if (app.userInfo._openid) {
+        applyUserState();
+      } else {
+        wx.cloud.callFunction({
+        name: 'login',
+        data: {}
+      }).then((res) => {
+        return db.collection("users").where({
+          _openid: res.result.openid
+        });
+      }).then((res) => {
+        if (res.data[0]) app.userInfo = Object.assign(app.userInfo, res.data[0]);
+        if (app.userInfo._openid) return applyUserState();
+        app.setPendingPostTarget({ postId: id, postType: 'ss', commentId: this.commentId, source: 'share', liuyan: liuyan === 'true' });
+        wx.showToast({ title: '还未登录', icon: 'none', duration: 1500 });
+      }).catch((err) => {
+        console.warn('分享入口登录状态读取失败', err);
+      });
+      }
+    } else {
+      applyUserState();
       this.jiazai(id);
     }
 
