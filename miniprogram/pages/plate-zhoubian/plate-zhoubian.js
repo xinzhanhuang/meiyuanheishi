@@ -88,7 +88,7 @@ Page({
   //生命周期函数--监听页面加载
   onLoad: function (options) {
     this.commentId = options.commentId;
-    this.jiazai(options.id)
+    const isSharedEntry = options.zhoubianfenxiang === 'true' || options.zhoubianfenxiang === 'ture';
 
     console.log(options)
     app.fxssid = options.id
@@ -143,7 +143,7 @@ Page({
     }
 
     // Banner List
-    if (options.fenxiang = 'true' && options.bannerList2) {
+    if (isSharedEntry && options.bannerList2) {
       var bannerList2 = JSON.parse(decodeURIComponent(options.bannerList2));
     } else {
       var bannerList1 = app.bannerList2;
@@ -188,8 +188,10 @@ Page({
     })
 
     //判断是否为分享来的！！！！！！！！！！！！！
-    if (options.zhoubianfenxiang = "true") {
+    if (isSharedEntry) {
       console.log("登录")
+
+      this.jiazai(options.id)
 
       wx.cloud.callFunction({
         name: 'login',
