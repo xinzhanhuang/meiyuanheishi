@@ -294,7 +294,7 @@ Page({
 
       if (res.data[0] != undefined) {
         //var ss_xx=await this.read(res.data[0])//读缓存图
-        var ss_xx = await this.readd(res.data[0])//处理超长名
+        var ss_xx = await this.readd(utils.normalizePost(res.data[0]))//处理超长名
 
         // Initialize tp2 for main post images
         if (ss_xx.ss_xx.tp && ss_xx.ss_xx.tp.length > 0) {

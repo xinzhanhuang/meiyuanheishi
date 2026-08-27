@@ -295,6 +295,35 @@ const util = {
     if (type === 'tj') params.push('liuyan=true');
     return `${page}?${params.join('&')}`;
   },
+  normalizePost(post) {
+    if (!post || typeof post !== 'object') return post;
+    const detail = post.ss_xx && typeof post.ss_xx === 'object' ? post.ss_xx : (post.ss_xx = {});
+    ['tp', 'huifunr', 'dianzanid', 'Mazhu', 'fujian'].forEach(key => {
+      if (!Array.isArray(detail[key])) detail[key] = [];
+    });
+    if (!Array.isArray(detail.jubao)) detail.jubao = [[], 0];
+    if (!Array.isArray(detail.jubao[0])) detail.jubao[0] = [];
+    if (typeof detail.jubao[1] !== 'number') detail.jubao[1] = 0;
+    if (!detail.orderdetail || typeof detail.orderdetail !== 'object') detail.orderdetail = {};
+    ['dianzannb', 'huifunb', 'look', 'downloads', 'remark_num'].forEach(key => {
+      if (typeof detail[key] !== 'number') detail[key] = 0;
+    });
+    detail.huifunr.forEach(comment => {
+      if (!comment || typeof comment !== 'object') return;
+      if (typeof comment.name !== 'string') comment.name = '';
+      if (!Array.isArray(comment.tp)) comment.tp = [];
+      if (!Array.isArray(comment.huifu)) comment.huifu = [];
+      if (!Array.isArray(comment.dianzhanID)) comment.dianzhanID = [];
+      if (typeof comment.pldianzannb !== 'number') comment.pldianzannb = 0;
+      comment.huifu.forEach(reply => {
+        if (!reply || typeof reply !== 'object') return;
+        if (typeof reply.name !== 'string') reply.name = '';
+        if (typeof reply.yuanname !== 'string') reply.yuanname = '';
+        if (!Array.isArray(reply.tp)) reply.tp = [];
+      });
+    });
+    return post;
+  },
   cancel(oid, name, cb) {
     this.post('help/update/state', {
       state: 4,

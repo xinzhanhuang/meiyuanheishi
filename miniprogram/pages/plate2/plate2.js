@@ -1140,7 +1140,7 @@ Page({
       let updates = {};
 
       if (res.data[0] != undefined) {
-        var ss_xx = res.data[0]; // WXS处理名字，此处直接赋值
+        var ss_xx = utils.normalizePost(res.data[0]); // WXS处理名字，此处直接赋值
 
         // 普通帖没有投票选项，无需查询两个投票集合。
         if (Array.isArray(ss_xx.voteOption) && ss_xx.voteOption.length > 0) {
