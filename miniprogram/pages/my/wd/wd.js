@@ -88,68 +88,32 @@ Page({
       success: (a) => {
         let userInfo = a.userInfo;
         if (userInfo) {
-          wx.showLoading({
-            title: '登陆中',
-          })
-          // 创建新用户记录
-          db.collection('users').add({
-            data: {
-              logintime: new Date().getTime(),
-              ban: false,
-              msgnb: [0, 0],
-              allow: true,
-              online: true,
-              wenzhang: [],
-              message: [],
-              dzmessage: [],
-              pinglunguode: [],
-              weiguinb: 0,
-              phone: this.data.phone,
-              userinfo: {
-                userphoto: userInfo.avatarUrl,
-                username: userInfo.nickName,
-                gender: userInfo.gender,
-                anonymous: "",
-                zhuanye: "",
-                isVIP: false,
-                login: true,
-                LCU: false
-              },
-            }
+          wx.cloud.callFunction({
+            name: 'registerUser',
+            data: { profile: { userphoto: userInfo.avatarUrl, username: userInfo.nickName, gender: userInfo.gender } }
           }).then((res) => {
-            // 登录成功后开启监听
-            this.jianting(res._id)
+            const user = res.result.user
+            this.jianting(user._id)
             app.jianting = true
-            app.userInfo._id = res._id // 修正: res.id -> res._id
-
-            // 获取完整的用户信息
-            db.collection('users').doc(res._id).get().then((res) => {
-              app.userInfo = Object.assign(app.userInfo, res.data);
-              console.log("登录成功，用户信息:", res.data);
-              wx.hideLoading()
-
-              // 更新页面数据
-              this.setData({
-                userphoto: app.userInfo.userinfo.userphoto,
-                username: app.userInfo.userinfo.username,
-                anonymous: app.userInfo.userinfo.anonymous,
-                isVIP: app.userInfo.userinfo.isVIP,
-                login: true,
-                wenzhang: app.userInfo.wenzhang,
-                message: app.userInfo.message,
-                gender: app.userInfo.userinfo.gender,
-              })
-
-              // 跳转到设置页面
-              wx.navigateTo({
-                url: '/pages/my/set/set?ss_xxid=' + ss_xxid,
-              })
+            app.userInfo = Object.assign(app.userInfo, user)
+            wx.hideLoading()
+            this.setData({
+              userphoto: user.userinfo.userphoto, username: user.userinfo.username,
+              anonymous: user.userinfo.anonymous, isVIP: user.userinfo.isVIP,
+              login: true, wenzhang: user.wenzhang, message: user.message,
+              gender: user.userinfo.gender,
             })
+            wx.navigateTo({ url: '/pages/my/set/set?ss_xxid=' + ss_xxid })
+          }).catch((err) => {
+            console.error('创建用户失败', err)
+            wx.hideLoading()
+            wx.showToast({ title: '登录失败，请稍后重试', icon: 'none' })
           })
         }
       },
       fail: res => {
         console.log("获取用户信息失败", res)
+        wx.hideLoading()
       }
     })
   },
