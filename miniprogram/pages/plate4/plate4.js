@@ -433,19 +433,17 @@ Page({
           // console.log("😄2",ss_xx)
           //var xx=await this.read(res.data)
           var xx = await this.love(res.data)
+          var postStartIndex = ss_xx.length
           ss_xx.push.apply(ss_xx, xx)
         }
+        if (shuaxin == true) var postStartIndex = 0
 
 
-        for (var i = 0; i < ss_xx.length; i++) {
+        for (var i = postStartIndex; i < ss_xx.length; i++) {
           var plxx = ss_xx[i].ss_xx.huifunr
           plxx.sort(function (a, b) {
             return b.pldianzannb - a.pldianzannb
           });
-          plxx.forEach(function (item) { })
-
-          ss_xx[i].ss_xx.huifunr.push.apply(plxx)
-
         }
 
 
@@ -1242,4 +1240,3 @@ Page({
   },
 
 })
-

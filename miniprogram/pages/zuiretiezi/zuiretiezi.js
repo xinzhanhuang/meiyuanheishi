@@ -396,12 +396,14 @@ Page({
           // console.log("😄2",ss_xx)
           //var xx=await this.read(res.data)
           var xx = await this.love(res.data)
+          var postStartIndex = ss_xx.length
           ss_xx.push.apply(ss_xx, xx)
         }
+        if (shuaxin == true) var postStartIndex = 0
 
         ///////循环评论
 
-        for (var i = 0; i < ss_xx.length; i++) {
+        for (var i = postStartIndex; i < ss_xx.length; i++) {
           if (ss_xx[i] && ss_xx[i].ss_xx && ss_xx[i].ss_xx.huifunr) {
             var plxx = ss_xx[i].ss_xx.huifunr
             plxx.sort(function (a, b) {
