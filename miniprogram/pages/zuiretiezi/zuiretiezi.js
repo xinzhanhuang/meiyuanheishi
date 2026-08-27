@@ -730,7 +730,11 @@ Page({
   logintime() {
     var now = new Date().getTime()
     console.log(app.userInfo._id)
-    wx.cloud.callFunction({ name: 'updateUserPresence', data: { updateLoginTime: true } })
+    db.collection('users').doc(app.userInfo._id).update({
+      data: {
+        logintime: now
+      }
+    })
   },
 
 

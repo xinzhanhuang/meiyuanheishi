@@ -1653,7 +1653,13 @@ Page({
             var haiyou = JSON.stringify(ss_xx.huifunr).includes(app.userInfo._id);
             // 没了就删掉自己评论过的记录
             if (haiyou == false) {
-              wx.cloud.callFunction({ name: 'updateMyProfile', data: { removeCommentedPostId: that.data.id } });
+              db.collection('users').doc(app.userInfo._id).update({
+                data: {
+                  pinglunguode: _.pull({
+                    id: _.eq(that.data.id)
+                  })
+                }
+              });
               return;
             }
 
@@ -2028,7 +2034,12 @@ Page({
           });
         }
 
-        wx.cloud.callFunction({ name: 'updateMyProfile', data: { msgnb: msgnb } });
+        db.collection('users').doc(app.userInfo._id).update({
+          data: {
+            msgnb: msgnb,
+            // allow:allow
+          }
+        });
         console.log('增加了所有授权');
       },
 
