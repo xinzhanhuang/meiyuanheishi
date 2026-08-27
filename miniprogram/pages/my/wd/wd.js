@@ -289,64 +289,23 @@ Page({
    * 开启消息监听
    * @param {String} _id 用户ID
    */
-  jianting(_id) {
-    // 先关闭已存在的监听器
-    if (this.watcher) {
-      this.watcher.close();
-    }
-
-    if (!_id) {
-      console.error('用户ID不存在，无法开启监听');
-      return;
-    }
-
-    var that = this;
-    app.jianting = true;
-
-    try {
-      this.watcher = db.collection('users').doc(_id).watch({
-        onChange: function (e) {
-          console.log('监听user数据变化：', e.docs[0]);
-          app.userInfo = e.docs[0];
-          var message = e.docs[0].message;
-          app.message = message;
-          that.jiantingchuli(message);
-        },
-        onError: function (err) {
-          console.error('监听出现问题！', err);
-          // 监听出错时尝试重新初始化
-          setTimeout(() => {
-            if (app.userInfo._id) {
-              that.jianting(app.userInfo._id);
-            }
-          }, 3000);
-        }
-      });
-    } catch (err) {
-      console.error('初始化监听器失败:', err);
-    }
+  jianting() {
+    app.setUserWatcherListener((user) => this.jiantingchuli(user.message || []))
+    app.startUserWatcher()
   },
 
   /**
    * 生命周期函数--监听页面卸载
    */
   onUnload: function () {
-    if (this.watcher) {
-      this.watcher.close();
-      this.watcher = null;
-    }
-    app.jianting = false;
+    app.clearUserWatcherListener()
   },
 
   /**
    * 生命周期函数--监听页面隐藏
    */
   onHide: function () {
-    if (this.watcher) {
-      this.watcher.close();
-      this.watcher = null;
-    }
-    app.jianting = false;
+    app.clearUserWatcherListener()
   },
 
   /**
@@ -395,8 +354,8 @@ Page({
     }
 
     // 如果用户已登录且没有活跃的监听器，则重新初始化
-    if (app.userInfo._id && !app.jianting) {
-      this.jianting(app.userInfo._id);
+    if (app.userInfo._id) {
+      this.jianting();
     }
   },
 

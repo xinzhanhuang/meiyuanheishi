@@ -718,10 +718,7 @@ Page({
    * 生命周期函数--监听页面隐藏
    */
   onHide: function () {
-    if (this.watcher) {
-      this.watcher.close();
-      this.watcher = null;
-    }
+    app.clearUserWatcherListener()
   },
 
   /**
@@ -735,10 +732,7 @@ Page({
    * 生命周期函数--监听页面卸载
    */
   onUnload: function () {
-    if (this.watcher) {
-      this.watcher.close();
-      this.watcher = null;
-    }
+    app.clearUserWatcherListener()
   },
 
   /**
@@ -1131,69 +1125,9 @@ Page({
   /**
    * 消息监听
    */
-  jianting(retryCount = 0) {
-    // 防抖：如果最近刚初始化过，则跳过
-    if (this.jiantingDebounce) {
-      console.log('监听器初始化过于频繁，已跳过');
-      return;
-    }
-
-    // 如果重试次数超过3次，不再重试
-    if (retryCount > 3) {
-      console.error('监听器重试次数过多，停止重试');
-      return;
-    }
-
-    this.jiantingDebounce = true;
-    setTimeout(() => {
-      this.jiantingDebounce = false;
-    }, 2000); // 2秒防抖
-
-    // 先关闭已存在的监听器
-    if (this.watcher) {
-      this.watcher.close();
-      this.watcher = null;
-    }
-
-    if (!app.userInfo._id) {
-      console.error('用户未登录，无法开启监听');
-      return;
-    }
-
-    var _id = app.userInfo._id;
-    var that = this;
-
-    try {
-      this.watcher = db.collection('users').doc(_id).watch({
-        onChange: function (e) {
-          console.log('监听user数据变化：', e.docs[0]);
-          app.userInfo = e.docs[0];
-          var message = e.docs[0].message || []; // 确保message存在
-          app.message = message;
-          that.jiantingchuli(message);
-
-          // 成功连接后，重置重试计数（如果需要）
-          // 但这里是onChange，连接成功并不一定马上触发onChange。
-          // 比较好的做法是单独维护状态，但简单起见，这里不需要重置，
-          // 因为我们只关心由于onError触发的连续重试。
-        },
-        onError: function (err) {
-          console.error('监听出现问题！', err);
-
-          // 检查错误类型，如果是权限问题可能不应该重试
-          if (err.errCode === -402002) {
-            console.log("鉴权失败或连接断开，尝试重连...");
-          }
-
-          // 增加重试延迟到5秒，并增加计数
-          setTimeout(() => {
-            that.jianting(retryCount + 1);
-          }, 5000);
-        }
-      });
-    } catch (err) {
-      console.error('初始化监听器失败:', err);
-    }
+  jianting() {
+    app.setUserWatcherListener((user) => this.jiantingchuli(user.message || []))
+    app.startUserWatcher()
   },
 
   /**

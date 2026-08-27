@@ -100,21 +100,7 @@ Page({
             console.log("已经登录，开启监听user")
             var _id = app.userInfo._id
             var that = this
-            this.watcher = db.collection('users').doc(_id).watch({
-              onChange: function (e) {
-                console.log('监听user数据变化：', e.docs[0])
-                app.userInfo = e.docs[0]
-                var message = e.docs[0].message//message数组
-                app.message = message
-                // that.jiantingchuli(message)
-
-                console.log('长度', message.length)
-
-              },
-              onError: function (err) {
-                console.error('监听出现问题！', err)
-              }
-            })
+            app.startUserWatcher()
           }
         })
       });
