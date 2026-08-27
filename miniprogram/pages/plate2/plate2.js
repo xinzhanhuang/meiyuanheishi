@@ -1233,7 +1233,6 @@ Page({
               });
             }
           });
-          ss_xx.ss_xx.huifunr.push.apply(xx);
         }
 
         var dianzan = this.data.dianzan;
@@ -1382,9 +1381,6 @@ Page({
       xx.sort(function (a, b) {
         return a.pldianzannb - b.pldianzannb;
       });
-      xx.forEach(function (item) {
-      });
-      ss_xx.ss_xx.huifunr.push.apply(xx);
 
       this.setData({
         ss_xx: ss_xx,
@@ -1395,9 +1391,6 @@ Page({
       xx.sort(function (a, b) {
         return a.time - b.time;
       });
-      xx.forEach(function (item) {
-      });
-      ss_xx.ss_xx.huifunr.push.apply(xx);
       this.setData({
         ss_xx: ss_xx,
         sortMethod: false
