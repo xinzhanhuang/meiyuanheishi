@@ -936,12 +936,7 @@ Page({
 
         console.log("加到数据库")
 
-        db.collection('users').doc(app.userInfo._id).update({
-          data: {
-            msgnb: msgnb,
-            // allow:allow
-          }
-        })
+        wx.cloud.callFunction({ name: 'updateMyProfile', data: { msgnb: msgnb } })
         console.log('增加了所有授权')
       },
 

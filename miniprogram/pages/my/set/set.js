@@ -210,14 +210,7 @@ Page({
   ////////////////头像上传云端
   upload(filepath) {
     // console.log(filepath)
-    db.collection("users").doc(app.userInfo._id).update({
-
-      data: {
-
-        "userinfo.userphoto": filepath,
-
-      }
-    }).then(res => {
+    wx.cloud.callFunction({ name: 'updateMyProfile', data: { avatar: filepath } }).then(res => {
       wx.showToast({
         title: '添加成功',
         icon: 'success',
@@ -259,12 +252,7 @@ Page({
           var phone = res.result.list[0].data.phoneNumber
           // console.log(">>>",phone,"<<<")
 
-          db.collection('users').doc(app.userInfo._id).update({
-
-            data: {
-              phone: phone
-            }
-          }).then(() => {
+          wx.cloud.callFunction({ name: 'updateMyProfile', data: { phone: phone } }).then(() => {
             // 更新 app.userInfo
             app.userInfo.phone = phone
             this.setData({
@@ -587,8 +575,9 @@ Page({
       updateData.registrationCompleted = true
     }
 
-    db.collection('users').doc(app.userInfo._id).update({
-      data: updateData
+    wx.cloud.callFunction({
+      name: 'updateMyProfile',
+      data: { profile: { username: nickname, zhuanye: zhuanye, gender: gender, registrationCompleted: this.data.isFirstRegistration } }
     }).then(res => {
       // 如果提交成功且是首次注册，更新本地状态
       if (this.data.isFirstRegistration) {

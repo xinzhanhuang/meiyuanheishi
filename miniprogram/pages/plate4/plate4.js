@@ -701,11 +701,7 @@ Page({
       // search_keywords logic removed - directly using searchLogs
 
       // 保存搜索关键词（最多保留 10 个）
-      const dbUpdate = db.collection("users").doc(app.userInfo._id).update({
-        data: {
-          search: _.push({ each: [keywords], slice: -10 })
-        }
-      });
+      const dbUpdate = wx.cloud.callFunction({ name: 'updateMyProfile', data: { searchKeyword: keywords } });
 
       dbUpdate.then(updateRes => {
         console.log('用户搜索记录已更新', updateRes);
