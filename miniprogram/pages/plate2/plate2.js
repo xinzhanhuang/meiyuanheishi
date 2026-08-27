@@ -1128,33 +1128,39 @@ Page({
     }).get().then(async (res) => {
       let updates = {};
 
-      VOTE_OPTION.where({
-        id
-      }).get().then((res) => {
-        var options = res.data;
-        this.setData({
-          options
-        });
-
-        VOTE_RECORD.where({
-          voteItemId: options[0].id,
-          voterId: app.userInfo._openid
-        }).get().then((res) => {
-          let list = res.data;
-          if (list.length > 0) {
-            let colorIndex = list[0].colorIndex;
-            this.setData({
-              colorIndex,
-              already11: true,
-              already22: true
-            });
-          }
-        });
-      }).catch((res) => {
-      });
-
       if (res.data[0] != undefined) {
         var ss_xx = res.data[0]; // WXS处理名字，此处直接赋值
+
+        // 普通帖没有投票选项，无需查询两个投票集合。
+        if (Array.isArray(ss_xx.voteOption) && ss_xx.voteOption.length > 0) {
+          VOTE_OPTION.where({
+            id
+          }).get().then((res) => {
+            var options = res.data || [];
+            this.setData({
+              options
+            });
+
+            if (options.length === 0) return;
+
+            return VOTE_RECORD.where({
+              voteItemId: options[0].id,
+              voterId: app.userInfo._openid
+            }).get().then((res) => {
+              let list = res.data;
+              if (list.length > 0) {
+                let colorIndex = list[0].colorIndex;
+                this.setData({
+                  colorIndex,
+                  already11: true,
+                  already22: true
+                });
+              }
+            });
+          }).catch((err) => {
+            console.error('加载投票数据失败', err);
+          });
+        }
 
         // 初始化图片加载状态
         if (ss_xx.ss_xx.tp && ss_xx.ss_xx.tp.length > 0) {
