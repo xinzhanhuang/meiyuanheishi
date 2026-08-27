@@ -1186,10 +1186,18 @@ Page({
           });
           // 获取旧的评论列表用于状态保持
           let oldHuifunr = this.data.ss_xx && this.data.ss_xx.ss_xx && this.data.ss_xx.ss_xx.huifunr;
+          let oldCommentById = Object.create(null);
+          if (Array.isArray(oldHuifunr)) {
+            oldHuifunr.forEach((old) => {
+              if (old && oldCommentById[old.pinglunID] === undefined) {
+                oldCommentById[old.pinglunID] = old;
+              }
+            });
+          }
 
           xx.forEach(function (item) {
-            // 尝试找到对应的旧评论
-            let oldItem = oldHuifunr ? oldHuifunr.find(old => old.pinglunID === item.pinglunID) : null;
+            // 通过评论 ID 恢复旧图片加载状态，避免逐条扫描旧评论列表。
+            let oldItem = oldCommentById[item.pinglunID] || null;
 
             // 初始化评论图片加载状态
             if (item.tp && item.tp.length > 0) {
