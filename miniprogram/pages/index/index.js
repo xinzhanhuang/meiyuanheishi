@@ -656,34 +656,7 @@ Page({
       app.jianting = false;
     }
 
-    // 重新从数据库获取最新消息数据，确保红点状态正确
-    if (app.userInfo._id && app.userInfo.userinfo && app.userInfo.userinfo.login) {
-      var that = this;
-      db.collection('users').doc(app.userInfo._id).get().then((res) => {
-        if (res.data) {
-          // 无论message是否存在，都要更新（包括空数组的情况）
-          var message = res.data.message || [];
-          var dzmessage = res.data.dzmessage || []; // 获取点赞消息
-
-          // 更新app.userInfo的完整数据
-          app.userInfo = res.data;
-          // 确保app.message和app.userInfo.message一致
-          app.message = message;
-          app.userInfo.message = message;
-          app.userInfo.dzmessage = dzmessage; // 更新点赞消息
-
-          console.log('index onShow获取到的消息数量:', message.length, '点赞数量:', dzmessage.length);
-        }
-        // 检查并更新红点状态
-        that.checkred();
-      }).catch((err) => {
-        console.error('获取消息数据失败:', err);
-        // 即使获取失败，也尝试检查红点
-        that.checkred();
-      });
-    } else {
-      this.checkred();
-    }
+    // 消息与红点由 app 的用户实时监听统一同步，避免每次显示首页再读取同一用户文档。
   },
 
   /**
