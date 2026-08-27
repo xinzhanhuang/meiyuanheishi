@@ -322,10 +322,14 @@ Page({
 
 
   //生命周期函数--监听页面隐藏
-  onHide: function () { },
+  onHide: function () {
+    this.cancelSuggestionRequest()
+  },
 
   //生命周期函数--监听页面卸载
-  onUnload: function () { },
+  onUnload: function () {
+    this.cancelSuggestionRequest()
+  },
 
 
 
@@ -565,6 +569,7 @@ Page({
 
   //搜索shijian
   search(e) {
+    this.cancelSuggestionRequest()
 
     var searchcache = this.data.searchcache
 
@@ -734,10 +739,21 @@ Page({
   },
 
   clearinput() {
+    this.cancelSuggestionRequest()
     this.setData({
       zhankaisearch2: true,
-      search: ''
+      search: '',
+      suggestionList: [],
+      showSuggestions: false
     })
+  },
+
+  cancelSuggestionRequest() {
+    if (this.suggestionTimer) {
+      clearTimeout(this.suggestionTimer)
+      this.suggestionTimer = null
+    }
+    this.suggestionRequestId = (this.suggestionRequestId || 0) + 1
   },
 
 
@@ -818,8 +834,8 @@ Page({
 
   getValue(event) {
     const val = event.detail.value;
-    const currentReqId = Date.now(); // Unique ID for this input event
-    this.lastReqId = currentReqId;   // Update global latest ID
+    this.cancelSuggestionRequest();
+    const currentReqId = this.suggestionRequestId;
 
     this.setData({
       search: val,
@@ -839,8 +855,8 @@ Page({
     });
 
     // 2. Debounced Cloud Fetch (300ms)
-    if (this.timer) clearTimeout(this.timer);
-    this.timer = setTimeout(() => {
+    this.suggestionTimer = setTimeout(() => {
+      this.suggestionTimer = null;
       this.getSuggestions(val, currentReqId);
     }, 300);
   },
@@ -854,7 +870,7 @@ Page({
       data: { keyword: keyword }
     }).then(res => {
       // Race Condition Check: If newer input exists, discard this result
-      if (reqId !== this.lastReqId) {
+      if (reqId !== this.suggestionRequestId) {
         console.log('Discarding outdated cloud result', reqId);
         return;
       }
@@ -887,7 +903,9 @@ Page({
         });
       }
     }).catch(err => {
-      console.error('云联想失败', err);
+      if (reqId === this.suggestionRequestId) {
+        console.error('云联想失败', err);
+      }
     });
   },
 
