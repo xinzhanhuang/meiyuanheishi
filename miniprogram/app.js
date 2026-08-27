@@ -20,6 +20,7 @@ App({
     this.fenxiang = "false"
     this.fxssid = ""
     this.pendingPostTarget = null
+    this.userWatcherUnavailable = false
     this.jianting = false
 
 
@@ -135,6 +136,7 @@ App({
     this.stopUserWatcher()
     this.userWatcherId = userId
     this.jianting = true
+    this.userWatcherUnavailable = false
     var that = this
     this.userWatcher = wx.cloud.database().collection('users').doc(userId).watch({
       onChange(event) {
@@ -150,6 +152,11 @@ App({
         that.userWatcher = null
         that.jianting = false
         if (that.userWatcherRetryTimer) return
+        if (retryCount >= 3) {
+          that.userWatcherUnavailable = true
+          console.warn('用户消息实时监听已降级，等待下次进入前台重试')
+          return
+        }
         that.userWatcherRetryTimer = setTimeout(() => {
           that.userWatcherRetryTimer = null
           that.startUserWatcher(retryCount + 1)

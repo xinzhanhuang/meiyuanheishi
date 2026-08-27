@@ -3,6 +3,12 @@ let appDefinition;
 let watchOptions;
 let watchCount = 0;
 const badges = [];
+const timers = [];
+global.setTimeout = callback => { timers.push(callback); return callback; };
+global.clearTimeout = timer => {
+  const index = timers.indexOf(timer);
+  if (index >= 0) timers.splice(index, 1);
+};
 global.getApp = () => ({});
 global.App = definition => { appDefinition = definition; };
 global.wx = {
@@ -33,4 +39,14 @@ assert.equal(watchCount, 1, 'should keep the scheduled retry for the same user')
 app.userWatcherRetryTimer = null;
 app.stopUserWatcher();
 assert.equal(app.userWatcher, null);
+app.startUserWatcher();
+for (let attempt = 0; attempt < 3; attempt++) {
+  watchOptions.onError(new Error('offline'));
+  assert.equal(timers.length, 1);
+  timers.shift()();
+}
+watchOptions.onError(new Error('offline'));
+assert.equal(timers.length, 0, 'should stop scheduling after three retries');
+assert.equal(app.userWatcherUnavailable, true);
+assert.equal(app.jianting, false);
 console.log('user watcher checks passed');
