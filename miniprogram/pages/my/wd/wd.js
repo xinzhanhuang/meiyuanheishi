@@ -123,7 +123,7 @@ Page({
             app.userInfo._id = res._id // 修正: res.id -> res._id
 
             // 获取完整的用户信息
-            db.collection('users').doc(res._id).get().then((res) => {
+            return db.collection('users').doc(res._id).get().then((res) => {
               app.userInfo = Object.assign(app.userInfo, res.data);
               console.log("登录成功，用户信息:", res.data);
               wx.hideLoading()
@@ -145,11 +145,18 @@ Page({
                 url: '/pages/my/set/set?ss_xxid=' + ss_xxid,
               })
             })
+          }).catch((err) => {
+            console.error('创建或读取用户失败', err)
+            wx.hideLoading()
+            wx.showToast({ title: '登录失败，请稍后重试', icon: 'none' })
           })
+        } else {
+          wx.hideLoading()
         }
       },
       fail: res => {
         console.log("获取用户信息失败", res)
+        wx.hideLoading()
       }
     })
   },
@@ -173,7 +180,7 @@ Page({
         data: {}
       }).then((res) => {
         // 根据openid查询用户
-        db.collection("users").where({ _openid: res.result.openid }).get().then((res) => {
+        return db.collection("users").where({ _openid: res.result.openid }).get().then((res) => {
           if (res.data.length > 0) {
             app.userInfo = Object.assign(app.userInfo, res.data[0]);
             wx.hideLoading()

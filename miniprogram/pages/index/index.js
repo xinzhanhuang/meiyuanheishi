@@ -349,12 +349,15 @@ Page({
         db.collection("users").where({
           _openid: res.result.openid
         }).get().then((res) => {
+          if (!res.data.length) {
+            this.jiazai()
+            return
+          }
           app.userInfo = Object.assign(app.userInfo, res.data[0]);
           // Sync message arrays
           app.message = app.userInfo.message || [];
 
           this.jiazai()
-          wx.hideLoading()
 
           if (app.userInfo._openid == "") {
             /* 如果没有登录信息 */
@@ -369,7 +372,13 @@ Page({
             // 显式调用checkred以更新红点
             this.checkred();
           }
+        }).catch((err) => {
+          console.error('首页用户信息读取失败', err)
+          this.jiazai()
         })
+      }).catch((err) => {
+        console.error('首页静默登录失败', err)
+        this.jiazai()
       });
     } else {
       this.jiazai()
@@ -825,7 +834,6 @@ Page({
             jiazaizhong: false
           })
           wx.stopPullDownRefresh({})
-          wx.hideLoading({})
           return
         }
 
@@ -889,7 +897,6 @@ Page({
           kong: true,
           jiazaizhong: false,
         })
-        wx.hideLoading({})
 
         if (shuaxin == true) {
           wx.stopPullDownRefresh({})
@@ -899,6 +906,13 @@ Page({
             duration: 800
           })
         }
+      }).catch((err) => {
+        console.error('首页列表加载失败', err)
+        this.setData({
+          jiazaizhong: false,
+          kong: true
+        })
+        wx.stopPullDownRefresh({})
       })
   },
 
