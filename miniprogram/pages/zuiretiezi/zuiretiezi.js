@@ -48,11 +48,12 @@ Page({
     var choosetitle1 = options.choosetitle1
     let logined = app.userInfo.userinfo.login;
     var fenxiang = options.fenxiang
+    const isSharedEntry = options.fenxiang === 'true' || options.fenxiang === 'ture';
     //console.log(app.userInfo);
 
 
     // 使用 sort 方法和 Math.random 打乱数组顺序
-    if (options.fenxiang = 'true' && options.bannerList2) {
+    if (isSharedEntry && options.bannerList2) {
 
 
       var bannerList2 = JSON.parse(decodeURIComponent(options.bannerList2))

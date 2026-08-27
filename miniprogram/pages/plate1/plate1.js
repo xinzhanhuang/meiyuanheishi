@@ -124,6 +124,7 @@ Page({
   //生命周期函数--监听页面加载！！！！！！！！！！！！
   onLoad: function (options) {
     let logined = app.userInfo.userinfo.login;
+    const isSharedEntry = options.fenxiang === 'true' || options.fenxiang === 'ture';
     const systeminfo = wx.getWindowInfo()
     const menuButtonInfo = wx.getMenuButtonBoundingClientRect()
 
@@ -145,7 +146,7 @@ Page({
 
 
 
-    if (options.fenxiang = "true" && logined != true) {
+    if (isSharedEntry && logined != true) {
       /*调用云函数登录*/
       //   wx.showLoading({
       //     title: '检查登录',
