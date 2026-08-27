@@ -733,11 +733,9 @@ Page({
       // Reset status to pending
       ss_xx.checked = false;
 
-      db.collection('tianmeizhoubian').doc(this.data.editId).update({
-        data: {
-          ss_xx: ss_xx,
-          time: ss_xx.firsttime
-        }
+      wx.cloud.callFunction({
+        name: 'publishPost',
+        data: { collection: 'tianmeizhoubian', ss_xx, editId: this.data.editId }
       }).then(res => {
         console.log("Edit Success", res);
         app.shuaxin = true;
@@ -758,13 +756,9 @@ Page({
     }
 
     // Normal Add Logic
-    db.collection('tianmeizhoubian').add({
-      data: {
-        ss_xx,
-        time: ss_xx.firsttime,
-        // Ensure new posts have checked: false (if not set by default, explicit is safer)
-        'ss_xx.checked': false
-      }
+    wx.cloud.callFunction({
+      name: 'publishPost',
+      data: { collection: 'tianmeizhoubian', ss_xx }
     }).then((res) => {
       //console.log(res._id)//拿到id
       //console.log(ss_xx)
@@ -778,34 +772,13 @@ Page({
       wx.switchTab({ url: '/pages/tools/tools' })
 
 
-      var id = res._id
-      var jl = {
-        "time": ss_xx.firsttime,
-        "zilei": ss_xx.zilei,
-        "nr": ss_xx.nr,
-        "zbtitle": ss_xx.zbtitle,
-        "id": id,
-        "weigui": false,
-        "type": 'zhoubiantype'
-      }
-      if (jl.nr == '' && jl.zbtitle == '') {
-        jl.nr = '分享了' + ss_xx.tp.length + '张图片'
-      }
-
-      var wenzhang = []
-      //记录到自己users里（最多保留50条）
-      db.collection("users").doc(app.userInfo._id).update({
-        data: {
-          wenzhang: _.push({ each: [jl], slice: -50 })
-        }
-      }).then((res) => {
-        //进行全局数据我的本地储存
-        if (!app.userInfo.wenzhang) app.userInfo.wenzhang = [];
-        app.userInfo.wenzhang = app.userInfo.wenzhang.concat([jl]).slice(-50);
-        this.setData({
-          imgs: [],
-          wbnr: ""
-        })
+      const jl = res.result.summary
+      if (!app.userInfo.wenzhang) app.userInfo.wenzhang = [];
+      app.userInfo.wenzhang = app.userInfo.wenzhang.concat([jl]).slice(-50);
+      this.setData({
+        imgs: [],
+        wbnr: ""
+      })
 
         //   if(wenzhang.length<4){
         //     wx.showModal({
@@ -834,9 +807,11 @@ Page({
         //    })
         //   };
 
-      })
-
-    })   // close add().then()
+    }).catch((err) => {
+      console.error('发布失败', err)
+      wx.hideLoading()
+      wx.showToast({ title: '发布失败，请稍后重试', icon: 'none' })
+    })
 
 
 
