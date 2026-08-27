@@ -45,7 +45,7 @@ Page({
 
   //生命周期函数--监听页面加载！！！！！！！！！！！！！！
   onLoad: function (options) {
-    var choosetitle1 = options.choosetitle1
+    var choosetitle1 = options.choosetitle1 || app.choosetitle1
     let logined = app.userInfo.userinfo.login;
     var fenxiang = options.fenxiang
     const isSharedEntry = options.fenxiang === 'true' || options.fenxiang === 'ture';
@@ -446,10 +446,10 @@ Page({
   tiaozhuan(e) {
     //console.log(bankuai.currentTarget.dataset.ku)
     var choosetitle = (e.detail && e.detail.choosetitle) ? e.detail.choosetitle : e.currentTarget.dataset.choosetitle
-    var choosetitle1 = this.data.choosetitle1
+    app.choosetitle1 = this.data.choosetitle1
     console.log("ccccvvvvvvv", choosetitle)
     wx.navigateTo({
-      url: "../plate1/plate1?choosetitle=" + choosetitle + "&choosetitle1=" + choosetitle1
+      url: "../plate1/plate1?choosetitle=" + choosetitle
     })
   },
 
@@ -474,12 +474,9 @@ Page({
       reping = e.currentTarget.dataset.reping
     }
     if (this.data.fenxiang === 'true' || this.data.fenxiang === 'ture') {
-      var choosetitle1 = false
-      var zuiress_xx1 = false
       var DONOT = '111'
     } else {
-      var choosetitle1 = this.data.choosetitle1
-      var zuiress_xx1 = JSON.stringify(app.zuiress_xx1)
+      app.choosetitle1 = this.data.choosetitle1
       var DONOT = '000'
     }
 
@@ -499,7 +496,7 @@ Page({
       love = 'false'
     }
     wx.navigateTo({
-      url: "../plate2/plate2?id=" + id + "&fenxiang=false&liuyan=false&love=" + love + "&reping=" + reping + "&openid=" + openid + "&lzid=" + lzid + "&choosetitle1=" + choosetitle1 + "&zuiress_xx1=" + encodeURIComponent(zuiress_xx1) + "&DONOT=" + DONOT,
+      url: "../plate2/plate2?id=" + id + "&fenxiang=false&liuyan=false&love=" + love + "&reping=" + reping + "&openid=" + openid + "&lzid=" + lzid + "&DONOT=" + DONOT,
     })
     this.setData({
       index: index

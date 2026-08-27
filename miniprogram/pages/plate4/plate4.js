@@ -351,10 +351,10 @@ Page({
   tiaozhuan(e) {
     //console.log(bankuai.currentTarget.dataset.ku)
     var choosetitle = e.currentTarget.dataset.choosetitle
-    var choosetitle1 = JSON.stringify(this.data.choosetitle)
+    app.choosetitle1 = this.data.choosetitle
     console.log("ccccvvvvvvv", choosetitle)
     wx.navigateTo({
-      url: "../plate1/plate1?choosetitle=" + choosetitle + "&choosetitle1=" + choosetitle1
+      url: "../plate1/plate1?choosetitle=" + choosetitle
     })
   },
 
@@ -497,13 +497,7 @@ Page({
     var takeorderid = e.currentTarget.dataset.takeorderid
     var openlocationtitle = e.currentTarget.dataset.openlocationtitle
 
-    if (!openlocationtitle) {
-      var zuiress_xx1 = JSON.stringify(app.zuiress_xx1)
-      var choosetitle1 = JSON.stringify(this.data.choosetitle)
-      var tiezicanshu = "&choosetitle1=" + choosetitle1 + "&zuiress_xx1=" + encodeURIComponent(zuiress_xx1)
-    } else {
-      tiezicanshu = ""
-    }
+    app.choosetitle1 = this.data.choosetitle
 
     if (jumptype == 111) {
 
@@ -531,7 +525,7 @@ Page({
         love = 'false'
       }
       wx.navigateTo({
-        url: "../plate2/plate2?id=" + id + "&fenxiang=false&liuyan=false&love=" + love + "&reping=" + reping + "&openid=" + openid + "&lzid=" + lzid + "&takeorderid=" + takeorderid + "&openlocationtitle=" + openlocationtitle + "&DONOT=000" + tiezicanshu,
+        url: "../plate2/plate2?id=" + id + "&fenxiang=false&liuyan=false&love=" + love + "&reping=" + reping + "&openid=" + openid + "&lzid=" + lzid + "&takeorderid=" + takeorderid + "&openlocationtitle=" + openlocationtitle + "&DONOT=000",
       })
       this.setData({
         index: index

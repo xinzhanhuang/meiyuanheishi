@@ -192,8 +192,9 @@ Page({
         app.jianting = true
       }
     }
-    var choosetitle1 = JSON.parse(options.choosetitle1);
+    var choosetitle1 = options.choosetitle1 ? JSON.parse(options.choosetitle1) : (app.choosetitle1 || []);
     var choosetitle = options.choosetitle
+    app.choosetitle1 = choosetitle1
 
     this.setData({
       choosetitle: String(choosetitle),
@@ -350,8 +351,7 @@ Page({
     var id = e.currentTarget.dataset.id
     var love = e.currentTarget.dataset.love
     var index = e.currentTarget.dataset.index
-    var choosetitle1 = JSON.stringify(this.data.choosetitle1)
-    var zuiress_xx1 = false
+    app.choosetitle1 = this.data.choosetitle1
 
     wx.cloud.callFunction({
       name: "look",
@@ -370,7 +370,7 @@ Page({
 
 
     wx.navigateTo({
-      url: "../plate2/plate2?id=" + id + "&fenxiang=false&liuyan=false&love=" + love + "&choosetitle1=" + choosetitle1 + "&DONOT=111" + "&zuiress_xx1=" + zuiress_xx1
+      url: "../plate2/plate2?id=" + id + "&fenxiang=false&liuyan=false&love=" + love + "&DONOT=111"
     })
 
     this.setData({

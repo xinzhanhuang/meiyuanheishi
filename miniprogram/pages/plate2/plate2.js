@@ -911,10 +911,14 @@ Page({
 
     if (options.zuiress_xx1) {
       var zuiress_xx1 = JSON.parse(decodeURIComponent(options.zuiress_xx1));
+    } else {
+      var zuiress_xx1 = app.zuiress_xx1 || false;
     }
 
     if (options.choosetitle1) {
       var choosetitle1 = JSON.parse(decodeURIComponent(options.choosetitle1));
+    } else {
+      var choosetitle1 = app.choosetitle1 || false;
     }
 
     wx.cloud.callFunction({
@@ -1378,11 +1382,10 @@ Page({
   tiaozhuan(e) {
     if (this.data.DONOT == "000") {
       var choosetitle = e.currentTarget.dataset.choosetitle;
-      var choosetitle1 = JSON.stringify(this.data.choosetitle1);
-      var zuiress_xx1 = JSON.stringify(app.zuiress_xx1);
+      app.choosetitle1 = this.data.choosetitle1;
       console.log("ccccvvvvvvv", choosetitle);
       wx.navigateTo({
-        url: "/pages/plate1/plate1?choosetitle=" + choosetitle + "&choosetitle1=" + choosetitle1 + "&zuiress_xx1=" + encodeURIComponent(zuiress_xx1)
+        url: "/pages/plate1/plate1?choosetitle=" + choosetitle
       });
     }
   },
