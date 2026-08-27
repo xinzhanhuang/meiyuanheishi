@@ -1,5 +1,7 @@
 const assert = require('assert');
 let scrolledTo;
+let clearHighlight;
+global.setTimeout = callback => { clearHighlight = callback; };
 
 global.wx = {
   nextTick(callback) { callback(); },
@@ -29,4 +31,6 @@ jumpToComment(page, 'hidden');
 assert.equal(page.data.activeReplyId, 'sub-comment-0-3');
 assert.equal(page.data.ss_xx.ss_xx.huifunr[0].zhankai, true);
 assert.equal(scrolledTo, 420);
+clearHighlight();
+assert.equal(page.data.activeReplyId, '');
 console.log('comment jump check passed');

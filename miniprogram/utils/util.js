@@ -267,6 +267,9 @@ const util = {
         if (rect) wx.pageScrollTo({ scrollTop: Math.max(rect.top - 80, 0), duration: 300 });
       }).exec();
     }));
+    setTimeout(() => {
+      if (page.data.activeReplyId === targetId) page.setData({ activeReplyId: '' });
+    }, 1500);
   },
   cancel(oid, name, cb) {
     this.post('help/update/state', {
