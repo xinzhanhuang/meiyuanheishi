@@ -326,6 +326,14 @@ const util = {
     });
     return post;
   },
+  createImageLoadStates(urls, previous, matchUrl = true) {
+    return (Array.isArray(urls) ? urls : []).map((url, index) => ({
+      loaded: Boolean(
+        previous && previous.tp2 && previous.tp2[index] && previous.tp2[index].loaded &&
+        (!matchUrl || (previous.tp && previous.tp[index] === url))
+      )
+    }));
+  },
   cancel(oid, name, cb) {
     this.post('help/update/state', {
       state: 4,

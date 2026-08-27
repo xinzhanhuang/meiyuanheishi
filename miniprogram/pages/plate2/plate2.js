@@ -1144,16 +1144,8 @@ Page({
 
         // 初始化图片加载状态
         if (ss_xx.ss_xx.tp && ss_xx.ss_xx.tp.length > 0) {
-          // 尝试获取旧有的tp2状态
-          let oldTp2 = this.data.ss_xx && this.data.ss_xx.ss_xx && this.data.ss_xx.ss_xx.tp2;
-
-          ss_xx.ss_xx.tp2 = ss_xx.ss_xx.tp.map((url, index) => {
-            // 如果旧状态存在且URL匹配且已加载，则保持已加载状态
-            if (oldTp2 && oldTp2[index] && oldTp2[index].loaded && this.data.ss_xx.ss_xx.tp[index] === url) {
-              return { loaded: true };
-            }
-            return { loaded: false };
-          });
+          let oldPost = this.data.ss_xx && this.data.ss_xx.ss_xx;
+          ss_xx.ss_xx.tp2 = utils.createImageLoadStates(ss_xx.ss_xx.tp, oldPost);
         }
 
         // 处理评论点赞
@@ -1181,12 +1173,7 @@ Page({
 
             // 初始化评论图片加载状态
             if (item.tp && item.tp.length > 0) {
-              item.tp2 = item.tp.map((url, idx) => {
-                if (oldItem && oldItem.tp2 && oldItem.tp2[idx] && oldItem.tp2[idx].loaded && oldItem.tp[idx] === url) {
-                  return { loaded: true };
-                }
-                return { loaded: false };
-              });
+              item.tp2 = utils.createImageLoadStates(item.tp, oldItem);
             }
             // 初始化回复图片加载状态
             if (item.huifu && item.huifu.length > 0) {
@@ -1195,13 +1182,7 @@ Page({
                   // 尝试找到对应的旧回复
                   let oldSubItem = oldItem && oldItem.huifu && oldItem.huifu[subIdx]; // 假设回复顺序不变，或者用更好的匹配方式
 
-                  subItem.tp2 = subItem.tp.map((url, idx) => {
-                    // 简单按索引和URL匹配回复图片
-                    if (oldSubItem && oldSubItem.tp2 && oldSubItem.tp2[idx] && oldSubItem.tp2[idx].loaded && oldSubItem.tp[idx] === url) {
-                      return { loaded: true };
-                    }
-                    return { loaded: false };
-                  });
+                  subItem.tp2 = utils.createImageLoadStates(subItem.tp, oldSubItem);
                 }
               });
             }

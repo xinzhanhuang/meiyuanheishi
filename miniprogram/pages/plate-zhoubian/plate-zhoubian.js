@@ -281,13 +281,8 @@ Page({
 
         // Initialize tp2 for main post images
         if (ss_xx.ss_xx.tp && ss_xx.ss_xx.tp.length > 0) {
-          let oldTp2 = this.data.ss_xx && this.data.ss_xx.ss_xx && this.data.ss_xx.ss_xx.tp2;
-          ss_xx.ss_xx.tp2 = ss_xx.ss_xx.tp.map((url, index) => {
-            if (oldTp2 && oldTp2[index] && oldTp2[index].loaded && this.data.ss_xx.ss_xx.tp[index] === url) {
-              return { loaded: true };
-            }
-            return { loaded: false };
-          });
+          let oldPost = this.data.ss_xx && this.data.ss_xx.ss_xx;
+          ss_xx.ss_xx.tp2 = utils.createImageLoadStates(ss_xx.ss_xx.tp, oldPost);
         }
 
         // Initialize tp2 for comments and replies
@@ -304,23 +299,13 @@ Page({
 
             let oldItem = oldHuifunr ? oldHuifunr[index] : null;
             if (item.tp && item.tp.length > 0) {
-              item.tp2 = item.tp.map((url, idx) => {
-                if (oldItem && oldItem.tp2 && oldItem.tp2[idx] && oldItem.tp2[idx].loaded) {
-                  return { loaded: true };
-                }
-                return { loaded: false };
-              });
+              item.tp2 = utils.createImageLoadStates(item.tp, oldItem, false);
             }
             if (item.huifu && item.huifu.length > 0) {
               item.huifu.forEach((subItem, subIdx) => {
                 let oldSubItem = oldItem && oldItem.huifu && oldItem.huifu[subIdx];
                 if (subItem.tp && subItem.tp.length > 0) {
-                  subItem.tp2 = subItem.tp.map((url, idx) => {
-                    if (oldSubItem && oldSubItem.tp2 && oldSubItem.tp2[idx] && oldSubItem.tp2[idx].loaded) {
-                      return { loaded: true };
-                    }
-                    return { loaded: false };
-                  });
+                  subItem.tp2 = utils.createImageLoadStates(subItem.tp, oldSubItem, false);
                 }
               });
             }
