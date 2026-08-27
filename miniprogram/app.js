@@ -66,45 +66,14 @@ App({
   },
   onShow() {
     this.startUserWatcher()
-    wx.cloud.callFunction({
-      name: 'login',
-      data: {}
-    }).then((res) => {
-      var openid = res.result.openid
-      this.checkUpdate()
-      var db = wx.cloud.database()
-      db.collection('users').where({ _openid: openid }).update({
-        data: {
-          online: true
-        }
-      })
-    });
-
-
+    this.checkUpdate()
+    this.updateOnlineState(true)
   },
 
   //不在小程序中就下线
   onHide() {
     this.stopUserWatcher()
-
-    wx.cloud.callFunction({
-      name: 'login',
-      data: {}
-    }).then((res) => {
-
-      var openid = res.result.openid
-
-      var db = wx.cloud.database()
-
-      // if(this._id!=""){
-      console.log("下线")
-      db.collection('users').where({ _openid: openid }).update({
-        data: {
-          online: false
-        }
-      })
-      // }
-    })
+    this.updateOnlineState(false)
   },
 
   onReady() {
@@ -112,6 +81,18 @@ App({
 
   onUnload() {
     this.stopUserWatcher()
+  },
+
+  updateOnlineState(online) {
+    return wx.cloud.callFunction({ name: 'login', data: {} }).then((res) => {
+      var openid = res && res.result && res.result.openid
+      if (!openid) throw new Error('login did not return openid')
+      return wx.cloud.database().collection('users').where({ _openid: openid }).update({
+        data: { online }
+      })
+    }).catch((err) => {
+      console.warn('更新在线状态失败', err)
+    })
   },
 
   refreshMessageBadge() {
