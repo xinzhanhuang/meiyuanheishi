@@ -271,6 +271,17 @@ const util = {
       if (page.data.activeReplyId === targetId) page.setData({ activeReplyId: '' });
     }, 1500);
   },
+  getPostTarget(options, defaultPostType) {
+    const source = options || {};
+    const isMessage = source.liuyan === true || source.liuyan === 'true';
+    return {
+      postId: source.postId || source.id || '',
+      postType: source.postType || (isMessage ? 'tj' : defaultPostType),
+      commentId: source.commentId || '',
+      replyId: source.replyId || '',
+      source: source.source || ''
+    };
+  },
   cancel(oid, name, cb) {
     this.post('help/update/state', {
       state: 4,

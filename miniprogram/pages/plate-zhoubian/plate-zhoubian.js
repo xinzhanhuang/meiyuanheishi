@@ -87,11 +87,13 @@ Page({
 
   //生命周期函数--监听页面加载
   onLoad: function (options) {
-    this.commentId = options.commentId;
+    const target = utils.getPostTarget(options, 'zhoubian');
+    this.commentId = target.commentId;
+    var id = target.postId;
     const isSharedEntry = options.zhoubianfenxiang === 'true' || options.zhoubianfenxiang === 'ture';
 
     console.log(options)
-    app.fxssid = options.id
+    app.fxssid = target.postId
     app.zhoubianfenxiang = options.zhoubianfenxiang
     var love = options.love
     var liuyan = options.liuyan
@@ -122,7 +124,7 @@ Page({
       zuiress_xx1,
       fenxiang: options.zhoubianfenxiang,
       dianzan: dianzan,
-      id: options.id
+      id: target.postId
     })
 
     // Initialization logic from plate2.js
@@ -191,7 +193,7 @@ Page({
     if (isSharedEntry) {
       console.log("登录")
 
-      this.jiazai(options.id)
+      this.jiazai(id)
 
       wx.cloud.callFunction({
         name: 'login',
@@ -217,7 +219,7 @@ Page({
             console.log("取到openid")
             this.setData({
               _openid: _openid,
-              id: options.id,
+              id,
               _id: app.userInfo._id
             })
 
@@ -238,7 +240,7 @@ Page({
           type: 'ss'
         }
       });
-      this.jiazai(options.id)
+      this.jiazai(id)
     }
 
     //判断是否有了glid

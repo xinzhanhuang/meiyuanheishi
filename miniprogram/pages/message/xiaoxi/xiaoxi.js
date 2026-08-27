@@ -229,17 +229,16 @@ Page({
       })
     } else if (type == 'zhoubiantype') {
       wx.navigateTo({
-        url: "../../plate-zhoubian/plate-zhoubian?liuyan=" + liuyan + "&id=" + ssid + "&commentId=" + id
+        url: "../../plate-zhoubian/plate-zhoubian?liuyan=" + liuyan + "&id=" + ssid + "&commentId=" + id + "&postId=" + ssid + "&postType=" + (liuyan == true ? 'tj' : 'zhoubian') + "&source=message"
       })
     } else {
       wx.navigateTo({
-        url: "../../plate2/plate2?liuyan=" + liuyan + "&id=" + ssid + "&commentId=" + id
+        url: "../../plate2/plate2?liuyan=" + liuyan + "&id=" + ssid + "&commentId=" + id + "&postId=" + ssid + "&postType=ss&source=message"
       })
 
     }
   },
 
 })
-
 
 

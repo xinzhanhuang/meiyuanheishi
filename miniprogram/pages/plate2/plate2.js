@@ -893,7 +893,8 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
-    this.commentId = options.commentId;
+    const target = utils.getPostTarget(options, 'ss');
+    this.commentId = target.commentId;
     // Initialize window metrics for top-based positioning
     const sys = wx.getSystemInfoSync();
     this.windowHeight = sys.windowHeight;
@@ -906,7 +907,7 @@ Page({
     let alldibutitle = this.data.alldibutitle;
     let randomIndex = Math.floor(Math.random() * alldibutitle.length);
     var dibutitle = alldibutitle[randomIndex];
-    var id = options.id;
+    var id = target.postId;
 
     if (options.zuiress_xx1) {
       var zuiress_xx1 = JSON.parse(decodeURIComponent(options.zuiress_xx1));
@@ -928,7 +929,7 @@ Page({
     if (options.fenxiang === 'true' || options.fenxiang === 'ture') {
       this.jiazai(id);
     }
-    app.fxssid = options.id;
+    app.fxssid = id;
     app.fenxiang = options.fenxiang;
     var love = options.love;
     var reping = options.reping;
@@ -1004,7 +1005,7 @@ Page({
       openlocationtitle: options.openlocationtitle,
       takeorderid1: takeorderid1,
       dianzan: dianzan,
-      id: options.id,
+      id,
       reping: options.reping,
       openid: options.openid,
       lzid: options.lzid,
@@ -1071,7 +1072,7 @@ Page({
             }
             this.setData({
               _openid: _openid,
-              id: options.id,
+              id,
               _id: app.userInfo._id,
               orderlzid,
               isAdmin: mine
@@ -1099,7 +1100,7 @@ Page({
         orderlzid,
         isAdmin: mine
       });
-      this.jiazai(options.id);
+      this.jiazai(id);
     }
 
     // 判断是否有了glid
