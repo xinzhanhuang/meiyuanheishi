@@ -57,6 +57,9 @@ exports.main = async (event, context) => {
                 ywnr: ywnr,
                 id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
                 ssid: event.id,
+                postId: event.id,
+                postType: 'ss',
+                source: 'message',
                 isorder: false
               })
             }
@@ -108,6 +111,9 @@ exports.main = async (event, context) => {
                 zbtitle: zbtitle,
                 id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
                 ssid: event.id,
+                postId: event.id,
+                postType: 'zhoubian',
+                source: 'message',
                 isorder: false,
                 subtype: 'tianmeizhoubian' // Optional: to distinguish source
               })
@@ -194,6 +200,10 @@ exports.main = async (event, context) => {
                 bhfpl: plnr,
                 id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
                 ssid: event.id,
+                postId: event.id,
+                postType: collectionName == 'tianmeizhoubian' ? 'zhoubian' : 'ss',
+                commentId: plid,
+                source: 'message',
                 isorder: false,
                 subtype: collectionName == 'tianmeizhoubian' ? 'tianmeizhoubian' : ''
               })

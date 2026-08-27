@@ -5,7 +5,7 @@
 <view wx:if="{{message.length>0}}">
   <view wx:for="{{message}}" wx:key="idex" wx:for-item="item0" wx:for-index="index0">
     <mp-slideview buttons="{{slideButtons}}" bindbuttontap="slideButtonTap" data-ssid="{{item0.ssid}}" data-id="{{item0.id}}" data-index="{{index0}}">
-      <view class="content" bindtap="chakan" data-ssid="{{item0.ssid}}" data-subtype="{{item0.subtype}}" data-id="{{item0.id}}" data-type="{{item0.type}}" data-liuyan="{{item0.liuyan}}">
+      <view class="content" bindtap="chakan" data-ssid="{{item0.ssid}}" data-subtype="{{item0.subtype}}" data-id="{{item0.id}}" data-type="{{item0.type}}" data-liuyan="{{item0.liuyan}}" data-post-id="{{item0.postId}}" data-post-type="{{item0.postType}}" data-comment-id="{{item0.commentId}}">
         <view class="left">
           <!-- 第一部分图片 -->
           <view class="avatar-container">

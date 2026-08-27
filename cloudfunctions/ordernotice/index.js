@@ -23,6 +23,9 @@ exports.main = async (event, context) => {
         plnr: '🎉请及时联系：'+event.takeorderphone,
         ywnr: event.ordertitle,
         ssid: event.orderid,
+        postId: event.orderid,
+        postType: 'ss',
+        source: 'message',
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         liuyan: event.liuyan
       };

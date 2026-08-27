@@ -1052,9 +1052,10 @@ Page({
           if (_openid == "") {
             app.setPendingPostTarget({
               postId: id,
-              postType: liuyan === 'true' ? 'tj' : 'ss',
+              postType: 'ss',
               commentId: this.commentId,
-              source: 'share'
+              source: 'share',
+              liuyan: liuyan === 'true'
             });
             /* 如果没有登录信息则跳转到wd */
             wx.showToast({
@@ -2467,7 +2468,7 @@ Page({
 
     var jg = this.data.ss_xx.ss_xx.orderdetail.jg
     var ordertitle = this.data.ss_xx.ss_xx.orderdetail.ordertitle
-    var query = 'id=' + this.data.id + '&postId=' + this.data.id + '&postType=' + (this.data.liuyan ? 'tj' : 'ss') + '&source=share&fenxiang=ture&liuyan=' + this.data.liuyan
+    var query = 'id=' + this.data.id + '&postId=' + this.data.id + '&postType=ss&source=share&fenxiang=ture&liuyan=' + this.data.liuyan
 
     if (ordertitle) {
       return {
@@ -2489,7 +2490,7 @@ Page({
   onShareAppMessage: function () {
     var jg = this.data.ss_xx.ss_xx.orderdetail.jg;
     var ordertitle = this.data.ss_xx.ss_xx.orderdetail.ordertitle;
-    var sharePath = "/pages/plate2/plate2?id=" + this.data.id + "&postId=" + this.data.id + "&postType=" + (this.data.liuyan ? 'tj' : 'ss') + "&source=share&fenxiang=ture&liuyan=" + this.data.liuyan;
+    var sharePath = "/pages/plate2/plate2?id=" + this.data.id + "&postId=" + this.data.id + "&postType=ss&source=share&fenxiang=ture&liuyan=" + this.data.liuyan;
 
     if (ordertitle) {
       // console.log("path:/pages/plate2/plate2?id=" + this.data.id)

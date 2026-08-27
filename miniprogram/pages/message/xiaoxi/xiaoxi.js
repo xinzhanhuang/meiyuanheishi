@@ -1,6 +1,7 @@
 const app = getApp()
 const db = wx.cloud.database()
 const _ = db.command
+const utils = require('../../../utils/util.js')
 
 Page({
 
@@ -177,6 +178,7 @@ Page({
     var id = e.currentTarget.dataset.id
     var liuyan = e.currentTarget.dataset.liuyan
     var type = e.currentTarget.dataset.type
+    var postType = e.currentTarget.dataset.postType || (type == 'zhoubiantype' ? 'zhoubian' : 'ss')
 
     console.log("id:", id, type)
     //console.log(ssid)
@@ -227,18 +229,16 @@ Page({
       wx.navigateTo({
         url: "../../post-zhoubian/post-zhoubian?id=" + ssid + "&isEdit=true"
       })
-    } else if (type == 'zhoubiantype') {
+    } else if (postType == 'zhoubian' || postType == 'tj') {
       wx.navigateTo({
-        url: "../../plate-zhoubian/plate-zhoubian?liuyan=" + liuyan + "&id=" + ssid + "&commentId=" + id + "&postId=" + ssid + "&postType=" + (liuyan == true ? 'tj' : 'zhoubian') + "&source=message"
+        url: utils.getPostTargetUrl({ postId: e.currentTarget.dataset.postId || ssid, postType, commentId: e.currentTarget.dataset.commentId || id, replyId: e.currentTarget.dataset.replyId, source: 'message', liuyan })
       })
     } else {
       wx.navigateTo({
-        url: "../../plate2/plate2?liuyan=" + liuyan + "&id=" + ssid + "&commentId=" + id + "&postId=" + ssid + "&postType=ss&source=message"
+        url: utils.getPostTargetUrl({ postId: e.currentTarget.dataset.postId || ssid, postType, commentId: e.currentTarget.dataset.commentId || id, replyId: e.currentTarget.dataset.replyId, source: 'message', liuyan })
       })
 
     }
   },
 
 })
-
-

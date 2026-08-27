@@ -1,4 +1,5 @@
 const app = getApp()
+const utils = require('../../../utils/util.js')
 const db = wx.cloud.database()
 const _ = db.command
 
@@ -162,6 +163,7 @@ Page({
         var liuyan = e.currentTarget.dataset.liuyan
         var type = e.currentTarget.dataset.type
         var subtype = e.currentTarget.dataset.subtype
+        var postType = e.currentTarget.dataset.postType || (subtype == 'tianmeizhoubian' ? 'zhoubian' : 'ss')
 
         console.log("id:", id, type)
         //console.log(ssid)
@@ -171,13 +173,13 @@ Page({
 
         // Auto-delete removed per request.
 
-        if (subtype == 'tianmeizhoubian') {
+        if (postType == 'zhoubian' || postType == 'tj') {
             wx.navigateTo({
-                url: "../../plate-zhoubian/plate-zhoubian?liuyan=" + liuyan + "&id=" + ssid
+                url: utils.getPostTargetUrl({ postId: e.currentTarget.dataset.postId || ssid, postType, commentId: e.currentTarget.dataset.commentId, source: 'message', liuyan })
             })
         } else {
             wx.navigateTo({
-                url: "../../plate2/plate2?liuyan=" + liuyan + "&id=" + ssid
+                url: utils.getPostTargetUrl({ postId: e.currentTarget.dataset.postId || ssid, postType, commentId: e.currentTarget.dataset.commentId, source: 'message', liuyan })
             })
         }
     },

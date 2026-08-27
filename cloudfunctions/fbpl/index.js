@@ -57,6 +57,10 @@ exports.main = async (event, context) => {
       var newmessage = {
         id: event.pinglunnr.ssid + event.pinglunnr.time,
         ssid: event.pinglunnr.ssid,
+        postId: event.pinglunnr.ssid,
+        postType: 'ss',
+        commentId: event.pinglunnr.ssid + event.pinglunnr.time,
+        source: 'message',
         type: "huifu",
         time: event.pinglunnr.time,
         bhfpl: event.pinglunnr.bhfpl,
@@ -206,6 +210,10 @@ exports.main = async (event, context) => {
       var newmessage = {
         id: event.pinglunnr.ssid + event.pinglunnr.time,
         ssid: event.pinglunnr.ssid,
+        postId: event.pinglunnr.ssid,
+        postType: 'ss',
+        commentId: event.pinglunnr.ssid + event.pinglunnr.time,
+        source: 'message',
         type: "pinglun",
         time: event.pinglunnr.time,
         ywnr: event.pinglunnr.ywnr,

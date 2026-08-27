@@ -210,9 +210,10 @@ Page({
           if (_openid == "") {
             app.setPendingPostTarget({
               postId: id,
-              postType: liuyan === 'true' ? 'tj' : 'zhoubian',
+              postType: 'zhoubian',
               commentId: this.commentId,
-              source: 'share'
+              source: 'share',
+              liuyan: liuyan === 'true'
             })
             /*如果没有登录信息则跳转到wd*/
             wx.showToast({
@@ -1485,7 +1486,7 @@ Page({
     return {
       title: app.ssinfo.jg,
       imageUrl: app.ssinfo.tp[0],
-      path: "/pages/plate-zhoubian/plate-zhoubian?id=" + this.data.id + "&postId=" + this.data.id + "&postType=" + (this.data.liuyan ? 'tj' : 'zhoubian') + "&source=share&zhoubianfenxiang=true&liuyan=" + this.data.liuyan
+      path: "/pages/plate-zhoubian/plate-zhoubian?id=" + this.data.id + "&postId=" + this.data.id + "&postType=zhoubian&source=share&zhoubianfenxiang=true&liuyan=" + this.data.liuyan
     }
   },
   //用户转发
@@ -1493,7 +1494,7 @@ Page({
     return {
       title: app.ssinfo.jg,
       imageUrl: app.ssinfo.tp[0],
-      query: "id=" + this.data.id + "&postId=" + this.data.id + "&postType=" + (this.data.liuyan ? 'tj' : 'zhoubian') + "&source=share&zhoubianfenxiang=true&liuyan=" + this.data.liuyan
+      query: "id=" + this.data.id + "&postId=" + this.data.id + "&postType=zhoubian&source=share&zhoubianfenxiang=true&liuyan=" + this.data.liuyan
     }
   },
 

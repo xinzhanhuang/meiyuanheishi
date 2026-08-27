@@ -52,6 +52,9 @@ exports.main = async (event, context) => {
                 type:'jubao',
                 time:event.time,
                 ssid:event.id,
+                postId:event.id,
+                postType:'ss',
+                source:'message',
                 plnr:event.ywnr,
                 name:"帖子被封：",
                 id:event.id+event.time,
@@ -75,6 +78,9 @@ exports.main = async (event, context) => {
                 type:'jubao',
                 time:event.time,
                 ssid:event.id,
+                postId:event.id,
+                postType:'ss',
+                source:'message',
                 plnr:event.ywnr,
                 name:"帖子被封：",
                 id:event.id+event.time,
@@ -95,4 +101,3 @@ exports.main = async (event, context) => {
   })
 
 }
-

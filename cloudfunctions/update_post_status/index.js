@@ -30,6 +30,9 @@ exports.main = async (event, context) => {
             const notification = {
                 id: Date.now().toString(), // Unique ID for message
                 ssid: id, // Related Post ID
+                postId: id,
+                postType: 'zhoubian',
+                source: 'message',
                 type: 'reject', // Message Type
                 name: '系统通知', // Sender Name
                 photo: '/images/icon/system_notice.png', // System Icon (Fallback or specific)

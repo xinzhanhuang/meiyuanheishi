@@ -57,6 +57,10 @@ exports.main = async (event, context) => {
       var newmessage = {
         id: event.pinglunnr.ssid + event.pinglunnr.time,
         ssid: event.pinglunnr.ssid,
+        postId: event.pinglunnr.ssid,
+        postType: 'zhoubian',
+        commentId: event.pinglunnr.ssid + event.pinglunnr.time,
+        source: 'message',
         type: "zhoubiantype",
         zilei: zilei,
         time: event.pinglunnr.time,
@@ -202,6 +206,10 @@ exports.main = async (event, context) => {
       var newmessage = {
         id: event.pinglunnr.ssid + event.pinglunnr.time,
         ssid: event.pinglunnr.ssid,
+        postId: event.pinglunnr.ssid,
+        postType: 'zhoubian',
+        commentId: event.pinglunnr.ssid + event.pinglunnr.time,
+        source: 'message',
         type: "zhoubiantype",
         time: event.pinglunnr.time,
         zbtitle: event.pinglunnr.zbtitle,
@@ -322,4 +330,3 @@ exports.main = async (event, context) => {
     })
   }
 }
-

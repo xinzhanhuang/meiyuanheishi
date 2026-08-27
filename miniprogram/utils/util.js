@@ -276,10 +276,11 @@ const util = {
     const isMessage = source.liuyan === true || source.liuyan === 'true';
     return {
       postId: source.postId || source.id || '',
-      postType: source.postType || (isMessage ? 'tj' : defaultPostType),
+      postType: source.postType || defaultPostType,
       commentId: source.commentId || '',
       replyId: source.replyId || '',
-      source: source.source || ''
+      source: source.source || '',
+      liuyan: isMessage
     };
   },
   getPostTargetUrl(target) {
@@ -292,7 +293,8 @@ const util = {
       `source=${encodeURIComponent(target.source || 'login')}`
     ];
     if (target.commentId) params.push(`commentId=${encodeURIComponent(target.commentId)}`);
-    if (type === 'tj') params.push('liuyan=true');
+    if (target.replyId) params.push(`replyId=${encodeURIComponent(target.replyId)}`);
+    if (target.liuyan || type === 'tj') params.push('liuyan=true');
     return `${page}?${params.join('&')}`;
   },
   normalizePost(post) {
