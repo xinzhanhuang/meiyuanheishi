@@ -135,7 +135,7 @@ App({
 
   startUserWatcher(retryCount = 0) {
     var userId = this.userInfo && this.userInfo._id
-    if (!userId || (this.userWatcher && this.userWatcherId === userId)) return
+    if (!userId || (this.userWatcher && this.userWatcherId === userId) || (this.userWatcherRetryTimer && this.userWatcherId === userId)) return
     if (retryCount > 3) return
     this.stopUserWatcher()
     this.userWatcherId = userId
