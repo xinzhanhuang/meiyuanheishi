@@ -1129,6 +1129,10 @@ Page({
    * 加载对应说说id的内容
    */
   jiazai(id) {
+    if (!id) {
+      this.setData({ ss_xx: 0, loadingHidden: true });
+      return;
+    }
     var ku = this.data.ku;
     db.collection(ku).where({
       '_id': id
@@ -1297,7 +1301,12 @@ Page({
         updates.ss_xx = 0;
       }
 
+      updates.loadingHidden = true;
       this.setData(updates, () => utils.jumpToComment(this, this.commentId));
+    }).catch((err) => {
+      console.error('加载帖子失败', err);
+      this.setData({ ss_xx: 0, loadingHidden: true });
+      wx.showToast({ title: '加载失败，请稍后重试', icon: 'none' });
     })
   },
 

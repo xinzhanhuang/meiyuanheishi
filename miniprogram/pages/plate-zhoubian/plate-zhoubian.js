@@ -282,6 +282,10 @@ Page({
   },
   //加载对应说说id的内容
   jiazai(id) {
+    if (!id) {
+      this.setData({ ss_xx: 0 })
+      return
+    }
     var ku = this.data.ku
     //console.log("哭哭哭：",ku)
     db.collection(ku).where({ '_id': id }).get().then(async (res) => {
@@ -404,6 +408,10 @@ Page({
           ss_xx: 0
         })
       }
+    }).catch((err) => {
+      console.error('加载周边帖子失败', err)
+      this.setData({ ss_xx: 0 })
+      wx.showToast({ title: '加载失败，请稍后重试', icon: 'none' })
     })
   },
 
