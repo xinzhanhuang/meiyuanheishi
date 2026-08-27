@@ -229,11 +229,11 @@ Page({
       })
     } else if (type == 'zhoubiantype') {
       wx.navigateTo({
-        url: "../../plate-zhoubian/plate-zhoubian?liuyan=" + liuyan + "&id=" + ssid
+        url: "../../plate-zhoubian/plate-zhoubian?liuyan=" + liuyan + "&id=" + ssid + "&commentId=" + id
       })
     } else {
       wx.navigateTo({
-        url: "../../plate2/plate2?liuyan=" + liuyan + "&id=" + ssid
+        url: "../../plate2/plate2?liuyan=" + liuyan + "&id=" + ssid + "&commentId=" + id
       })
 
     }

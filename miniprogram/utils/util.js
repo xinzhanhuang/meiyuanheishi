@@ -241,6 +241,33 @@ const util = {
     }
     return timeSpanStr;
   },
+  jumpToComment(page, commentId) {
+    if (!commentId || page.hasJumpedToComment) return;
+    const comments = page.data.ss_xx && page.data.ss_xx.ss_xx && page.data.ss_xx.ss_xx.huifunr;
+    if (!comments) return;
+    let targetId = '';
+    let expandKey = '';
+    comments.some((comment, index0) => {
+      if (comment.pinglunID === commentId) {
+        targetId = `comment-content-${index0}`;
+        return true;
+      }
+      const index1 = (comment.huifu || []).findIndex(reply => reply.pinglunID === commentId);
+      if (index1 < 0) return false;
+      targetId = `sub-comment-${index0}-${index1}`;
+      if (index1 > 2) expandKey = `ss_xx.ss_xx.huifunr[${index0}].zhankai`;
+      return true;
+    });
+    if (!targetId) return;
+    page.hasJumpedToComment = true;
+    const updates = { activeReplyId: targetId };
+    if (expandKey) updates[expandKey] = true;
+    page.setData(updates, () => wx.nextTick(() => {
+      wx.createSelectorQuery().select(`#${targetId}`).boundingClientRect(rect => {
+        if (rect) wx.pageScrollTo({ scrollTop: Math.max(rect.top - 80, 0), duration: 300 });
+      }).exec();
+    }));
+  },
   cancel(oid, name, cb) {
     this.post('help/update/state', {
       state: 4,
