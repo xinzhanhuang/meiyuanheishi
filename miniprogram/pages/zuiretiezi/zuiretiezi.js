@@ -473,7 +473,7 @@ Page({
       index = e.currentTarget.dataset.index
       reping = e.currentTarget.dataset.reping
     }
-    if (this.data.fenxiang = true) {
+    if (this.data.fenxiang === 'true' || this.data.fenxiang === 'ture') {
       var choosetitle1 = false
       var zuiress_xx1 = false
       var DONOT = '111'

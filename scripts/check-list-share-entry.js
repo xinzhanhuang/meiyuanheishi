@@ -12,4 +12,8 @@ targets.forEach((file) => {
   assert(!/options\.fenxiang\s*=\s*['\"]true['\"]/.test(source), `${file} 不得把分享判断写成赋值`)
 })
 
+const hotPosts = fs.readFileSync('miniprogram/pages/zuiretiezi/zuiretiezi.js', 'utf8')
+assert(hotPosts.includes("if (this.data.fenxiang === 'true' || this.data.fenxiang === 'ture')"), '热帖详情跳转必须按分享状态分支')
+assert(!hotPosts.includes('if (this.data.fenxiang = true)'), '热帖详情跳转不得强制写入分享状态')
+
 console.log('列表分享入口判断检查通过')
