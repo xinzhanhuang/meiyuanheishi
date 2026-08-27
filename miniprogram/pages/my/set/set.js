@@ -509,10 +509,6 @@ Page({
       });
       return false
     }
-    app.userInfo.phone = that.data.phone
-    app.userInfo.userinfo.username = that.data.nickname
-    app.userInfo.userinfo.gender = that.data.gender
-
     let gender = that.data.gender;
     let nickname = that.data.nickname;
     console.log("1111111", this.data.nickname)
@@ -552,10 +548,6 @@ Page({
       return false
     }
 
-    wx.showLoading({
-      title: '正在提交',
-    })
-
     //所有内容都不为空，才提交数据
     // 确保 ss_xxid 有明确的值，避免 undefined
     var ss_xxid = this.data.ss_xxid ? this.data.ss_xxid : "nothing"
@@ -572,7 +564,9 @@ Page({
       return false;
     }
 
-    app.zhuanye = zhuanye
+    wx.showLoading({
+      title: '正在提交',
+    })
 
     console.log("hahhahahhappss_xxid", ss_xxid)
 
@@ -591,6 +585,11 @@ Page({
     db.collection('users').doc(app.userInfo._id).update({
       data: updateData
     }).then(res => {
+      wx.hideLoading()
+      app.userInfo.phone = that.data.phone
+      app.userInfo.userinfo.username = nickname
+      app.userInfo.userinfo.gender = gender
+      app.zhuanye = zhuanye
       // 如果提交成功且是首次注册，更新本地状态
       if (this.data.isFirstRegistration) {
         this.setData({
@@ -604,38 +603,26 @@ Page({
       wx.showToast({
         title: '更新成功',
       })
+
+      var target = app.consumePendingPostTarget()
+      if (target) {
+        wx.navigateTo({ url: utils.getPostTargetUrl(target) })
+      } else if (app.fenxiang == "ture") {
+        app.fenxiang = "false"
+        wx.navigateTo({ url: "/pages/plate2/plate2?id=" + app.fxssid + "&fenxiang=false" })
+      } else if (app.zhoubianfenxiang == "true") {
+        app.zhoubianfenxiang = "false"
+        wx.navigateTo({ url: "/pages/plate-zhoubian/plate-zhoubian?id=" + app.fxssid + "&zhoubianfenxiang=false" })
+      } else if (ss_xxid != "nothing") {
+        wx.navigateTo({ url: "/pages/plate2/plate2?id=" + ss_xxid })
+      } else {
+        wx.switchTab({ url: '/pages/index/index' })
+      }
+    }).catch(err => {
+      console.error('更新用户资料失败', err)
+      wx.hideLoading()
+      wx.showToast({ title: '保存失败，请稍后重试', icon: 'none' })
     })
-
-    var target = app.consumePendingPostTarget()
-    if (target) {
-      wx.navigateTo({ url: utils.getPostTargetUrl(target) })
-    } else if (app.fenxiang == "ture") {
-      // console.log("sssss1",app.fenxiang)
-      app.fenxiang = "false"
-      wx.navigateTo({
-        url: "/pages/plate2/plate2?id=" + app.fxssid + "&fenxiang=false"
-      })
-    } else if (app.zhoubianfenxiang == "true") {
-      // console.log("sssss2",app.fenxiang)
-      app.zhoubianfenxiang = "false"
-      wx.navigateTo({
-        url: "/pages/plate-zhoubian/plate-zhoubian?id=" + app.fxssid + "&zhoubianfenxiang=false"
-      })
-    } else if (ss_xxid != "nothing") {
-      console.log("sssss3", ss_xxid)
-      wx.navigateTo({
-        url: "/pages/plate2/plate2?id=" + ss_xxid
-      })
-    }
-    else {
-      wx.switchTab({
-
-        url: '/pages/index/index'
-
-      });
-
-
-    }
 
   },
 

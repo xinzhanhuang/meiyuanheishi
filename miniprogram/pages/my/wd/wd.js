@@ -160,11 +160,13 @@ Page({
           })
         } else {
           wx.hideLoading()
+          wx.showToast({ title: '已取消登录', icon: 'none' })
         }
       },
       fail: res => {
         console.log("获取用户信息失败", res)
         wx.hideLoading()
+        wx.showToast({ title: '已取消登录', icon: 'none' })
       }
     })
   },
@@ -258,7 +260,9 @@ Page({
         })
       }).catch(err => {
         wx.hideLoading();
+        this.setData({ login: false });
         console.error("云函数登录失败", err);
+        wx.showToast({ title: '登录失败，请稍后重试', icon: 'none' });
       });
     } else {
       // 已登录状态
