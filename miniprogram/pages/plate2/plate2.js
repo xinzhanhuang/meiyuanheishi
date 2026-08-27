@@ -924,7 +924,10 @@ Page({
       }
     });
 
-    this.jiazai(id);
+    // 分享入口需要等待登录结果前先展示帖子；普通入口在身份状态设置后加载一次。
+    if (options.fenxiang === 'true' || options.fenxiang === 'ture') {
+      this.jiazai(id);
+    }
     app.fxssid = options.id;
     app.fenxiang = options.fenxiang;
     var love = options.love;
