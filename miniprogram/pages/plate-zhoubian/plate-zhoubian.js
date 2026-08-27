@@ -1485,7 +1485,7 @@ Page({
     return {
       title: app.ssinfo.jg,
       imageUrl: app.ssinfo.tp[0],
-      path: "/pages/plate-zhoubian/plate-zhoubian?id=" + this.data.id + "&zhoubianfenxiang=true&liuyan=" + this.data.liuyan
+      path: "/pages/plate-zhoubian/plate-zhoubian?id=" + this.data.id + "&postId=" + this.data.id + "&postType=" + (this.data.liuyan ? 'tj' : 'zhoubian') + "&source=share&zhoubianfenxiang=true&liuyan=" + this.data.liuyan
     }
   },
   //用户转发
@@ -1493,6 +1493,7 @@ Page({
     return {
       title: app.ssinfo.jg,
       imageUrl: app.ssinfo.tp[0],
+      query: "id=" + this.data.id + "&postId=" + this.data.id + "&postType=" + (this.data.liuyan ? 'tj' : 'zhoubian') + "&source=share&zhoubianfenxiang=true&liuyan=" + this.data.liuyan
     }
   },
 

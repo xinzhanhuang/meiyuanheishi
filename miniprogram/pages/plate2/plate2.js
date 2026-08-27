@@ -2467,29 +2467,20 @@ Page({
 
     var jg = this.data.ss_xx.ss_xx.orderdetail.jg
     var ordertitle = this.data.ss_xx.ss_xx.orderdetail.ordertitle
-    var heishiweixin = app.heishiweixin
-
-    var bannerList1 = app.bannerList2
-    if (bannerList1) {
-      var bannerList2 = bannerList1.sort(() => Math.random() - 0.5)
-      var bannerList2 = JSON.stringify(bannerList2)
-    } else {
-      var bannerList2 = false
-
-    }
+    var query = 'id=' + this.data.id + '&postId=' + this.data.id + '&postType=' + (this.data.liuyan ? 'tj' : 'ss') + '&source=share&fenxiang=ture&liuyan=' + this.data.liuyan
 
     if (ordertitle) {
       return {
         title: "派单" + jg + "元｜" + ordertitle,
         imageUrl: app.ssinfo.tp[0],
-        query: 'id=' + this.data.id + '&fenxiang=ture&takeorderid=' + this.data.takeorderid1 + "&lzid=" + this.data.lzid + "&heishiweixin=" + heishiweixin + '&bannerList2=' + encodeURIComponent(bannerList2)
+        query: query + '&takeorderid=' + this.data.takeorderid1 + '&lzid=' + this.data.lzid
 
       }
     } else {
       return {
         title: app.ssinfo.nr,
         imageUrl: app.ssinfo.tp[0],
-        query: 'id=' + this.data.id + '&fenxiang=ture' + "&lzid=" + this.data.lzid + "&heishiweixin=" + heishiweixin + '&bannerList2=' + encodeURIComponent(bannerList2),
+        query: query + '&lzid=' + this.data.lzid,
       }
     }
   },
@@ -2498,15 +2489,7 @@ Page({
   onShareAppMessage: function () {
     var jg = this.data.ss_xx.ss_xx.orderdetail.jg;
     var ordertitle = this.data.ss_xx.ss_xx.orderdetail.ordertitle;
-    var heishiweixin = app.heishiweixin;
-
-    var bannerList1 = app.bannerList2;
-    if (bannerList1) {
-      var bannerList2 = bannerList1.sort(() => Math.random() - 0.5);
-      var bannerList2 = JSON.stringify(bannerList2);
-    } else {
-      var bannerList2 = false;
-    }
+    var sharePath = "/pages/plate2/plate2?id=" + this.data.id + "&postId=" + this.data.id + "&postType=" + (this.data.liuyan ? 'tj' : 'ss') + "&source=share&fenxiang=ture&liuyan=" + this.data.liuyan;
 
     if (ordertitle) {
       // console.log("path:/pages/plate2/plate2?id=" + this.data.id)
@@ -2517,20 +2500,15 @@ Page({
       return {
         title: "派单" + jg + "元｜" + ordertitle,
         imageUrl: app.ssinfo.tp[0],
-        path: "/pages/plate2/plate2?id=" + this.data.id + "&fenxiang=" + fenxiang + "&liuyan=" + this.data.liuyan + "&takeorderid=" + takeorderid1 + "&lzid=" + lzid + "&heishiweixin=" + heishiweixin + '&bannerList2=' + encodeURIComponent(bannerList2)
+        path: sharePath + "&takeorderid=" + takeorderid1 + "&lzid=" + lzid
       };
     } else {
       console.log("path:/pages/plate2/plate2?id=" + this.data.id);
       console.log("xxxhhhhhhxxx", this.data.zuiress_zhuanfa);
-      var heishiweixin = app.heishiweixin;
-      var takeorderid1 = this.data.takeorderid1;
-      var lzid = this.data.lzid;
-      var fenxiang = "ture";
-
       return {
         title: app.ssinfo.nr,
         imageUrl: app.ssinfo.tp[0],
-        path: "/pages/plate2/plate2?id=" + this.data.id + "&fenxiang=" + fenxiang + "&liuyan=" + this.data.liuyan + "&zuiress_xx1=false" + "&heishiweixin=" + heishiweixin + '&bannerList2=' + encodeURIComponent(bannerList2)
+        path: sharePath
       };
     }
   },
