@@ -665,20 +665,92 @@ Page({
       voteOption
     } = this.data.publish
 
-    wx.cloud.callFunction({
-      name: 'publishPost',
-      data: { collection: 'ss', ss_xx, voteNumberPerPerson, voteOption, openlocationtitle: this.data.openlocationtitle }
+    db.collection('ss').add({
+      data: {
+
+        voteNumberPerPerson: voteNumberPerPerson,
+        votepeopleNumber: 0,
+        voteOption,
+        isEnd: false,
+        ss_xx,
+        time: ss_xx.firsttime
+      }
     }).then((res) => {
-      const summary = res.result.summary
-      _this.setData({ publishSuccess: true, imgs: [], wbnr: '' })
+
+      let voteItemId = res._id
+      voteOption.forEach((element, index) => {
+        VOTE_OPTION.add({
+          data: {
+            id: voteItemId,
+            voteOption: element,
+            voteNumber: 0
+          },
+          success(res) {
+            if (index == voteOption.length - 1) {
+              _this.setData({
+                publishSuccess: true
+              })
+              console.log('---发布成功---', _this.data.publishSuccess);
+
+            }
+          },
+          fail(res) {
+            console.log(res.errMsg);
+          }
+        })
+      });
+
+
       app.shuaxin = true
-      app.userInfo.wenzhang = (app.userInfo.wenzhang || []).concat([summary]).slice(-50)
-      wx.hideLoading()
-      wx.switchTab({ url: '/pages/index/index' })
-    }).catch((err) => {
-      console.error('发布失败', err)
-      wx.hideLoading()
-      wx.showToast({ title: '发布失败，请稍后重试', icon: 'none' })
+      console.log(
+
+
+        "ceshi sssssss", this.data.openlocationtitle
+      )
+      if (this.data.openlocationtitle) {
+        var ISorderdetail = true
+      } else {
+        var ISorderdetail = false
+      }
+      console.log("ss_xx.orderdetail.ordertitle", ss_xx.orderdetail.ordertitle)
+      var id = res._id
+      var jl = {
+        "time": ss_xx.firsttime,
+        "nr": ss_xx.orderdetail.ordertitle ? ss_xx.orderdetail.ordertitle : ss_xx.nr,
+        "id": id,
+        "weigui": false,
+        "tp": ss_xx.tp,
+        "type": ss_xx.orderdetail.ordertitle ? "order" : "post",
+        'ISorderdetail': ISorderdetail
+      }
+      if (jl.nr == '') {
+        jl.nr = '分享了' + ss_xx.tp.length + '张图片'
+      }
+
+      var wenzhang = []
+      //记录到自己users里（最多保留50条）
+      db.collection("users").doc(app.userInfo._id).update({
+        data: {
+          wenzhang: _.push({ each: [jl], slice: -50 })
+        }
+      }).then((res) => {
+        //进行全局数据我的本地储存
+        if (!app.userInfo.wenzhang) app.userInfo.wenzhang = [];
+        app.userInfo.wenzhang = app.userInfo.wenzhang.concat([jl]).slice(-50);
+        this.setData({
+          imgs: [],
+          wbnr: ""
+        })
+
+      })
+
+      wx.hideLoading({}) //发布成功隐藏
+      wx.switchTab({
+        url: '/pages/index/index'
+      })
+
+
+
     })
 
   },
