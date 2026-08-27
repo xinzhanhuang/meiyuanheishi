@@ -893,6 +893,7 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
+    this.commentId = options.commentId;
     // Initialize window metrics for top-based positioning
     const sys = wx.getSystemInfoSync();
     this.windowHeight = sys.windowHeight;
@@ -1275,7 +1276,7 @@ Page({
         updates.ss_xx = 0;
       }
 
-      this.setData(updates);
+      this.setData(updates, () => utils.jumpToComment(this, this.commentId));
     })
   },
 

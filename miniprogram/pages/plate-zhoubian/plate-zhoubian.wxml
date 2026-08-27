@@ -302,7 +302,7 @@
               <image wx:if="{{item0.tp[0]}}" catchtap="previewImg" data-tp="{{[index,item0.tp]}}" src="{{item0.tp[0]}}" mode="heightFix" class="comment-img" bindload="imageOnLoadComment" data-index0="{{index0}}" hidden="{{!item0.tp2[0].loaded}}"> </image>
               <image lazy-load="true" src="/images/loading8.gif" wx:if="{{item0.tp[0] && !item0.tp2[0].loaded}}" mode="heightFix" class="loading-img-small" />
             </view>
-            <view catchtap="huifu" data-xx="{{item0}}" data-index="{{index0}}" class="comment-text-container" hover-class="comment-hover" id="comment-content-{{index0}}">
+            <view catchtap="huifu" data-xx="{{item0}}" data-index="{{index0}}" class="comment-text-container {{activeReplyId == 'comment-content-' + index0 ? 'comment-highlight' : ''}}" hover-class="comment-hover" id="comment-content-{{index0}}">
 
               <text class="comment-text" wx:if="{{item0.wbnr}}">{{item0.wbnr}}</text>
 

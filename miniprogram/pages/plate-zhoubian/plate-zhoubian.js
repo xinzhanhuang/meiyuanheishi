@@ -87,6 +87,7 @@ Page({
 
   //生命周期函数--监听页面加载
   onLoad: function (options) {
+    this.commentId = options.commentId;
     this.jiazai(options.id)
 
     console.log(options)
@@ -376,9 +377,8 @@ Page({
 
           if (res.data[0].ss_xx.jubao[1] < 10) {
             this.setData({
-
               ss_xx: ss_xx
-            })
+            }, () => utils.jumpToComment(this, this.commentId))
           } else {
             this.setData({
               ss_xx: 0
@@ -387,7 +387,7 @@ Page({
         } else {
           this.setData({
             ss_xx: ss_xx
-          })
+          }, () => utils.jumpToComment(this, this.commentId))
         }
 
       } else {
