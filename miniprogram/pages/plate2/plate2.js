@@ -5,9 +5,12 @@ const app = getApp();
 const _ = db.command;
 const utils = require('../../utils/util.js');
 const { submitVote } = require('../../utils/plate2-vote');
-const { callCloudFunction, errorMessage } = require('../../utils/cloud-call');
+const commentMethods = require('../../utils/plate2-comments');
+const shareMethods = require('../../utils/plate2-share');
 
 Page({
+  ...commentMethods,
+  ...shareMethods,
   /**
    * 页面的初始数据
    */
@@ -1352,145 +1355,6 @@ Page({
   },
 
   /**
-   * 显示评论操作菜单 (长按触发)
-   */
-  showCommentMenu(e) {
-    console.log("e.currentTarget.dataset", e.currentTarget.dataset)
-    let { item, index0, index, type, index1, parentitem } = e.currentTarget.dataset;
-
-    // 兼容 data-index0 和 data-index
-    if (index0 === undefined && index !== undefined) {
-      index0 = index;
-    }
-
-    const _id = app.userInfo._id;
-    const lzid = this.data.ss_xx.ss_xx.lzid; // 楼主ID
-    const isAdmin = this.data.isAdmin;
-
-    // 基础菜单选项
-    const groups = [
-      { text: '回复', value: 'reply' },
-      { text: '复制', value: 'copy' }
-    ];
-
-    // 判断是否有删除权限: 管理员 OR 楼主 OR 评论发布者
-    if (isAdmin || lzid == _id || item.plrid == _id) {
-      groups.push({ text: '删除', type: 'warn', value: 'delete' });
-    }
-
-    this.setData({
-      showDialog: true,
-      groups: groups,
-      selectedComment: {
-        item,
-        index0,
-        type, // 'main' or 'sub'
-        index1,
-        parentitem
-      }
-    });
-  },
-
-  /**
-   * 关闭评论菜单 (actionSheet 会自动处理，这里主要是重置状态)
-   */
-  closeCommentMenu() {
-    this.setData({
-      showDialog: false
-    });
-  },
-
-  /**
-   * 菜单点击处理
-   */
-  btnClick(e) {
-    const { value } = e.detail;
-    this.closeCommentMenu();
-
-    if (value === 'reply') {
-      this.handleMenuReply();
-    } else if (value === 'copy') {
-      this.handleMenuCopy();
-    } else if (value === 'delete') {
-      this.handleMenuDelete();
-    } else if (value === 'toggle_status') {
-      const openlocationtitle = this.data.ss_xx.ss_xx.orderdetail.openlocationtitle;
-      if (openlocationtitle) {
-        this.oderover();
-      } else {
-        this.gameover();
-      }
-    } else if (value === 'delete_post') {
-      this.deletethisone();
-    }
-  },
-
-  /**
-   * 菜单-回复
-   */
-  handleMenuReply() {
-    const { item, index0, type, index1, parentitem } = this.data.selectedComment;
-
-    // 调用现有的 huifu 方法
-    const dataset = type === 'main' ?
-      { xx: item, index: index0 } :
-      { xx: parentitem, xx1: item, index: index0, index1: index1 };
-
-    this.huifu({
-      currentTarget: { dataset }
-    });
-  },
-
-  /**
-   * 菜单-复制
-   */
-  handleMenuCopy() {
-    const { item } = this.data.selectedComment;
-
-    wx.setClipboardData({
-      data: item.wbnr,
-      success: function () {
-        wx.showToast({
-          title: '已复制',
-          icon: 'none'
-        });
-      }
-    });
-  },
-
-  /**
-   * 菜单-删除
-   */
-  handleMenuDelete() {
-    const { item, index0, type, index1, parentitem } = this.data.selectedComment;
-
-    // 构造 changanshanchu 需要的 dataset
-    // 注意: changanshanchu 原逻辑需要 checking data-id0, index, time 等
-    // data-id0="{{item0.plrid}}" data-index="{{index0}}" data-time="{{item0.time}}" 
-    // sub: data-index1="{{index1}}" data-id1="{{item1.plrid}}" data-time1="{{item1.time}}"
-
-    const dataset = type === 'main' ? {
-      id0: item.plrid,
-      index: index0,
-      time: item.time,
-      huifunb: item.huifunb
-    } : {
-      id0: parentitem.plrid,
-      index: index0,
-      time: parentitem.time,
-      index1: index1,
-      id1: item.plrid,
-      time1: item.time
-    };
-
-    console.log("Delete Dataset Constructed:", dataset);
-
-    this.changanshanchu({
-      currentTarget: { dataset }
-    });
-  },
-
-  /**
    * 删除评论 (原逻辑优化)
    */
   changanshanchu(e) {
@@ -2182,56 +2046,6 @@ Page({
     }
   },
 
-  // 展开评论
-  zhankai(e) {
-    console.log(e.currentTarget.dataset.index); // 该条评论所在数组的下表
-    var index = e.currentTarget.dataset.index;
-    var zhankai = "ss_xx.ss_xx.huifunr[" + index + "].zhankai";
-    // console.log(zhankai)
-    this.setData({
-      [zhankai]: true,
-    });
-  },
-
-  // 收起评论
-  shouqi(e) {
-    console.log(e.currentTarget.dataset.index); // 该条评论所在数组的下表
-    var index = e.currentTarget.dataset.index;
-    var zhankai = "ss_xx.ss_xx.huifunr[" + index + "].zhankai";
-    // console.log(zhankai)
-    this.setData({
-      [zhankai]: false,
-    });
-  },
-
-  // 用云函数发表评论
-  async fbpl(pinglunnr, pd, Mazhu) {
-    if (this._commentSubmitting) return false;
-    this._commentSubmitting = true;
-    console.log("xxxxlllll", Mazhu);
-    try {
-      return await callCloudFunction('fbpl', {
-        pinglunnr: pinglunnr,
-        pd: pd,
-        Mazhu: Mazhu
-      });
-    } catch (err) {
-      console.log(err);
-      wx.showToast({ title: errorMessage(err, '评论失败，请重试'), icon: 'none' });
-      return false;
-    } finally {
-      this._commentSubmitting = false;
-    }
-  },
-
-  // 实时获取input,写到data中储存为wbnr
-  wbnr(e) {
-    // console.log(e.detail.value)
-    this.setData({
-      wbnr: e.detail.value
-    });
-  },
-
   // 举报帖子
   jubao(e) {
     // 判断是否举报过
@@ -2326,70 +2140,6 @@ Page({
 
 
 
-
-  fuzhi(e) {
-    //console.log(e.currentTarget.dataset.item)
-    wx.setClipboardData({
-      data: e.currentTarget.dataset.item,
-      success(res) {
-        console.log("成功")
-      }
-    })
-  },
-
-
-  //用户转发
-  onShareTimeline: function () {
-
-
-
-    var jg = this.data.ss_xx.ss_xx.orderdetail.jg
-    var ordertitle = this.data.ss_xx.ss_xx.orderdetail.ordertitle
-    var query = 'id=' + this.data.id + '&postId=' + this.data.id + '&postType=ss&source=share&fenxiang=ture&liuyan=' + this.data.liuyan
-
-    if (ordertitle) {
-      return {
-        title: "派单" + jg + "元｜" + ordertitle,
-        imageUrl: app.ssinfo.tp[0],
-        query: query + '&takeorderid=' + this.data.takeorderid1 + '&lzid=' + this.data.lzid
-
-      }
-    } else {
-      return {
-        title: app.ssinfo.nr,
-        imageUrl: app.ssinfo.tp[0],
-        query: query + '&lzid=' + this.data.lzid,
-      }
-    }
-  },
-
-
-  onShareAppMessage: function () {
-    var jg = this.data.ss_xx.ss_xx.orderdetail.jg;
-    var ordertitle = this.data.ss_xx.ss_xx.orderdetail.ordertitle;
-    var sharePath = "/pages/plate2/plate2?id=" + this.data.id + "&postId=" + this.data.id + "&postType=ss&source=share&fenxiang=ture&liuyan=" + this.data.liuyan;
-
-    if (ordertitle) {
-      // console.log("path:/pages/plate2/plate2?id=" + this.data.id)
-      // console.log(app.ssinfo.nr)
-      var fenxiang = "ture";
-      var takeorderid1 = this.data.takeorderid1;
-      var lzid = this.data.lzid;
-      return {
-        title: "派单" + jg + "元｜" + ordertitle,
-        imageUrl: app.ssinfo.tp[0],
-        path: sharePath + "&takeorderid=" + takeorderid1 + "&lzid=" + lzid
-      };
-    } else {
-      console.log("path:/pages/plate2/plate2?id=" + this.data.id);
-      console.log("xxxhhhhhhxxx", this.data.zuiress_zhuanfa);
-      return {
-        title: app.ssinfo.nr,
-        imageUrl: app.ssinfo.tp[0],
-        path: sharePath
-      };
-    }
-  },
 
   /**
    * 检查用户权限
