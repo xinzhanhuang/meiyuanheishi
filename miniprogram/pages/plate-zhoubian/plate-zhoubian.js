@@ -2,6 +2,7 @@ var db = wx.cloud.database()
 var app = getApp()
 var _ = db.command
 var utils = require('../../utils/util.js')
+var cloudCall = require('../../utils/cloud-call')
 Page({
   //页面的初始数据
   data: {
@@ -1261,19 +1262,19 @@ Page({
 
   //用云函数发表评论
   async fbzbpj(pinglunnr, pd) {
+    if (this._commentSubmitting) return false;
+    this._commentSubmitting = true;
     try {
-      var res = await wx.cloud.callFunction({
-        name: 'fbzbpj',
-        data: {
-          pinglunnr: pinglunnr,
-          pd: pd
-        }
+      return await cloudCall.callCloudFunction('fbzbpj', {
+        pinglunnr: pinglunnr,
+        pd: pd
       });
-      console.log(res);
-      return res.result
     } catch (err) {
       console.log(err);
+      wx.showToast({ title: cloudCall.errorMessage(err, '评论失败，请重试'), icon: 'none' });
       return false;
+    } finally {
+      this._commentSubmitting = false;
     }
 
   },

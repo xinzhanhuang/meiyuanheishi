@@ -4,6 +4,8 @@ const VOTE_RECORD = wx.cloud.database().collection("VoteRecord");
 const app = getApp();
 const _ = db.command;
 const utils = require('../../utils/util.js');
+const { submitVote } = require('../../utils/plate2-vote');
+const { callCloudFunction, errorMessage } = require('../../utils/cloud-call');
 
 Page({
   /**
@@ -2204,21 +2206,21 @@ Page({
 
   // 用云函数发表评论
   async fbpl(pinglunnr, pd, Mazhu) {
+    if (this._commentSubmitting) return false;
+    this._commentSubmitting = true;
     console.log("xxxxlllll", Mazhu);
     try {
-      var res = await wx.cloud.callFunction({
-        name: 'fbpl',
-        data: {
-          pinglunnr: pinglunnr,
-          pd: pd,
-          Mazhu: Mazhu
-        }
+      return await callCloudFunction('fbpl', {
+        pinglunnr: pinglunnr,
+        pd: pd,
+        Mazhu: Mazhu
       });
-      console.log(res);
-      return res.result;
     } catch (err) {
       console.log(err);
+      wx.showToast({ title: errorMessage(err, '评论失败，请重试'), icon: 'none' });
       return false;
+    } finally {
+      this._commentSubmitting = false;
     }
   },
 
@@ -2444,30 +2446,7 @@ Page({
    * 确认投票
    */
   onConfirm(e) {
-    let _this = this;
-    wx.cloud.callFunction({
-      name: "VoteOption",
-      data: {
-        actionVersion: 2,
-        id: _this.data.option._id,
-        itemid: _this.data.id,
-        voteNumber: _this.data.number,
-        colorIndex: this.data.colorIndex
-      },
-      success(res) {
-        const result = res.result || {};
-        wx.showToast({
-          title: result.success ? '投票成功' : (result.errCode === 'ALREADY_VOTED' ? '投过票啦' : '投票失败'),
-          icon: 'none',
-          duration: 800,
-        });
-        if (result.success) _this.jiazai(_this.data.id);
-      },
-      fail(res) {
-        console.log(res.errMsg);
-        wx.showToast({ title: '投票失败，请重试', icon: 'none' });
-      }
-    });
+    return submitVote(this);
   },
 
   /**
