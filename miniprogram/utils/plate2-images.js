@@ -283,6 +283,13 @@ module.exports = {
       });
 
       wx.hideLoading();
+    },
+    fail(err) {
+      console.error('选择评论图片失败', err);
+      wx.hideLoading();
+      if (!err.errMsg || !err.errMsg.includes('cancel')) {
+        wx.showToast({ title: '无法选择图片，请检查相册权限', icon: 'none' });
+      }
     }
   });
 },

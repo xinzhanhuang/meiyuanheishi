@@ -43,8 +43,11 @@ for (const [name, variable] of Object.entries(modules)) {
 assert(plate2.split('\n').length < 2000, 'plate2 主文件应保持在 2000 行以内')
 
 const cloudCall = read('miniprogram/utils/cloud-call.js')
+const imageModule = read('miniprogram/utils/plate2-images.js')
 assert(cloudCall.includes('PERMISSION_DENIED'))
 assert(cloudCall.includes('ALREADY_VOTED'))
 assert(cloudCall.includes('throw error'))
+assert(imageModule.includes("fail(err) {\n      console.error('选择评论图片失败'"))
+assert(imageModule.includes('无法选择图片，请检查相册权限'))
 
 console.log('工程化安全批次检查通过')

@@ -511,23 +511,7 @@ Page({
       })
       return
     }
-    if (app.userInfo.phone == undefined || app.userInfo.phone == null || app.userInfo.phone == "") {
-
-
-      wx.navigateTo({
-        url: '/pages/my/set/set?phone=0',
-      })
-      return
-    }
-    if (app.userInfo.userinfo.gender == undefined || app.userInfo.userinfo.gender == null || app.userInfo.userinfo.gender == "") {
-
-
-
-      wx.navigateTo({
-        url: '/pages/my/set/set?gender=0',
-      })
-      return
-    }
+    // 手机号、性别等个人资料均为可选。
     //检测账号是否被封
     var ban = app.userInfo.ban
     if (ban == true) {
