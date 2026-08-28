@@ -18,6 +18,8 @@ assert(!checknotice.includes('event.glids'))
 
 const publishPost = read('cloudfunctions/publishPost/index.js')
 const postPage = read('miniprogram/pages/post/post.js')
+const voteFunction = read('cloudfunctions/VoteOption/index.js')
+const plate2Data = read('miniprogram/utils/plate2-data.js')
 assert(publishPost.includes('cloud.getWXContext().OPENID'))
 assert(publishPost.includes('db.runTransaction(async (transaction)'))
 assert(publishPost.includes("collection('ss').add"))
@@ -26,6 +28,9 @@ assert(publishPost.includes("collection('users').doc(actor._id).update"))
 assert(postPage.includes("name: 'publishPost'"))
 assert(!postPage.includes("db.collection('ss').add"))
 assert(postPage.includes('var reviewResults = await Promise.all(['))
+assert(voteFunction.includes("event.action === 'getVoteState'"))
+assert(plate2Data.includes("action: 'getVoteState'"))
+assert(!plate2Data.includes("db.collection('VoteOption')"))
 for (const message of ['文字审核失败', '图片审核失败', '图片上传失败', '网络失败，请重试']) {
   assert(postPage.includes(message), `发帖页缺少失败提示：${message}`)
 }

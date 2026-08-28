@@ -1,8 +1,6 @@
 const app = getApp()
 const db = wx.cloud.database()
 const _ = db.command
-const VOTE_OPTION = db.collection('VoteOption')
-const VOTE_RECORD = db.collection('VoteRecord')
 const utils = require('./util')
 
 module.exports = {
@@ -23,30 +21,19 @@ module.exports = {
 
       // 普通帖没有投票选项，无需查询两个投票集合。
       if (Array.isArray(ss_xx.voteOption) && ss_xx.voteOption.length > 0) {
-        VOTE_OPTION.where({
-          id
-        }).get().then((res) => {
-          var options = res.data || [];
-          this.setData({
-            options
-          });
-
-          if (options.length === 0) return;
-
-          return VOTE_RECORD.where({
-            voteItemId: options[0].id,
-            voterId: app.userInfo._openid
-          }).get().then((res) => {
-            let list = res.data;
-            if (list.length > 0) {
-              let colorIndex = list[0].colorIndex;
-              this.setData({
-                colorIndex,
-                already11: true,
-                already22: true
-              });
-            }
-          });
+        wx.cloud.callFunction({
+          name: 'VoteOption',
+          data: { action: 'getVoteState', itemid: id }
+        }).then((res) => {
+          const result = res && res.result;
+          if (!result || result.success !== true) throw new Error('VOTE_STATE_FAILED');
+          const updates = { options: result.options || [] };
+          if (result.record) {
+            updates.colorIndex = result.record.colorIndex;
+            updates.already11 = true;
+            updates.already22 = true;
+          }
+          this.setData(updates);
         }).catch((err) => {
           console.error('加载投票数据失败', err);
         });

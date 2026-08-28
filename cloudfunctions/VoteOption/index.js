@@ -16,7 +16,24 @@ async function legacyVote(event) {
   return { success: true, legacy: true, stats: results.map((result) => result.stats) }
 }
 
+async function getVoteState(event) {
+  if (!event.itemid) {
+    return { success: false, errCode: 'INVALID_ARGUMENT', errMsg: 'Missing post id' }
+  }
+  const openid = cloud.getWXContext().OPENID
+  const optionResult = await db.collection('VoteOption').where({ id: event.itemid }).get()
+  const recordResult = openid
+    ? await db.collection('VoteRecord').where({ voteItemId: event.itemid, voterId: openid }).get()
+    : { data: [] }
+  return {
+    success: true,
+    options: optionResult.data || [],
+    record: recordResult.data && recordResult.data[0] ? recordResult.data[0] : null
+  }
+}
+
 exports.main = async (event = {}) => {
+  if (event.action === 'getVoteState') return getVoteState(event)
   // 旧客户端会先直写 VoteRecord，再调用本函数；部署过渡期必须保留原计数协议。
   if (event.actionVersion !== 2) return legacyVote(event)
 
