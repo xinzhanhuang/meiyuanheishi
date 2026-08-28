@@ -11,7 +11,24 @@ cloud.init({
 1.pinglun
 2.huifu
 */
-exports.main = async (event, context) => {
+exports.main = async (event = {}, context) => {
+  const wxContext = cloud.getWXContext()
+  if (!wxContext.OPENID) return { success: false, errCode: 'UNAUTHENTICATED' }
+  if (!event.pinglunnr || !Array.isArray(event.pd)) {
+    return { success: false, errCode: 'INVALID_ARGUMENT' }
+  }
+  const actorResult = await cloud.database().collection('users').where({
+    _openid: wxContext.OPENID
+  }).limit(1).get()
+  const actor = actorResult.data[0]
+  if (!actor) return { success: false, errCode: 'USER_NOT_FOUND' }
+
+  const commentTime = Date.now()
+  event.pinglunnr.plrid = actor._id
+  event.pinglunnr.time = commentTime
+  event.pinglunnr.pinglunID = `${event.pinglunnr.ssid}${commentTime}`
+  event.pinglunnr.name = event.pinglunnr.name || '校园用户'
+  event.pinglunnr.photo = event.pinglunnr.photo || '/images/message/touxiang1.png'
   console.log(event.pinglunnr)
   var pinglunnr = event.pinglunnr
   var pd = event.pd
@@ -21,6 +38,9 @@ exports.main = async (event, context) => {
   var lzid = event.pinglunnr.lzid
   var plrid = event.pinglunnr.plrid
   var zilei = event.pinglunnr.zilei
+  if (typeof id !== 'string' || !id || typeof event.pinglunnr.wbnr !== 'string') {
+    return { success: false, errCode: 'INVALID_COMMENT' }
+  }
   var path = "pages/plate-zhoubian/plate-zhoubian?id=" + id + "&zhoubianfenxiang=true&liuyan=" + liuyan
   const _ = cloud.database().command
 
