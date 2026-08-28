@@ -12,6 +12,7 @@ global.clearTimeout = timer => {
 global.getApp = () => ({});
 global.App = definition => { appDefinition = definition; };
 global.wx = {
+  getAccountInfoSync() { return { miniProgram: { appId: 'wx3280f3d41b172606' } }; },
   cloud: {
     init() {}, callFunction() { return { then() { return { catch() {} }; } }; },
     database() { return { collection() { return { doc() { return { watch(options) { watchOptions = options; watchCount++; return { close() {} }; } }; } }; } }; }
