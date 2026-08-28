@@ -19,6 +19,14 @@ assert(!checknotice.includes('event.glids'))
 const plate2 = read('miniprogram/pages/plate2/plate2.js')
 const voteModule = read('miniprogram/utils/plate2-vote.js')
 const commentModule = read('miniprogram/utils/plate2-comments.js')
+const modules = {
+  comments: 'commentMethods',
+  share: 'shareMethods',
+  images: 'imageMethods',
+  data: 'dataMethods',
+  management: 'managementMethods',
+  lifecycle: 'lifecycleMethods'
+}
 assert(plate2.includes("require('../../utils/plate2-vote')"))
 assert(plate2.includes('return submitVote(this)'))
 assert(voteModule.includes('page._voteSubmitting'))
@@ -28,6 +36,11 @@ assert(commentModule.includes('this._commentSubmitting'))
 for (const method of ['showCommentMenu', 'btnClick', 'handleMenuReply', 'handleMenuDelete', 'fbpl']) {
   assert(commentModule.includes(`${method}(`), `评论模块缺少 ${method}`)
 }
+for (const [name, variable] of Object.entries(modules)) {
+  assert(plate2.includes(`require('../../utils/plate2-${name}')`), `plate2 未接入 ${name} 模块`)
+  assert(plate2.includes(`...${variable}`), `plate2 未注册 ${name} 方法`)
+}
+assert(plate2.split('\n').length < 2000, 'plate2 主文件应保持在 2000 行以内')
 
 const cloudCall = read('miniprogram/utils/cloud-call.js')
 assert(cloudCall.includes('PERMISSION_DENIED'))

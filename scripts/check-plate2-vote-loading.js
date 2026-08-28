@@ -1,7 +1,7 @@
 const assert = require('assert')
 const fs = require('fs')
 
-const source = fs.readFileSync('miniprogram/pages/plate2/plate2.js', 'utf8')
+const source = fs.readFileSync('miniprogram/utils/plate2-data.js', 'utf8')
 const voteGuard = 'if (Array.isArray(ss_xx.voteOption) && ss_xx.voteOption.length > 0)'
 
 assert(source.includes(voteGuard), '投票查询必须由非空投票选项保护')

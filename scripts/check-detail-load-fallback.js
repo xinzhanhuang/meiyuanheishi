@@ -1,10 +1,10 @@
 const assert = require('assert');
 const fs = require('fs');
 
-const normal = fs.readFileSync('miniprogram/pages/plate2/plate2.js', 'utf8');
+const normal = fs.readFileSync('miniprogram/utils/plate2-data.js', 'utf8');
 const nearby = fs.readFileSync('miniprogram/pages/plate-zhoubian/plate-zhoubian.js', 'utf8');
 
-assert(normal.includes('if (!id) {\n      this.setData({ ss_xx: 0, loadingHidden: true });'));
+assert(/if \(!id\) \{\s+this\.setData\(\{ ss_xx: 0, loadingHidden: true \}\);/.test(normal));
 assert(normal.includes('updates.loadingHidden = true;'));
 assert(normal.includes("console.error('加载帖子失败', err);"));
 assert(nearby.includes('if (!id) {\n      this.setData({ ss_xx: 0 })'));

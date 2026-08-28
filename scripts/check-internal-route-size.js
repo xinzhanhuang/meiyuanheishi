@@ -8,7 +8,7 @@ const fs = require('fs');
     assert(!route.includes('zuiress_xx1='), `${name} detail route carries hot-post array`);
   });
 });
-const detail = fs.readFileSync('miniprogram/pages/plate2/plate2.js', 'utf8');
+const detail = fs.readFileSync('miniprogram/utils/plate2-lifecycle.js', 'utf8');
 assert(detail.includes('var zuiress_xx1 = app.zuiress_xx1 || false;'));
 assert(detail.includes('var choosetitle1 = app.choosetitle1 || false;'));
 assert(detail.includes('if (options.zuiress_xx1)'));
