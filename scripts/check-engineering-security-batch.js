@@ -41,6 +41,8 @@ for (const [name, variable] of Object.entries(modules)) {
   assert(plate2.includes(`...${variable}`), `plate2 未注册 ${name} 方法`)
 }
 assert(plate2.split('\n').length < 2000, 'plate2 主文件应保持在 2000 行以内')
+assert(plate2.includes('app.userInfo.pinglunguode || []'))
+assert(!plate2.includes('async fasongqian('))
 
 const cloudCall = read('miniprogram/utils/cloud-call.js')
 const imageModule = read('miniprogram/utils/plate2-images.js')

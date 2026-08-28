@@ -976,7 +976,8 @@ Page({
       louzhu = true;
       niming = this.data.ss_xx.ss_xx.niming1;
     }
-    var pinglunguode = await this.fasongqian(app.userInfo._id);
+    // 登录时已经取得该字段，无需在每次评论前再次直读 users 集合。
+    var pinglunguode = app.userInfo.pinglunguode || [];
     // console.log("获取到评论过的：",pinglunguode)
     var first = Array.isArray(pinglunguode) && JSON.stringify(pinglunguode).includes(this.data.id);
     // 判断是回复帖子，还是回复评
@@ -1219,18 +1220,6 @@ Page({
         }
       }
     });
-  },
-
-  /**
-   * 发送前刷新内容
-   */
-  async fasongqian(e) {
-    // console.log(e)
-    return db.collection('users').doc(e).field({ pinglunguode: true }).get().then((res) => {
-      // console.log(res)
-      // 只获取 pinglunguode 字段，不再覆盖整个 app.userInfo
-      return res.data ? res.data.pinglunguode || [] : [];
-    }).catch(() => []);
   },
 
   /**
