@@ -2434,47 +2434,10 @@ Page({
         duration: 800,
       });
       return;
-    } else {
-      VOTE_RECORD.where({
-        voteItemId: this.data.id,
-        voterId: app.userInfo._openid
-      }).get().then((res) => {
-        let votedNumber = 0;
-        let list = res.data;
-        if (list.length > 0) {
-          list.forEach((element, index) => {
-            votedNumber += element.voteNumber;
-            if (index == list.length - 1) {
-              let remainVoteNumber = voteNumberPerPerson - votedNumber;
-              if (remainVoteNumber > 0) {
-                _this.setData({
-                  remainVoteNumber,
-                  option,
-                  already: false
-                });
-                this.onConfirm();
-              } else {
-                wx.showToast({
-                  title: '投过票啦',
-                  icon: 'none',
-                  duration: 800,
-                });
-                return;
-              }
-            }
-          });
-        } else {
-          _this.setData({
-            remainVoteNumber: voteNumberPerPerson,
-            option,
-            already: false
-          });
-          this.onConfirm();
-        }
-      }).catch((res) => {
-        console.log(res.errMsg);
-      });
     }
+
+    _this.setData({ option, already: false });
+    this.onConfirm();
   },
 
   /**
@@ -2482,39 +2445,27 @@ Page({
    */
   onConfirm(e) {
     let _this = this;
-    VOTE_RECORD.add({
+    wx.cloud.callFunction({
+      name: "VoteOption",
       data: {
-        voteTime: new Date(),
-        voteItemId: _this.data.id,
-        voteOptionId: _this.data.option._id,
-        voterId: app.userInfo._openid,
+        actionVersion: 2,
+        id: _this.data.option._id,
+        itemid: _this.data.id,
         voteNumber: _this.data.number,
         colorIndex: this.data.colorIndex
       },
-
       success(res) {
-        // 添加浏览数
-        wx.cloud.callFunction({
-          name: "VoteOption",
-          data: {
-            id: _this.data.option._id,
-            itemid: _this.data.id,
-          },
-          success(res) {
-            wx.showToast({
-              title: '投票成功',
-              icon: 'none',
-              duration: 800,
-            });
-            _this.jiazai(app.fxssid);
-          },
-          fail(res) {
-            console.log(res.errMsg);
-          }
+        const result = res.result || {};
+        wx.showToast({
+          title: result.success ? '投票成功' : (result.errCode === 'ALREADY_VOTED' ? '投过票啦' : '投票失败'),
+          icon: 'none',
+          duration: 800,
         });
+        if (result.success) _this.jiazai(_this.data.id);
       },
       fail(res) {
         console.log(res.errMsg);
+        wx.showToast({ title: '投票失败，请重试', icon: 'none' });
       }
     });
   },
