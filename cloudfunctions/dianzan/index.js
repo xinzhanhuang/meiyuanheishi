@@ -1,234 +1,132 @@
-
 const cloud = require('wx-server-sdk')
 
-cloud.init({
-  // API 调用都保持和云函数当前所在环境一致
-  env: cloud.DYNAMIC_CURRENT_ENV
-})
+cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
-exports.main = async (event, context) => {
-  //console.log("@@@",event.userInfo.openId,event.id)
-  var dzrid = event.dzrid
-  var type = event.type
-  const db = cloud.database()
-  const _ = db.command
-  var id = event.id
-  // var index=event.plindex
-  var plid = event.plid
-  // Notification Data
-  var name = event.name
-  var photo = event.photo
-  var time = event.time
-  var lzid = event.lzid
-  var ywnr = event.ywnr
-  var pllzid = event.pllzid
-  var plnr = event.plnr
-  var zbtitle = event.zbtitle
-  var zilei =event.zilei
+const db = cloud.database()
+const _ = db.command
 
-  if (dzrid == null || dzrid == undefined || dzrid == "") {
-    return
+function messageId() {
+  return Date.now().toString() + Math.random().toString(36).slice(2, 11)
+}
+
+async function getActorId(openid) {
+  const result = await db.collection('users').where({ _openid: openid }).limit(1).get()
+  return result.data[0] && result.data[0]._id
+}
+
+async function togglePostLike(event, actorId, collectionName, postType) {
+  const toggleResult = await db.runTransaction(async (transaction) => {
+    const postResult = await transaction.collection(collectionName).doc(event.id).get()
+    const post = postResult.data || {}
+    const detail = post.ss_xx || {}
+    const likedUserIds = Array.isArray(detail.dianzanid) ? detail.dianzanid : []
+    const liked = !likedUserIds.includes(actorId)
+
+    await transaction.collection(collectionName).doc(event.id).update({
+      data: {
+        'ss_xx.dianzanid': liked ? _.push(actorId) : _.pull(actorId),
+        'ss_xx.dianzannb': _.inc(liked ? 1 : -1)
+      }
+    })
+    return { liked }
+  })
+
+  if (toggleResult.liked && event.lzid && event.lzid !== cloud.getWXContext().OPENID) {
+    const notification = {
+      name: event.name,
+      photo: event.photo,
+      time: event.time,
+      type: 'dianzan',
+      ywnr: event.ywnr,
+      zbtitle: event.zbtitle,
+      zilei: event.zilei,
+      id: messageId(),
+      ssid: event.id,
+      postId: event.id,
+      postType,
+      source: 'message',
+      isorder: false
+    }
+    if (collectionName === 'tianmeizhoubian') notification.subtype = 'tianmeizhoubian'
+    await db.collection('users').where({ _openid: event.lzid }).update({
+      data: { dzmessage: _.push(notification) }
+    })
   }
 
-  if (type == 'ss') {
-    db.collection("ss").doc(event.id).get().then((res) => {
-      var dianzanid = res.data.ss_xx.dianzanid
-      var yn = dianzanid.indexOf(dzrid)
-      if (yn == -1) {
-        //没电
-        db.collection("ss").doc(event.id).update({
-          data: {
-            "ss_xx.dianzanid": _.push(dzrid),
-            "ss_xx.dianzannb": _.inc(1)
-          }
-        })
+  return { success: true, liked: toggleResult.liked, type: event.type }
+}
 
-        // Notification Logic
-        if (lzid && lzid != event.userInfo.openId) {
-          db.collection("users").where({
-            _openid: lzid
-          }).update({
-            data: {
-              dzmessage: _.push({
-                name: name,
-                photo: photo,
-                time: time,
-                type: 'dianzan',
-                ywnr: ywnr,
-                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-                ssid: event.id,
-                postId: event.id,
-                postType: 'ss',
-                source: 'message',
-                isorder: false
-              })
-            }
-          })
-        }
-
-        // console.log("点赞了")
-        return
-      } else {
-        db.collection("ss").doc(event.id).update({
-          data: {
-            //这里要移除openid
-            "ss_xx.dianzanid": _.pull(dzrid.toString()),
-            "ss_xx.dianzannb": _.inc(-1)
-          }
-        })
-        console.log("取消了")
-        return
-      }
-
+async function toggleCommentLike(event, actorId, collectionName) {
+  const toggleResult = await db.runTransaction(async (transaction) => {
+    const postResult = await transaction.collection(collectionName).doc(event.id).get()
+    const comments = (((postResult.data || {}).ss_xx || {}).huifunr) || []
+    const index = comments.findIndex((comment, commentIndex) => {
+      return (comment.pinglunID || `${event.id}_${commentIndex}`) === event.plid
     })
+    if (index < 0) return { found: false, liked: false }
 
-  } else if (type == 'tianmeizhoubian') {
-
-    return db.collection("tianmeizhoubian").doc(id).get().then((res) => {
-      var dianzanid = res.data.ss_xx.dianzanid
-      var yn = dianzanid.indexOf(dzrid)
-      if (yn == -1) {
-        //没电
-        db.collection("tianmeizhoubian").doc(id).update({
-          data: {
-            "ss_xx.dianzanid": _.push(dzrid),
-            "ss_xx.dianzannb": _.inc(1)
-          }
-        })
-
-        // Notification Logic
-        if (lzid && lzid != event.userInfo.openId) {
-          db.collection("users").where({
-            _openid: lzid
-          }).update({
-            data: {
-              dzmessage: _.push({
-                name: name,
-                photo: photo,
-                time: time,
-                type: 'dianzan',
-                zilei:zilei,
-                zbtitle: zbtitle,
-                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-                ssid: event.id,
-                postId: event.id,
-                postType: 'zhoubian',
-                source: 'message',
-                isorder: false,
-                subtype: 'tianmeizhoubian' // Optional: to distinguish source
-              })
-            }
-          })
-        }
-
-        console.log("点赞了")
-        return
-      } else {
-        db.collection("tianmeizhoubian").doc(id).update({
-          data: {
-            //这里要移除openid
-            "ss_xx.dianzanid": _.pull(dzrid.toString()),
-            "ss_xx.dianzannb": _.inc(-1)
-          }
-        })
-        console.log("取消了")
-        return
+    const likedUserIds = Array.isArray(comments[index].dianzhanID) ? comments[index].dianzhanID : []
+    const liked = !likedUserIds.includes(actorId)
+    await transaction.collection(collectionName).doc(event.id).update({
+      data: {
+        [`ss_xx.huifunr.${index}.dianzhanID`]: liked ? _.push(actorId) : _.pull(actorId),
+        [`ss_xx.huifunr.${index}.pldianzannb`]: _.inc(liked ? 1 : -1)
       }
-
     })
+    return { found: true, liked }
+  })
 
-
-
-
-
+  if (!toggleResult.found) {
+    return { success: false, errCode: 'COMMENT_NOT_FOUND', errMsg: 'Comment not found' }
   }
 
-  if (type == 'sspinglun') {
-    var collectionName = event.collection || "ss"; // PATCH: Support dynamic collection
-    db.collection(collectionName).doc(id).get().then((res) => {
-
-
-      var huifunr = res.data.ss_xx.huifunr
-
-      var index = -1;
-      var dianzhanID = [];
-
-      for (var i = 0; i < huifunr.length; i++) {
-        // Fallback to synthetic ID for legacy comments
-        let currentPinglunID = huifunr[i].pinglunID || (id + "_" + i);
-        if (currentPinglunID == plid) {
-          dianzhanID = huifunr[i].dianzhanID || [];
-          index = i;
-          break;
-        }
-      }
-
-      if (index === -1) {
-        console.log("Comment not found for plid:", plid);
-        return;
-      }
-
-      var yn = dianzhanID.indexOf(dzrid)
-
-      // console.log("xxxxxxxxxxx",yn,dianzhanID)
-
-      if (yn == -1) {
-        //没d点
-
-
-        db.collection(collectionName).doc(id).update({
-          data: {
-
-            [`ss_xx.huifunr.${index}.dianzhanID`]: _.push(dzrid),
-            [`ss_xx.huifunr.${index}.pldianzannb`]: _.inc(1),
-
-
-          }
+  if (toggleResult.liked && event.pllzid && event.pllzid !== actorId) {
+    await db.collection('users').doc(event.pllzid).update({
+      data: {
+        dzmessage: _.push({
+          name: event.name,
+          photo: event.photo,
+          time: event.time,
+          type: 'pldianzan',
+          zilei: event.zilei,
+          plnr: event.plnr,
+          bhfpl: event.plnr,
+          id: messageId(),
+          ssid: event.id,
+          postId: event.id,
+          postType: collectionName === 'tianmeizhoubian' ? 'zhoubian' : 'ss',
+          commentId: event.plid,
+          source: 'message',
+          isorder: false,
+          subtype: collectionName === 'tianmeizhoubian' ? 'tianmeizhoubian' : ''
         })
-
-        // Notification Logic
-        if (pllzid && pllzid != dzrid) {
-          db.collection("users").doc(pllzid).update({
-            data: {
-              dzmessage: _.push({
-                name: name,
-                photo: photo,
-                time: time,
-                type: 'pldianzan',
-                zilei:zilei,
-                plnr: plnr,
-                bhfpl: plnr,
-                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-                ssid: event.id,
-                postId: event.id,
-                postType: collectionName == 'tianmeizhoubian' ? 'zhoubian' : 'ss',
-                commentId: plid,
-                source: 'message',
-                isorder: false,
-                subtype: collectionName == 'tianmeizhoubian' ? 'tianmeizhoubian' : ''
-              })
-            }
-          })
-        }
-
-        console.log("点赞了zilei",zilei)
-        return
-      } else {
-
-        db.collection(collectionName).doc(id).update({
-          data: {
-            [`ss_xx.huifunr.${index}.dianzhanID`]: _.pull(dzrid),
-            [`ss_xx.huifunr.${index}.pldianzannb`]: _.inc(-1),
-
-          }
-        })
-        console.log("取消了")
-        return
       }
-
     })
-
-
   }
 
+  return { success: true, liked: toggleResult.liked, type: event.type }
+}
+
+exports.main = async (event = {}) => {
+  const openid = cloud.getWXContext().OPENID
+  if (!openid) return { success: false, errCode: 'UNAUTHENTICATED', errMsg: 'Missing OPENID' }
+  if (typeof event.id !== 'string' || !event.id) {
+    return { success: false, errCode: 'INVALID_ID', errMsg: 'Missing post id' }
+  }
+
+  const actorId = await getActorId(openid)
+  if (!actorId) return { success: false, errCode: 'USER_NOT_FOUND', errMsg: 'User not found' }
+
+  if (event.type === 'ss') return togglePostLike(event, actorId, 'ss', 'ss')
+  if (event.type === 'tianmeizhoubian') {
+    return togglePostLike(event, actorId, 'tianmeizhoubian', 'zhoubian')
+  }
+  if (event.type === 'sspinglun') {
+    const collectionName = event.collection || 'ss'
+    if (!['ss', 'tianmeizhoubian'].includes(collectionName)) {
+      return { success: false, errCode: 'INVALID_COLLECTION', errMsg: 'Unsupported collection' }
+    }
+    return toggleCommentLike(event, actorId, collectionName)
+  }
+  return { success: false, errCode: 'INVALID_TYPE', errMsg: 'Unsupported like type' }
 }
