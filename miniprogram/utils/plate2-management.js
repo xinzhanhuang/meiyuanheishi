@@ -1,6 +1,5 @@
 const app = getApp()
-const db = wx.cloud.database()
-const _ = db.command
+const { callCloudFunction, errorMessage } = require('./cloud-call')
 
 module.exports = {
 
@@ -104,130 +103,32 @@ module.exports = {
   });
 },
 
-  gameover(e) {
-  if (e) console.log(e);
-  var _id = app.userInfo._id;
-  // 检测是否是自己的
-  var mine = false;
-  var myid = app.userInfo._id;
-  for (var ii = 0; ii < app.glids.length; ii++) {
-    if (app.glids[ii] == myid) {
-      mine = true;
-      break;
-    }
+  async gameover() {
+  try {
+    const result = await callCloudFunction('delete', { action: 'toggleActivity', postId: this.data.id });
+    this.setData({ show: false, 'ss_xx.ss_xx.isover': result.isover });
+    app.shuaxin = true;
+    wx.showToast({ title: result.isover ? '活动结束' : '活动恢复' });
+  } catch (err) {
+    console.error('修改活动状态失败', err);
+    wx.showToast({ title: errorMessage(err, '状态修改失败'), icon: 'none' });
   }
-
-  // 删除条件：2.自己的帖子。3.自己是管理员
-  if (mine == true || _id == this.data.ss_xx.ss_xx.lzid) {
-    var isover = this.data.ss_xx.ss_xx.isover;
-    if (!isover) {
-      db.collection('ss').doc(this.data.id).update({
-        data: {
-          'ss_xx.isover': true
-        }
-      }).then(res => {
-        wx.showToast({
-          title: '活动结束',
-        });
-
-        this.setData({
-          show: false,
-          "ss_xx.ss_xx.isover": true,
-
-        });
-
-        app.shuaxin = true;
-      });
-    } else {
-      db.collection('ss').doc(this.data.id).update({
-        data: {
-          'ss_xx.isover': false,
-        }
-
-      }).then(res => {
-        if (e && e.detail) console.log(e.detail.value);
-        this.setData({
-          show: false,
-          "ss_xx.ss_xx.isover": false,
-
-
-
-        })
-
-        wx.showToast({
-          title: '活动恢复',
-        })
-
-        app.shuaxin = true
-
-      })
-
-    }
-  } else (
-    wx.showToast({
-      title: '无权修改',
-      icon: 'none',
-      duration: 800
-    })
-  )
-
 },
 
-  oderover(e) {
-  if (e) console.log(e);
-  var _id = app.userInfo._id;
-  // 检测是否是自己的
-  // 优化：直接使用 onLoad 中已获取的管理员状态
-  var mine = this.data.isAdmin;
-
-  // 删除条件：2.自己的帖子。3.自己是管理员
-  if (mine == true || _id == this.data.ss_xx.ss_xx.lzid) {
-    var isover = this.data.ss_xx.ss_xx.orderdetail.takeorder;
-    if (!isover) {
-      db.collection('ss').doc(this.data.id).update({
-        data: {
-          'ss_xx.orderdetail.takeorder': true
-        }
-      }).then(res => {
-        wx.showToast({
-          title: '结束',
-        });
-
-        this.setData({
-
-          show: false,
-          "ss_xx.ss_xx.orderdetail.takeorder": true
-        });
-
-        app.shuaxin = true;
-      });
-    } else {
-      db.collection('ss').doc(this.data.id).update({
-        data: {
-          'ss_xx.orderdetail.takeorder': false,
-          'ss_xx.orderdetail.takeorderid': "",
-          'ss_xx.orderdetail.takeorderphone': "",
-        }
-      }).then(res => {
-        if (e && e.detail) console.log(e.detail.value);
-        this.setData({
-          show: false,
-          "ss_xx.ss_xx.orderdetail.takeorder": false,
-
-        });
-
-        wx.showToast({
-          title: '恢复',
-        });
-        app.shuaxin = true;
-      });
-    }
-  } else {
-    wx.showToast({
-      title: '无权修改',
-      icon: 'none',
-      duration: 800
+  async oderover() {
+  try {
+    const result = await callCloudFunction('delete', { action: 'toggleOrder', postId: this.data.id });
+    this.setData({
+      show: false,
+      'ss_xx.ss_xx.orderdetail.takeorder': result.takeorder,
+      'ss_xx.ss_xx.orderdetail.takeorderid': result.takeorder ? this.data.ss_xx.ss_xx.orderdetail.takeorderid : '',
+      'ss_xx.ss_xx.orderdetail.takeorderphone': result.takeorder ? this.data.ss_xx.ss_xx.orderdetail.takeorderphone : ''
     });
+    app.shuaxin = true;
+    wx.showToast({ title: result.takeorder ? '结束' : '恢复' });
+  } catch (err) {
+    console.error('修改派单状态失败', err);
+    wx.showToast({ title: errorMessage(err, '状态修改失败'), icon: 'none' });
   }
 },
 
@@ -239,9 +140,6 @@ module.exports = {
 },
 
   deletethisone() {
-  this.setData({
-
-  });
   var that = this;
   wx.showModal({
     title: '提示💡',
@@ -254,37 +152,13 @@ module.exports = {
     success(res) {
       if (res.confirm) {
         console.log('用户点击确定');
-        that.setData({
-          ss_xx: 0
-        });
-        wx.showToast({
-          title: '已删除',
-          icon: "none"
-        });
-
-        db.collection('ss').doc(that.data.id).get().then((res) => {
-          console.log(res.data.ss_xx.tp); // 取到图片判断删图
-          var tp = res.data.ss_xx.tp;
-          if (tp.length > 0) {
-            wx.cloud.deleteFile({
-              fileList: tp
-            });
-          }
-
-          // 上面已经有了tp,直接删原帖子
-          if (tp != null && tp != undefined) {
-            db.collection('ss').doc(that.data.id).remove(); // 删了ss里面的记录
-          }
-        });
-
-        db.collection('users').where({
-          _id: app.userInfo._id
-        }).update({
-          data: {
-            wenzhang: _.pull({
-              id: _.eq(that.data.id)
-            })
-          }
+        callCloudFunction('delete', { action: 'deletePost', postId: that.data.id }).then(() => {
+          that.setData({ ss_xx: 0 });
+          app.shuaxin = true;
+          wx.showToast({ title: '已删除', icon: 'none' });
+        }).catch((err) => {
+          console.error('删除帖子失败', err);
+          wx.showToast({ title: errorMessage(err, '删除失败，请重试'), icon: 'none' });
         });
 
       } else if (res.cancel) {

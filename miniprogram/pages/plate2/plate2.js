@@ -268,8 +268,6 @@ Page({
     var jg = biaodan.jg;
     var weixin = biaodan.weixin;
     var openlocationtitle = this.data.ss_xx.ss_xx.orderdetail.openlocationtitle;
-    var that = this;
-
     if (!this.checkFullLogin()) return;
 
     // 检测账号是否被封
@@ -304,36 +302,14 @@ Page({
       mask: true
     });
 
-    if (!openlocationtitle) {
-      if (textwbnr.length == 0) {
-        wx.showToast({
-          title: '再多说点吧！',
-          icon: 'none',
-          duration: 800,
-        });
-        return; // 这个return返回，停止继续执行
-      }
-
-      db.collection('ss').doc(that.data.id).update({
-        data: {
-          'ss_xx.nr': textwbnr
-        }
-      }).then(res => {
-        wx.showToast({
-          title: '修改成功',
-        });
-
-
-        that.setData({
-          "ss_xx.ss_xx.nr": textwbnr,
-          istrue: false
-        });
-        app.shuaxin = true;
-      });
+    if (!openlocationtitle && textwbnr.length == 0) {
+      wx.hideLoading();
+      wx.showToast({ title: '再多说点吧！', icon: 'none', duration: 800 });
+      return;
     }
-
     if (openlocationtitle) {
       if (!phone && !weixin) {
+        wx.hideLoading();
         wx.showToast({
           title: '至少一个联系方式',
           icon: 'none',
@@ -341,6 +317,7 @@ Page({
         });
         return; // 这个return返回，停止继续执行
       } else if (ordertitle.length < 1) {
+        wx.hideLoading();
         wx.showToast({
           title: '标题',
           icon: 'none',
@@ -348,6 +325,7 @@ Page({
         });
         return; // 这个return返回，停止继续执行
       } else if (jg <= 2 && jg == "") {
+        wx.hideLoading();
         wx.showToast({
           title: '赏金不小于2元',
           icon: 'none',
@@ -356,30 +334,25 @@ Page({
         return; // 这个return返回，停止继续执行
       }
 
-      db.collection('ss').doc(that.data.id).update({
-        data: {
-          'ss_xx.nr': textwbnr,
-          'ss_xx.orderdetail.ordertitle': ordertitle,
-          'ss_xx.orderdetail.phone': phone,
-          'ss_xx.orderdetail.jg': jg,
-          'ss_xx.orderdetail.weixin': weixin,
-        }
-      }).then(res => {
-        wx.showToast({
-          title: '修改成功',
-        });
-
-        that.setData({
-          'ss_xx.ss_xx.nr': textwbnr,
-          'ss_xx.ss_xx.orderdetail.ordertitle': ordertitle,
-          'ss_xx.ss_xx.orderdetail.phone': phone,
-          'ss_xx.ss_xx.orderdetail.jg': jg,
-          'ss_xx.ss_xx.orderdetail.weixin': weixin,
-          istrue: false
-        });
-
-        app.shuaxin = true;
+    }
+    try {
+      await callCloudFunction('delete', {
+        action: 'editPost',
+        postId: this.data.id,
+        nr: textwbnr,
+        ordertitle,
+        lianxi: phone,
+        jg,
+        weixin
       });
+      this.setData({ istrue: false });
+      app.shuaxin = true;
+      wx.showToast({ title: '修改成功' });
+    } catch (err) {
+      console.error('修改帖子失败', err);
+      wx.showToast({ title: errorMessage(err, '修改失败，请重试'), icon: 'none' });
+    } finally {
+      wx.hideLoading();
     }
   },
 

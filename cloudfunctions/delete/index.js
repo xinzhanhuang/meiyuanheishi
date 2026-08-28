@@ -3,6 +3,7 @@ const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
 const db = cloud.database()
+const _ = db.command
 
 async function getActor(openid) {
   const result = await db.collection('users').where({ _openid: openid }).limit(1).get()
@@ -15,16 +16,78 @@ async function isAdmin(actorId) {
   return Array.isArray(ids) && ids.includes(actorId)
 }
 
+async function managePost(event, actor) {
+  if (typeof event.postId !== 'string' || !event.postId) {
+    return { success: false, errCode: 'INVALID_ARGUMENT' }
+  }
+  const postResult = await db.collection('ss').doc(event.postId).get()
+  const post = postResult.data || {}
+  const detail = post.ss_xx || {}
+  if (actor._id !== detail.lzid && !(await isAdmin(actor._id))) {
+    return { success: false, errCode: 'PERMISSION_DENIED' }
+  }
+
+  if (event.action === 'editPost') {
+    const updates = { 'ss_xx.nr': String(event.nr || '') }
+    if (detail.orderdetail && detail.orderdetail.openlocationtitle) {
+      updates['ss_xx.orderdetail.ordertitle'] = String(event.ordertitle || '')
+      updates['ss_xx.orderdetail.lianxi'] = String(event.lianxi || '')
+      updates['ss_xx.orderdetail.jg'] = event.jg
+      updates['ss_xx.orderdetail.weixin'] = String(event.weixin || '')
+    }
+    await db.collection('ss').doc(event.postId).update({ data: updates })
+    return { success: true, action: event.action }
+  }
+
+  if (event.action === 'toggleActivity') {
+    const isover = !Boolean(detail.isover)
+    await db.collection('ss').doc(event.postId).update({ data: { 'ss_xx.isover': isover } })
+    return { success: true, action: event.action, isover }
+  }
+
+  if (event.action === 'toggleOrder') {
+    const orderdetail = detail.orderdetail || {}
+    const takeorder = !Boolean(orderdetail.takeorder)
+    const updates = { 'ss_xx.orderdetail.takeorder': takeorder }
+    if (!takeorder) {
+      updates['ss_xx.orderdetail.takeorderid'] = ''
+      updates['ss_xx.orderdetail.takeorderphone'] = ''
+    }
+    await db.collection('ss').doc(event.postId).update({ data: updates })
+    return { success: true, action: event.action, takeorder }
+  }
+
+  if (event.action === 'deletePost') {
+    await db.runTransaction(async (transaction) => {
+      await transaction.collection('ss').doc(event.postId).remove()
+      await transaction.collection('users').doc(detail.lzid).update({
+        data: { wenzhang: _.pull({ id: _.eq(event.postId) }) }
+      })
+    })
+    const files = Array.isArray(detail.tp) ? detail.tp.filter(Boolean) : []
+    if (files.length) {
+      try { await cloud.deleteFile({ fileList: files }) } catch (error) { console.error('清理帖子图片失败', error) }
+    }
+    return { success: true, action: event.action, deleted: 'post' }
+  }
+
+  return { success: false, errCode: 'INVALID_ACTION' }
+}
+
 exports.main = async (event = {}) => {
-  const data = event._data
   const openid = cloud.getWXContext().OPENID
   if (!openid) return { success: false, errCode: 'UNAUTHENTICATED' }
+  const actor = await getActor(openid)
+  if (!actor) return { success: false, errCode: 'USER_NOT_FOUND' }
+
+  if (['editPost', 'toggleActivity', 'toggleOrder', 'deletePost'].includes(event.action)) {
+    return managePost(event, actor)
+  }
+
+  const data = event._data
   if (!data || typeof data.id !== 'string' || !data.id) {
     return { success: false, errCode: 'INVALID_ARGUMENT' }
   }
-
-  const actor = await getActor(openid)
-  if (!actor) return { success: false, errCode: 'USER_NOT_FOUND' }
 
   const collectionName = data.liuyan
     ? 'tj'

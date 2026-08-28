@@ -21,6 +21,9 @@ const postPage = read('miniprogram/pages/post/post.js')
 const voteFunction = read('cloudfunctions/VoteOption/index.js')
 const plate2Data = read('miniprogram/utils/plate2-data.js')
 const likeFunction = read('cloudfunctions/dianzan/index.js')
+const deleteFunction = read('cloudfunctions/delete/index.js')
+const managementModule = read('miniprogram/utils/plate2-management.js')
+const plate2 = read('miniprogram/pages/plate2/plate2.js')
 assert(publishPost.includes('cloud.getWXContext().OPENID'))
 assert(publishPost.includes('db.runTransaction(async (transaction)'))
 assert(publishPost.includes("collection('ss').add"))
@@ -33,6 +36,14 @@ assert(voteFunction.includes("event.action === 'getVoteState'"))
 assert(plate2Data.includes("action: 'getVoteState'"))
 assert(!plate2Data.includes("db.collection('VoteOption')"))
 assert(likeFunction.includes("event.type === 'mazhu'"))
+for (const action of ['editPost', 'toggleActivity', 'toggleOrder', 'deletePost']) {
+  assert(deleteFunction.includes(action), `delete 云函数缺少帖子管理动作：${action}`)
+}
+assert(plate2.includes("action: 'editPost'"))
+assert(managementModule.includes("action: 'toggleActivity'"))
+assert(managementModule.includes("action: 'toggleOrder'"))
+assert(managementModule.includes("action: 'deletePost'"))
+assert(!managementModule.includes("db.collection('ss')"))
 for (const message of ['文字审核失败', '图片审核失败', '图片上传失败', '网络失败，请重试']) {
   assert(postPage.includes(message), `发帖页缺少失败提示：${message}`)
 }
@@ -40,7 +51,6 @@ for (const loading of ['准备发送...', '就快好了...', '即将完成...'])
   assert(postPage.includes(loading), `发帖页应保留加载提示：${loading}`)
 }
 
-const plate2 = read('miniprogram/pages/plate2/plate2.js')
 assert(plate2.includes("callCloudFunction('dianzan', { type: 'mazhu'"))
 const voteModule = read('miniprogram/utils/plate2-vote.js')
 const commentModule = read('miniprogram/utils/plate2-comments.js')
