@@ -5,11 +5,24 @@ cloud.init({
 })
 const db = cloud.database()
 
-exports.main = async (event, context) => {
+async function isAdmin(openid) {
+    const userResult = await db.collection('users').where({ _openid: openid }).limit(1).get()
+    const user = userResult.data[0]
+    if (!user) return false
+    const systemResult = await db.collection('system').doc('system01').get()
+    const ids = systemResult.data && systemResult.data.system && systemResult.data.system.glids
+    return Array.isArray(ids) && ids.includes(user._id)
+}
+
+exports.main = async (event = {}, context) => {
     const { id, status, reason } = event
 
-    if (!id) {
-        return { errCode: -1, errMsg: 'Missing id' };
+    if (!await isAdmin(cloud.getWXContext().OPENID)) {
+        return { errCode: -3, errMsg: 'Permission denied' };
+    }
+
+    if (!id || ![1, 2].includes(status)) {
+        return { errCode: -1, errMsg: 'Invalid id or status' };
     }
 
     try {

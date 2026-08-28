@@ -6,8 +6,23 @@ cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV
 })
 
-exports.main = async (event, context) => {
-  var jbrid=event.jbrid
+async function getAdmin(openid) {
+  const db = cloud.database()
+  const userResult = await db.collection('users').where({ _openid: openid }).limit(1).get()
+  const user = userResult.data[0]
+  if (!user) return null
+  const systemResult = await db.collection('system').doc('system01').get()
+  const ids = systemResult.data && systemResult.data.system && systemResult.data.system.glids
+  return Array.isArray(ids) && ids.includes(user._id) ? user : null
+}
+
+exports.main = async (event = {}, context) => {
+  const admin = await getAdmin(cloud.getWXContext().OPENID)
+  if (!admin) return { success: false, errCode: 'PERMISSION_DENIED' }
+  if (!event.id || !['ss', 'tianmeizhoubian'].includes(event.type)) {
+    return { success: false, errCode: 'INVALID_ARGUMENT' }
+  }
+  var jbrid=admin._id
   var type=event.type
   const db=cloud.database()
   const _ = db.command

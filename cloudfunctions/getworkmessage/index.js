@@ -11,7 +11,21 @@ const db = cloud.database();
 const queueCollection = db.collection('work_queue');
 const ssCollection = db.collection('ss');
 
-exports.main = async (event, context) => {
+async function isAdmin(openid) {
+    if (!openid) return false;
+    const userResult = await db.collection('users').where({ _openid: openid }).limit(1).get();
+    const user = userResult.data[0];
+    if (!user) return false;
+    const systemResult = await db.collection('system').doc('system01').get();
+    const ids = systemResult.data && systemResult.data.system && systemResult.data.system.glids;
+    return Array.isArray(ids) && ids.includes(user._id);
+}
+
+exports.main = async (event = {}, context) => {
+    const manualInvocation = Boolean(event.url || event.articleId);
+    if (manualInvocation && !await isAdmin(cloud.getWXContext().OPENID)) {
+        return { success: false, errCode: 'PERMISSION_DENIED', msg: 'Admin required.' };
+    }
     // 1. Fetch batch of tasks from Queue
     // Limit to 2 per run for stability
     const BATCH_SIZE = 2;

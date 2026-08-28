@@ -6,17 +6,26 @@ cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV
 })
 
-exports.main = async (event, context) => {
-  var jbrid=event.jbrid
+exports.main = async (event = {}, context) => {
   const db=cloud.database()
   const _ = db.command 
+  const openid = cloud.getWXContext().OPENID
+  if (!openid || !event.id) return { success: false, errCode: 'INVALID_ARGUMENT' }
+  const actorResult = await db.collection('users').where({ _openid: openid }).limit(1).get()
+  const actor = actorResult.data[0]
+  if (!actor) return { success: false, errCode: 'USER_NOT_FOUND' }
+  var jbrid=actor._id
 
   //先看数据库中举报数加完是否达到
-  db.collection("ss").doc(event.id).get().then((res)=>{
+  return db.collection("ss").doc(event.id).get().then((res)=>{
     var total=res.data.ss_xx.jubao[1]
     var lzid=res.data.ss_xx.lzid
+    var reporters=res.data.ss_xx.jubao[0] || []
+    if(reporters.indexOf(jbrid)!==-1){
+      return { success: false, errCode: 'ALREADY_REPORTED' }
+    }
     if(total>9){
-      return
+      return { success: false, errCode: 'REPORT_LIMIT_REACHED' }
     }
     if(total<=8){
       //加完小于等于九，可以直接加
