@@ -12,7 +12,7 @@ const documentedFunctions = [...contract.matchAll(/^\| `([^`]+)` \|/gm)]
   .map((match) => match[1])
   .sort()
 
-assert.strictEqual(sourceFunctions.length, 21, '有效云函数数量发生变化，请同步契约')
+assert.strictEqual(sourceFunctions.length, 22, '有效云函数数量发生变化，请同步契约')
 assert.strictEqual(new Set(documentedFunctions).size, documentedFunctions.length, '契约中存在重复云函数')
 assert.deepStrictEqual(documentedFunctions, sourceFunctions, '云函数源码目录与契约不一致')
 
@@ -24,4 +24,4 @@ const timerFunctions = sourceFunctions.filter((name) => {
 })
 assert.deepStrictEqual(timerFunctions.sort(), ['AiNews', 'getnewlines', 'getworkmessage'])
 
-console.log('云函数接口契约检查通过：21 个有效云函数，3 个定时任务')
+console.log('云函数接口契约检查通过：22 个有效云函数，3 个定时任务')

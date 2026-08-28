@@ -4,9 +4,6 @@ var util = require('../../utils/util.js');
 
 const app = getApp()
 const db = wx.cloud.database()
-const _ = db.command
-const VOTE_ITEM = wx.cloud.database().collection("ss")
-const VOTE_OPTION = wx.cloud.database().collection("VoteOption")
 
 Page({
   data: {
@@ -645,7 +642,7 @@ Page({
   /**
    * 发布说说
    */
-  post(ss_xx) {
+  async post(ss_xx) {
     // if (voteOption.length <2) {
     //   this.showToast("投票选项至少两个", "warning", "#FFC107", 2000)
     // }
@@ -658,100 +655,33 @@ Page({
     //var sjk=ss_xx.bankuai.toString()+"0"//@@@转成字符串@@@
     //添加说说记录
 
-    let _this = this
-
     let {
       voteNumberPerPerson,
       voteOption
     } = this.data.publish
-
-    db.collection('ss').add({
-      data: {
-
-        voteNumberPerPerson: voteNumberPerPerson,
-        votepeopleNumber: 0,
-        voteOption,
-        isEnd: false,
-        ss_xx,
-        time: ss_xx.firsttime
+    if (this._posting) return
+    this._posting = true
+    try {
+      const res = await wx.cloud.callFunction({
+        name: 'publishPost',
+        data: { ss_xx, voteNumberPerPerson, voteOption }
+      })
+      const result = res && res.result
+      if (!result || result.success !== true) {
+        throw new Error((result && result.errCode) || 'PUBLISH_FAILED')
       }
-    }).then((res) => {
-
-      let voteItemId = res._id
-      voteOption.forEach((element, index) => {
-        VOTE_OPTION.add({
-          data: {
-            id: voteItemId,
-            voteOption: element,
-            voteNumber: 0
-          },
-          success(res) {
-            if (index == voteOption.length - 1) {
-              _this.setData({
-                publishSuccess: true
-              })
-              console.log('---发布成功---', _this.data.publishSuccess);
-
-            }
-          },
-          fail(res) {
-            console.log(res.errMsg);
-          }
-        })
-      });
-
-
       app.shuaxin = true
-      console.log(
-
-
-        "ceshi sssssss", this.data.openlocationtitle
-      )
-      if (this.data.openlocationtitle) {
-        var ISorderdetail = true
-      } else {
-        var ISorderdetail = false
-      }
-      console.log("ss_xx.orderdetail.ordertitle", ss_xx.orderdetail.ordertitle)
-      var id = res._id
-      var jl = {
-        "time": ss_xx.firsttime,
-        "nr": ss_xx.orderdetail.ordertitle ? ss_xx.orderdetail.ordertitle : ss_xx.nr,
-        "id": id,
-        "weigui": false,
-        "tp": ss_xx.tp,
-        "type": ss_xx.orderdetail.ordertitle ? "order" : "post",
-        'ISorderdetail': ISorderdetail
-      }
-      if (jl.nr == '') {
-        jl.nr = '分享了' + ss_xx.tp.length + '张图片'
-      }
-
-      var wenzhang = []
-      //记录到自己users里（最多保留50条）
-      db.collection("users").doc(app.userInfo._id).update({
-        data: {
-          wenzhang: _.push({ each: [jl], slice: -50 })
-        }
-      }).then((res) => {
-        //进行全局数据我的本地储存
-        if (!app.userInfo.wenzhang) app.userInfo.wenzhang = [];
-        app.userInfo.wenzhang = app.userInfo.wenzhang.concat([jl]).slice(-50);
-        this.setData({
-          imgs: [],
-          wbnr: ""
-        })
-
-      })
-
-      wx.hideLoading({}) //发布成功隐藏
-      wx.switchTab({
-        url: '/pages/index/index'
-      })
-
-
-
-    })
+      if (!app.userInfo.wenzhang) app.userInfo.wenzhang = []
+      app.userInfo.wenzhang = app.userInfo.wenzhang.concat([result.record]).slice(-50)
+      this.setData({ imgs: [], wbnr: '', publishSuccess: true })
+      wx.switchTab({ url: '/pages/index/index' })
+    } catch (err) {
+      console.error('发布帖子失败', err)
+      wx.showToast({ title: '发布失败，请稍后重试', icon: 'none' })
+    } finally {
+      this._posting = false
+      wx.hideLoading()
+    }
 
   },
 
