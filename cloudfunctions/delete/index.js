@@ -4,6 +4,7 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
 const db = cloud.database()
 const _ = db.command
+const POST_COLLECTIONS = new Set(['ss', 'tianmeizhoubian'])
 
 async function getActor(openid) {
   const result = await db.collection('users').where({ _openid: openid }).limit(1).get()
@@ -20,7 +21,11 @@ async function managePost(event, actor) {
   if (typeof event.postId !== 'string' || !event.postId) {
     return { success: false, errCode: 'INVALID_ARGUMENT' }
   }
-  const postResult = await db.collection('ss').doc(event.postId).get()
+  const collectionName = event.action === 'deletePost' ? (event.collection || 'ss') : 'ss'
+  if (event.action === 'deletePost' && !POST_COLLECTIONS.has(collectionName)) {
+    return { success: false, errCode: 'INVALID_COLLECTION' }
+  }
+  const postResult = await db.collection(collectionName).doc(event.postId).get()
   const post = postResult.data || {}
   const detail = post.ss_xx || {}
   if (actor._id !== detail.lzid && !(await isAdmin(actor._id))) {
@@ -59,7 +64,7 @@ async function managePost(event, actor) {
 
   if (event.action === 'deletePost') {
     await db.runTransaction(async (transaction) => {
-      await transaction.collection('ss').doc(event.postId).remove()
+      await transaction.collection(collectionName).doc(event.postId).remove()
       await transaction.collection('users').doc(detail.lzid).update({
         data: { wenzhang: _.pull({ id: _.eq(event.postId) }) }
       })
@@ -68,7 +73,7 @@ async function managePost(event, actor) {
     if (files.length) {
       try { await cloud.deleteFile({ fileList: files }) } catch (error) { console.error('清理帖子图片失败', error) }
     }
-    return { success: true, action: event.action, deleted: 'post' }
+    return { success: true, action: event.action, deleted: 'post', collection: collectionName }
   }
 
   return { success: false, errCode: 'INVALID_ACTION' }

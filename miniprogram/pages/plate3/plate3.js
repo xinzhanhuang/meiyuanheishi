@@ -1,6 +1,4 @@
 var app = getApp()
-var db = wx.cloud.database()
-var _ = db.command
 Page({
 
   data: {
@@ -65,83 +63,32 @@ Page({
           var ssid = e.currentTarget.dataset.id
           var type = e.currentTarget.dataset.type
           var index = e.currentTarget.dataset.index
-          var wenzhang = that.data.wenzhang
-          wenzhang.splice(index, 1); //删除指定index记录
-          that.setData({
-            wenzhang: wenzhang
-          })
-          app.userInfo.wenzhang = wenzhang
-          var x = []
-          x[index] = 0
-          that.setData({
-            x: x
-          })
-          wx.showToast({
-            title: '删除成功',
-            icon: "none"
-          })
-
-
-          if (type == 'zhoubiantype') {
-            db.collection('tianmeizhoubian').doc(ssid).get().then((res) => {
-              console.log(res.data.ss_xx.tp) //取到图片判断删图！！！！！！！
-              var tp = res.data.ss_xx.tp
-              if (tp.length > 0) {
-                wx.cloud.deleteFile({
-                  fileList: tp
-                })
-              }
-
-              //上面已经有了tp,直接删原帖子
-              if (tp != null && tp != undefined) {
-                db.collection('tianmeizhoubian').doc(ssid).remove() //删了ss里面的记录
-              }
-
-
-              db.collection('users').where({
-                _id: app.userInfo._id
-              }).update({
-                data: {
-                  wenzhang: _.pull({
-                    id: _.eq(ssid)
-                  })
-                }
-              })
+          var collection = type == 'zhoubiantype' ? 'tianmeizhoubian' : 'ss'
+          wx.showLoading({ title: '删除中', mask: true })
+          wx.cloud.callFunction({
+            name: 'delete',
+            data: { action: 'deletePost', postId: ssid, collection }
+          }).then((result) => {
+            var response = result && result.result
+            if (!response || response.success !== true) {
+              throw new Error((response && response.errCode) || 'DELETE_POST_FAILED')
+            }
+            var wenzhang = that.data.wenzhang.slice()
+            wenzhang.splice(index, 1)
+            var x = []
+            x[index] = 0
+            app.userInfo.wenzhang = wenzhang
+            that.setData({
+              wenzhang,
+              x
             })
-          } else if (type != 'zhoubiantype') {
-            db.collection('ss').doc(ssid).get().then((res) => {
-              console.log(res.data.ss_xx.tp) //取到图片判断删图！！！！！！！
-              var tp = res.data.ss_xx.tp
-              if (tp.length > 0) {
-                wx.cloud.deleteFile({
-                  fileList: tp
-                })
-              }
-
-              //上面已经有了tp,直接删原帖子
-              if (tp != null && tp != undefined) {
-                db.collection('ss').doc(e.currentTarget.dataset.id).remove() //删了ss里面的记录
-              }
-            })
-
-            db.collection('users').where({
-              _id: app.userInfo._id
-            }).update({
-              data: {
-                wenzhang: _.pull({
-                  id: _.eq(ssid)
-                })
-
-              }
-
-            })
-
-          }
-
-
-
-
-
+            wx.hideLoading()
+            wx.showToast({ title: '删除成功', icon: 'none' })
+          }).catch((err) => {
+            wx.hideLoading()
+            console.error('删除帖子失败', err)
+            wx.showToast({ title: '删除失败', icon: 'none' })
+          })
         } else if (res.cancel) {
           console.log('用户点击取消')
           wx.showToast({

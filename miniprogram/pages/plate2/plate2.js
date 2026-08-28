@@ -489,25 +489,6 @@ Page({
                 var _id = app.userInfo._id;
                 var takeordername = app.userInfo.userinfo.username;
 
-                db.collection('ss').doc(this.data.id).update({
-                  data: {
-                    'ss_xx.orderdetail.takeorder': true,
-                    'ss_xx.orderdetail.takeorderid': _id,
-                    'ss_xx.orderdetail.takeorderphone': takeorderphone,
-                    'ss_xx.orderdetail.takeordername': takeordername
-                  }
-                }).then(res => {
-                  wx.showToast({
-                    title: '接单成功！',
-                  });
-                });
-                app.shuaxin = true;
-
-                this.setData({
-                  'ss_xx.ss_xx.orderdetail.takeorder': true,
-                  orderlzid: true
-                });
-
                 // 时间
                 var timestamp = Date.parse(new Date());
                 timestamp = timestamp / 1000;
@@ -538,9 +519,7 @@ Page({
                 var lzid = this.data.ss_xx.ss_xx.lzid;
 
                 console.log("sssssddddfffff", lzid, liuyan, takeorderphone, time);
-                wx.cloud.callFunction({
-                  name: 'ordernotice',
-                  data: {
+                callCloudFunction('ordernotice', {
                     orderid,
                     lzopenid,
                     ordertitle,
@@ -549,9 +528,15 @@ Page({
                     takeorderphoto: app.userInfo.userinfo.userphoto,
                     liuyan,
                     lzid
-                  }
                 }).then((res) => {
-                  console.log("获取到openid:", res);
+                  app.shuaxin = true;
+                  this.setData({
+                    'ss_xx.ss_xx.orderdetail.takeorder': true,
+                    orderlzid: true
+                  });
+                  wx.showToast({ title: '接单成功！' });
+                }).catch((err) => {
+                  wx.showToast({ title: errorMessage(err, '接单失败'), icon: 'none' });
                 });
 
               } else {
@@ -791,13 +776,10 @@ Page({
             var haiyou = JSON.stringify(ss_xx.huifunr).includes(app.userInfo._id);
             // 没了就删掉自己评论过的记录
             if (haiyou == false) {
-              db.collection('users').doc(app.userInfo._id).update({
-                data: {
-                  pinglunguode: _.pull({
-                    id: _.eq(that.data.id)
-                  })
-                }
-              });
+              callCloudFunction('login', {
+                action: 'removeCommentHistory',
+                postId: that.data.id
+              }).catch(err => console.error('清理评论记录失败', err));
               return;
             }
 
@@ -1173,11 +1155,8 @@ Page({
           });
         }
 
-        db.collection('users').doc(app.userInfo._id).update({
-          data: {
-            msgnb: msgnb,
-            // allow:allow
-          }
+        callCloudFunction('login', { action: 'setMessageBadge', msgnb }).catch(err => {
+          console.error('保存订阅消息状态失败', err)
         });
         console.log('增加了所有授权');
       },

@@ -43,7 +43,20 @@ exports.main = async (event = {}) => {
     liuyan: Boolean(event.liuyan)
   }
 
-  await db.collection('users').doc(ownerId).update({ data: { message: _.push(message) } })
+  const accepted = await db.runTransaction(async (transaction) => {
+    const latestResult = await transaction.collection(collectionName).doc(event.orderid).get()
+    const latestDetail = (latestResult.data && latestResult.data.ss_xx) || {}
+    if (latestDetail.orderdetail && latestDetail.orderdetail.takeorder) return false
+    await transaction.collection(collectionName).doc(event.orderid).update({ data: {
+      'ss_xx.orderdetail.takeorder': true,
+      'ss_xx.orderdetail.takeorderid': actor._id,
+      'ss_xx.orderdetail.takeorderphone': takeorderphone,
+      'ss_xx.orderdetail.takeordername': takeordername
+    } })
+    await transaction.collection('users').doc(ownerId).update({ data: { message: _.push(message) } })
+    return true
+  })
+  if (!accepted) return { success: false, errCode: 'ORDER_ALREADY_TAKEN' }
 
   let subscriptionSent = false
   if (!owner.online && Array.isArray(owner.msgnb) && owner.msgnb[0] > 0 && owner._openid) {

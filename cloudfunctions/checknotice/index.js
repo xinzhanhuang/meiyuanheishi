@@ -14,6 +14,13 @@ exports.main = async (event = {}) => {
   if (!actor || !adminIds.includes(actor._id)) {
     return { success: false, errCode: 'PERMISSION_DENIED' }
   }
+  if (event.action === 'setUserBan') {
+    if (typeof event.userId !== 'string' || typeof event.ban !== 'boolean') {
+      return { success: false, errCode: 'INVALID_ARGUMENT' }
+    }
+    await db.collection('users').doc(event.userId).update({ data: { ban: event.ban } })
+    return { success: true, ban: event.ban }
+  }
   if (!event.id || typeof event.wbnr !== 'string') {
     return { success: false, errCode: 'INVALID_ARGUMENT' }
   }

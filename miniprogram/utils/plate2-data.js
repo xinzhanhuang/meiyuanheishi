@@ -1,7 +1,7 @@
 const app = getApp()
 const db = wx.cloud.database()
-const _ = db.command
 const utils = require('./util')
+const { callCloudFunction } = require('./cloud-call')
 
 module.exports = {
 
@@ -170,11 +170,7 @@ module.exports = {
       nr: nr
     }; // 当前的时间戳
 
-    db.collection("users").doc(app.userInfo._id).update({
-      data: {
-        lookhistory: _.push({ each: [historyEntry], slice: -10 }),
-      }
-    }).then(updateRes => {
+    callCloudFunction('login', { action: 'appendLookHistory', entry: historyEntry }).then(updateRes => {
       console.log('浏览记录已更新', updateRes);
     }).catch(updateErr => {
       console.error('更新浏览记录失败', updateErr);

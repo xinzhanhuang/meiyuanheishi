@@ -1,6 +1,5 @@
 const app = getApp()
-const db = wx.cloud.database()
-const _ = db.command
+const { callCloudFunction } = require('../../../utils/cloud-call')
 const utils = require('../../../utils/util.js')
 
 Page({
@@ -73,14 +72,7 @@ Page({
       xx: x
     })
 
-    db.collection("users").doc(app.userInfo._id)
-      .update({
-        data: {
-          message: db.command.pull({
-            "id": db.command.eq(id)//这里不知道行不
-          })
-        }
-      }).then((res) => {
+    callCloudFunction('login', { action: 'removeMessage', messageType: 'message', id }).then((res) => {
         console.log("删消息（已读）", res)
         // 更新app中的消息数据
         app.message = message
@@ -101,7 +93,7 @@ Page({
           })
           app.hongdian = true
         }
-      })
+      }).catch(err => console.error('删除消息失败', err))
   },
 
 
@@ -111,12 +103,7 @@ Page({
     var message = this.data.message
     if (message.length > 0) {
 
-      db.collection("users").doc(app.userInfo._id)
-        .update({
-          data: {
-            message: []
-          }
-        }).then((res) => {
+      callCloudFunction('login', { action: 'clearMessages', messageType: 'message' }).then((res) => {
           console.log("删消息（已读）", res)
           // 更新app中的消息数据
           app.message = []
@@ -134,7 +121,7 @@ Page({
             icon: 'none',
             duration: 800
           })
-        })
+        }).catch(err => console.error('清空消息失败', err))
 
 
 
@@ -193,14 +180,7 @@ Page({
     if (type === 'reject') {
       var that = this;
       // Delete this message from DB
-      db.collection("users").doc(app.userInfo._id)
-        .update({
-          data: {
-            message: db.command.pull({
-              "id": db.command.eq(id)
-            })
-          }
-        }).then((res) => {
+      callCloudFunction('login', { action: 'removeMessage', messageType: 'message', id }).then((res) => {
           console.log("删消息（已读-拒绝通知）", res)
           // Update Local Message List
           var message = that.data.message.filter(msg => msg.id !== id)
@@ -224,7 +204,7 @@ Page({
             })
             app.hongdian = true
           }
-        })
+        }).catch(err => console.error('删除拒绝通知失败', err))
 
       wx.navigateTo({
         url: "../../post-zhoubian/post-zhoubian?id=" + ssid + "&isEdit=true"

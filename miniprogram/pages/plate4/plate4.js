@@ -1,6 +1,7 @@
 const app = getApp()
 const db = wx.cloud.database()
 const _ = db.command
+const { callCloudFunction } = require('../../utils/cloud-call')
 
 Page({
   timer: null, // Debounce timer
@@ -653,33 +654,8 @@ Page({
     ])).orderBy('time', 'desc').get().then(async (res) => {
       console.log(res.data)//这里一下取回了所有
 
-      // 将搜索记录插入到 searchLogs 集合
-      db.collection("searchLogs").add({
-        data: {
-          searchText: keywords,
-          userInfo: app.userInfo,
-          timestamp: new Date().getTime()
-        }
-      }).then(logRes => {
-        console.log('搜索记录已保存', logRes);
-      }).then(logRes => {
-        console.log('搜索记录已保存', logRes);
-      }).then(logRes => {
-        console.log('搜索记录已保存', logRes);
-      }).catch(logErr => {
-        console.error('保存搜索记录失败', logErr);
-      });
-
-      // search_keywords logic removed - directly using searchLogs
-
-      // 保存搜索关键词（最多保留 10 个）
-      const dbUpdate = db.collection("users").doc(app.userInfo._id).update({
-        data: {
-          search: _.push({ each: [keywords], slice: -10 })
-        }
-      });
-
-      dbUpdate.then(updateRes => {
+      callCloudFunction('login', { action: 'recordSearch', keyword: keywords }).then(updateRes => {
+        console.log('搜索记录已保存', updateRes)
         console.log('用户搜索记录已更新', updateRes);
 
         // Update Local Cache immediately
@@ -698,7 +674,7 @@ Page({
         });
 
       }).catch(updateErr => {
-        console.error('更新用户搜索记录失败', updateErr);
+        console.error('保存搜索记录失败', updateErr);
       });
 
 

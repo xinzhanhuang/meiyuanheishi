@@ -14,8 +14,13 @@ cloud.init({
  * 
  */
 exports.main = async (event, context) => {
-  return await cloud.getOpenData({
+  const result = await cloud.getOpenData({
     list:[event.id]
   })
+  const phone = result && result.list && result.list[0] && result.list[0].data && result.list[0].data.phoneNumber
+  const openid = cloud.getWXContext().OPENID
+  if (!phone || !openid) return { success: false, errCode: 'PHONE_NOT_FOUND' }
+  const db = cloud.database()
+  await db.collection('users').where({ _openid: openid }).update({ data: { phone } })
+  return { success: true, phone }
 }
-

@@ -104,8 +104,11 @@ Page({
             success(res) {
                 if (res.confirm) {
                     wx.showLoading({ title: '删除中' });
-                    db.collection('tianmeizhoubian').doc(id).remove()
-                        .then(res => {
+                    wx.cloud.callFunction({
+                        name: 'update_post_status',
+                        data: { id, action: 'delete' }
+                    }).then(res => {
+                            if (!res.result || !res.result.success) throw new Error((res.result && res.result.errMsg) || '删除失败');
                             wx.hideLoading();
                             wx.showToast({ title: '已删除' });
                             let list = that.data.list;

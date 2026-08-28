@@ -1,9 +1,9 @@
 // miniprogram/pages/post/post.js
 var util = require('../../utils/util.js');
+const { callCloudFunction } = require('../../utils/cloud-call')
 
 
 const app = getApp()
-const db = wx.cloud.database()
 
 Page({
   data: {
@@ -895,11 +895,8 @@ Page({
 
         console.log("加到数据库")
 
-        db.collection('users').doc(app.userInfo._id).update({
-          data: {
-            msgnb: msgnb,
-            // allow:allow
-          }
+        callCloudFunction('login', { action: 'setMessageBadge', msgnb }).catch(err => {
+          console.error('保存订阅消息状态失败', err)
         })
         console.log('增加了所有授权')
       },

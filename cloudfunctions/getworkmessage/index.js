@@ -22,9 +22,21 @@ async function isAdmin(openid) {
 }
 
 exports.main = async (event = {}, context) => {
-    const manualInvocation = Boolean(event.url || event.articleId);
+    const adminAction = ['deleteQueue', 'approvePost', 'deletePost'].includes(event.action);
+    const manualInvocation = Boolean(event.url || event.articleId || adminAction);
     if (manualInvocation && !await isAdmin(cloud.getWXContext().OPENID)) {
         return { success: false, errCode: 'PERMISSION_DENIED', msg: 'Admin required.' };
+    }
+    if (adminAction) {
+        if (typeof event.id !== 'string' || !event.id) {
+            return { success: false, errCode: 'INVALID_ARGUMENT' };
+        }
+        if (event.action === 'deleteQueue') await queueCollection.doc(event.id).remove();
+        if (event.action === 'approvePost') {
+            await ssCollection.doc(event.id).update({ data: { 'ss_xx.sstype': false } });
+        }
+        if (event.action === 'deletePost') await ssCollection.doc(event.id).remove();
+        return { success: true, action: event.action };
     }
     // 1. Fetch batch of tasks from Queue
     // Limit to 2 per run for stability

@@ -1,6 +1,7 @@
 //app.js
 const app = getApp()
 const { getCloudEnvId } = require('./config/cloud-env')
+const { callCloudFunction } = require('./utils/cloud-call')
 App({
   onLaunch: function () {
     if (!wx.cloud) {
@@ -86,13 +87,7 @@ App({
   },
 
   updateOnlineState(online) {
-    return wx.cloud.callFunction({ name: 'login', data: {} }).then((res) => {
-      var openid = res && res.result && res.result.openid
-      if (!openid) throw new Error('login did not return openid')
-      return wx.cloud.database().collection('users').where({ _openid: openid }).update({
-        data: { online }
-      })
-    }).catch((err) => {
+    return callCloudFunction('login', { action: 'setOnline', online }).catch((err) => {
       console.warn('更新在线状态失败', err)
     })
   },

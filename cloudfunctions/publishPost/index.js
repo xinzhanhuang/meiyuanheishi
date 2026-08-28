@@ -23,6 +23,33 @@ exports.main = async (event = {}) => {
     gender: profile.gender || '',
     zhuanye: profile.zhuanye || ''
   })
+  if (event.postType === 'zhoubian') {
+    ss_xx.checked = false
+    if (event.editId) {
+      const existing = await db.collection('tianmeizhoubian').doc(event.editId).get()
+      if (!existing.data || !existing.data.ss_xx || existing.data.ss_xx.lzid !== actor._id) {
+        return { success: false, errCode: 'PERMISSION_DENIED' }
+      }
+      await db.collection('tianmeizhoubian').doc(event.editId).update({ data: { ss_xx, time: ss_xx.firsttime } })
+      return { success: true, id: event.editId, edited: true }
+    }
+    return db.runTransaction(async (transaction) => {
+      const addResult = await transaction.collection('tianmeizhoubian').add({ data: { ss_xx, time: ss_xx.firsttime } })
+      const record = {
+        time: ss_xx.firsttime,
+        zilei: ss_xx.zilei,
+        nr: ss_xx.nr || ss_xx.zbtitle || `分享了${(ss_xx.tp || []).length}张图片`,
+        zbtitle: ss_xx.zbtitle,
+        id: addResult._id,
+        weigui: false,
+        type: 'zhoubiantype'
+      }
+      await transaction.collection('users').doc(actor._id).update({
+        data: { wenzhang: _.push({ each: [record], slice: -50 }) }
+      })
+      return { success: true, id: addResult._id, record }
+    })
+  }
   const voteOption = Array.isArray(event.voteOption) ? event.voteOption.slice(0, 5) : []
   const orderdetail = ss_xx.orderdetail || {}
   return db.runTransaction(async (transaction) => {

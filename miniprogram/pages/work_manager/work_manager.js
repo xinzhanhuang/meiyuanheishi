@@ -106,7 +106,8 @@ Page({
             success: (res) => {
                 if (res.confirm) {
                     // Start of fix: Hard delete from queue
-                    db.collection('work_queue').doc(id).remove().then(() => {
+                    wx.cloud.callFunction({ name: 'getworkmessage', data: { action: 'deleteQueue', id } }).then((res) => {
+                        if (!res.result || !res.result.success) throw new Error('忽略失败');
                         wx.showToast({ title: '已忽略' });
                         this.loadWorkArticles();
                     });
@@ -172,11 +173,10 @@ Page({
             success: (res) => {
                 if (res.confirm) {
                     wx.showLoading({ title: '发布中...' });
-                    db.collection('ss').doc(id).update({
-                        data: {
-                            'ss_xx.sstype': false // Set to false to make it effective/public
-                        }
-                    }).then(() => {
+                    wx.cloud.callFunction({
+                        name: 'getworkmessage', data: { action: 'approvePost', id }
+                    }).then((res) => {
+                        if (!res.result || !res.result.success) throw new Error('发布失败');
                         wx.hideLoading();
                         wx.showToast({ title: '已发布' });
                         this.loadPendingPosts();
@@ -197,7 +197,8 @@ Page({
             confirmColor: '#ff4d4f',
             success: (res) => {
                 if (res.confirm) {
-                    db.collection('ss').doc(id).remove().then(() => {
+                    wx.cloud.callFunction({ name: 'getworkmessage', data: { action: 'deletePost', id } }).then((res) => {
+                        if (!res.result || !res.result.success) throw new Error('删除失败');
                         wx.showToast({ title: '已删除' });
                         this.loadPendingPosts();
                     });

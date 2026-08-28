@@ -211,14 +211,10 @@ Page({
   ////////////////头像上传云端
   upload(filepath) {
     // console.log(filepath)
-    db.collection("users").doc(app.userInfo._id).update({
-
-      data: {
-
-        "userinfo.userphoto": filepath,
-
-      }
-    }).then(res => {
+    wx.cloud.callFunction({ name: 'login', data: {
+      action: 'updateProfile', profile: { userphoto: filepath }
+    }}).then(res => {
+      if (!res.result || !res.result.success) throw new Error('头像保存失败')
       wx.showToast({
         title: '添加成功',
         icon: 'success',
@@ -256,28 +252,18 @@ Page({
         }
       }).then((res) => {
         //console.log("取回：",res)
-        if (res.errMsg == "cloud.callFunction:ok") {
-          var phone = res.result.list[0].data.phoneNumber
+        if (res.result && res.result.success) {
+          var phone = res.result.phone
           // console.log(">>>",phone,"<<<")
 
-          db.collection('users').doc(app.userInfo._id).update({
+          app.userInfo.phone = phone
+          this.setData({ phone: phone })
 
-            data: {
-              phone: phone
-            }
-          }).then(() => {
-            // 更新 app.userInfo
-            app.userInfo.phone = phone
-            this.setData({
-              phone: phone
-            })
-
-            wx.hideLoading({})
-            wx.showToast({
-              title: '绑定成功！',
-              icon: "none",
-              duration: 1000
-            })
+          wx.hideLoading({})
+          wx.showToast({
+            title: '绑定成功！',
+            icon: "none",
+            duration: 1000
           })
         } else {
           wx.hideLoading({})
@@ -582,9 +568,12 @@ Page({
       updateData.registrationCompleted = true
     }
 
-    db.collection('users').doc(app.userInfo._id).update({
-      data: updateData
-    }).then(res => {
+    wx.cloud.callFunction({ name: 'login', data: {
+      action: 'updateProfile',
+      profile: { username: nickname, zhuanye, gender },
+      registrationCompleted: this.data.isFirstRegistration
+    }}).then(res => {
+      if (!res.result || !res.result.success) throw new Error('资料保存失败')
       wx.hideLoading()
       app.userInfo.phone = that.data.phone
       app.userInfo.userinfo.username = nickname

@@ -7,6 +7,7 @@ const ERROR_MESSAGES = {
   REPLY_NOT_FOUND: '回复已不存在',
   USER_NOT_FOUND: '用户状态异常，请重新登录',
   SELF_POST: '自己的帖子无需马住'
+  ,ORDER_ALREADY_TAKEN: '该派单已被接取'
 }
 
 function errorMessage(error, fallback) {

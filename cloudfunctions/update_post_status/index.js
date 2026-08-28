@@ -15,13 +15,13 @@ async function isAdmin(openid) {
 }
 
 exports.main = async (event = {}, context) => {
-    const { id, status, reason } = event
+    const { id, status, reason, action } = event
 
     if (!await isAdmin(cloud.getWXContext().OPENID)) {
         return { errCode: -3, errMsg: 'Permission denied' };
     }
 
-    if (!id || ![1, 2].includes(status)) {
+    if (!id || (action !== 'delete' && ![1, 2].includes(status))) {
         return { errCode: -1, errMsg: 'Invalid id or status' };
     }
 
@@ -30,6 +30,11 @@ exports.main = async (event = {}, context) => {
         const postRes = await db.collection('tianmeizhoubian').doc(id).get();
         const post = postRes.data;
         const authorId = post.ss_xx.lzid; // or use _openid if lzid isn't reliable, but lzid is usually user doc id
+
+        if (action === 'delete') {
+            await db.collection('tianmeizhoubian').doc(id).remove();
+            return { success: true, deleted: id };
+        }
 
         // 2. Update Post Status
         const updateRes = await db.collection('tianmeizhoubian').doc(id).update({

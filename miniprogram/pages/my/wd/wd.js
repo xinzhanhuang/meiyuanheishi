@@ -2,6 +2,7 @@
 const app = getApp()
 const db = wx.cloud.database()
 const utils = require('../../../utils/util.js')
+const { callCloudFunction } = require('../../../utils/cloud-call')
 
 Page({
   /**
@@ -93,50 +94,10 @@ Page({
     })
 
     try {
-      const loginRes = await wx.cloud.callFunction({ name: 'login', data: {} })
-      const openid = loginRes && loginRes.result && loginRes.result.openid
-      if (!openid) throw new Error('login did not return openid')
-
-      const userRes = await db.collection('users').where({ _openid: openid }).get()
-      let user = userRes.data[0]
-
-      if (!user) {
-        user = {
-          logintime: new Date().getTime(),
-          ban: false,
-          msgnb: [0, 0],
-          allow: true,
-          online: true,
-          wenzhang: [],
-          message: [],
-          dzmessage: [],
-          pinglunguode: [],
-          weiguinb: 0,
-          phone: '',
-          registrationCompleted: true,
-          userinfo: {
-            userphoto: '/images/message/touxiang1.png',
-            username: '校园用户',
-            gender: '',
-            anonymous: '',
-            zhuanye: '',
-            isVIP: false,
-            login: true,
-            LCU: false
-          }
-        }
-        const addRes = await db.collection('users').add({ data: user })
-        user._id = addRes._id
-        user._openid = openid
-      } else if (!user.userinfo || user.userinfo.login !== true) {
-        user.userinfo = Object.assign({
-          userphoto: '/images/message/touxiang1.png',
-          username: '校园用户'
-        }, user.userinfo, { login: true })
-        await db.collection('users').doc(user._id).update({
-          data: { userinfo: user.userinfo, online: true }
-        })
-      }
+      const loginRes = await wx.cloud.callFunction({ name: 'login', data: { action: 'ensureUser' } })
+      const result = loginRes && loginRes.result
+      if (!result || !result.success || !result.user) throw new Error('login did not return user')
+      let user = result.user
 
       app.userInfo = Object.assign(app.userInfo, user)
       this.jianting(user._id)
@@ -530,11 +491,7 @@ Page({
   logintime() {
     var now = new Date().getTime()
     if (app.userInfo._id) {
-      db.collection('users').doc(app.userInfo._id).update({
-        data: {
-          logintime: now
-        }
-      })
+      return callCloudFunction('login', { action: 'setLoginTime', logintime: now })
     }
   },
 

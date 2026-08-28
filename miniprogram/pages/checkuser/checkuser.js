@@ -73,13 +73,10 @@ Page({
     if (switch1Checked == false) {
       console.log("开灯")
 
-      db.collection('users').doc(userdata[0]._id).update({
-        data: {
-          'ban': false,
-
-        }
-
-      }).then(res => {
+      wx.cloud.callFunction({ name: 'checknotice', data: {
+        action: 'setUserBan', userId: userdata[0]._id, ban: false
+      }}).then(res => {
+        if (!res.result || !res.result.success) throw new Error('解封失败')
 
         wx.showToast({
           title: '解封',
@@ -101,13 +98,10 @@ Page({
       console.log("关灯")
 
 
-      db.collection('users').doc(userdata[0]._id).update({
-        data: {
-          'ban': true,
-
-        }
-
-      }).then(res => {
+      wx.cloud.callFunction({ name: 'checknotice', data: {
+        action: 'setUserBan', userId: userdata[0]._id, ban: true
+      }}).then(res => {
+        if (!res.result || !res.result.success) throw new Error('封号失败')
 
         wx.showToast({
           title: '已封',

@@ -1,7 +1,6 @@
 const app = getApp()
 const utils = require('../../../utils/util.js')
-const db = wx.cloud.database()
-const _ = db.command
+const { callCloudFunction } = require('../../../utils/cloud-call')
 
 Page({
 
@@ -73,14 +72,7 @@ Page({
             xx: x
         })
 
-        db.collection("users").doc(app.userInfo._id)
-            .update({
-                data: {
-                    dzmessage: db.command.pull({
-                        "id": db.command.eq(id)//这里不知道行不
-                    })
-                }
-            }).then((res) => {
+        callCloudFunction('login', { action: 'removeMessage', messageType: 'dzmessage', id }).then((res) => {
                 console.log("删消息（已读）", res)
                 // 更新app中的消息数据
                 app.userInfo.dzmessage = message
@@ -100,7 +92,7 @@ Page({
                     app.hongdian = true
                 }
 
-            })
+            }).catch(err => console.error('删除点赞消息失败', err))
     },
 
 
@@ -110,12 +102,7 @@ Page({
         var message = this.data.message
         if (message.length > 0) {
 
-            db.collection("users").doc(app.userInfo._id)
-                .update({
-                    data: {
-                        dzmessage: []
-                    }
-                }).then((res) => {
+            callCloudFunction('login', { action: 'clearMessages', messageType: 'dzmessage' }).then((res) => {
                     console.log("删消息（已读）", res)
                     // 更新app中的消息数据
                     app.userInfo.dzmessage = []
@@ -125,7 +112,7 @@ Page({
                         icon: 'none',
                         duration: 800
                     })
-                })
+                }).catch(err => console.error('清空点赞消息失败', err))
 
 
 
