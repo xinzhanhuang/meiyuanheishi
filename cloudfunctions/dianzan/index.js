@@ -107,6 +107,22 @@ async function toggleCommentLike(event, actorId, collectionName) {
   return { success: true, liked: toggleResult.liked, type: event.type }
 }
 
+async function toggleBookmark(event, actorId) {
+  return db.runTransaction(async (transaction) => {
+    const postResult = await transaction.collection('ss').doc(event.id).get()
+    const detail = (postResult.data && postResult.data.ss_xx) || {}
+    if (detail.lzid === actorId) {
+      return { success: false, errCode: 'SELF_POST', errMsg: 'Cannot bookmark own post' }
+    }
+    const userIds = Array.isArray(detail.Mazhu) ? detail.Mazhu : []
+    const bookmarked = !userIds.includes(actorId)
+    await transaction.collection('ss').doc(event.id).update({
+      data: { 'ss_xx.Mazhu': bookmarked ? _.push(actorId) : _.pull(actorId) }
+    })
+    return { success: true, bookmarked }
+  })
+}
+
 exports.main = async (event = {}) => {
   const openid = cloud.getWXContext().OPENID
   if (!openid) return { success: false, errCode: 'UNAUTHENTICATED', errMsg: 'Missing OPENID' }
@@ -117,6 +133,7 @@ exports.main = async (event = {}) => {
   const actorId = await getActorId(openid)
   if (!actorId) return { success: false, errCode: 'USER_NOT_FOUND', errMsg: 'User not found' }
 
+  if (event.type === 'mazhu') return toggleBookmark(event, actorId)
   if (event.type === 'ss') return togglePostLike(event, actorId, 'ss', 'ss')
   if (event.type === 'tianmeizhoubian') {
     return togglePostLike(event, actorId, 'tianmeizhoubian', 'zhoubian')

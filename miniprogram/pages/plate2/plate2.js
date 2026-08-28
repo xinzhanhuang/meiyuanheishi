@@ -3,6 +3,7 @@ const app = getApp();
 const _ = db.command;
 const utils = require('../../utils/util.js');
 const { submitVote } = require('../../utils/plate2-vote');
+const { callCloudFunction, errorMessage } = require('../../utils/cloud-call');
 const commentMethods = require('../../utils/plate2-comments');
 const shareMethods = require('../../utils/plate2-share');
 const lifecycleMethods = require('../../utils/plate2-lifecycle');
@@ -1574,7 +1575,7 @@ Page({
   },
 
   // 马住
-  mazhu(e) {
+  async mazhu(e) {
     var obj = wx.getLaunchOptionsSync();
     if (obj.scene == 1154) {
       wx.showToast({
@@ -1586,8 +1587,6 @@ Page({
     }
 
     // 未登录
-    var ss_xxid = this.data.ss_xx._id;
-
     if (app.userInfo.userinfo.login != true) {
       wx.showModal({
         title: '💡',
@@ -1616,67 +1615,21 @@ Page({
     if (!this.checkFullLogin()) return;
 
 
-    var _id = app.userInfo._id
-    if (_id != this.data.ss_xx.ss_xx.lzid) {
-      console.log("llllll")
-      if (!this.data.PDMazhu) {
-        db.collection('ss').doc(this.data.id).update({
-          data: {
-            // 假设数组字段名为'arrayFieldName'
-            'ss_xx.Mazhu': _.push(_id)
-          }
-        })
-          .then(res => {
-            this.setData({
-              PDMazhu: true
-            })
-
-            wx.showToast({
-              title: '已马',
-              icon: 'none',
-              duration: 1000
-            })
-            console.log(res);
-          })
-          .catch(err => {
-            wx.showToast({
-              title: 'bug',
-              icon: 'none',
-              duration: 1000
-            })
-            console.error(err);
-          });
-
-      } else {
-
-        db.collection('ss').doc(this.data.id).update({
-          data: {
-            // 假设数组字段名为'arrayFieldName'
-            'ss_xx.Mazhu': _.pull(_id)
-          }
-        })
-          .then(res => {
-            this.setData({
-              PDMazhu: false
-            })
-
-            wx.showToast({
-              title: '弃坑',
-              icon: 'none',
-              duration: 1000
-            })
-            console.log(res);
-          })
-          .catch(err => {
-            wx.showToast({
-              title: 'bug',
-              icon: 'none',
-              duration: 1000
-            })
-            console.error(err);
-          });
-
-      }
+    if (app.userInfo._id == this.data.ss_xx.ss_xx.lzid) {
+      wx.showToast({ title: '自己的帖子无需马住', icon: 'none' });
+      return;
+    }
+    if (this._bookmarkSubmitting) return;
+    this._bookmarkSubmitting = true;
+    try {
+      const result = await callCloudFunction('dianzan', { type: 'mazhu', id: this.data.id });
+      this.setData({ PDMazhu: result.bookmarked });
+      wx.showToast({ title: result.bookmarked ? '已马' : '弃坑', icon: 'none', duration: 1000 });
+    } catch (err) {
+      console.error('码住失败', err);
+      wx.showToast({ title: errorMessage(err, '操作失败，请重试'), icon: 'none' });
+    } finally {
+      this._bookmarkSubmitting = false;
     }
   },
 

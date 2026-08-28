@@ -5,7 +5,8 @@ const ERROR_MESSAGES = {
   ALREADY_REPORTED: '已经举报过了',
   COMMENT_NOT_FOUND: '评论已不存在',
   REPLY_NOT_FOUND: '回复已不存在',
-  USER_NOT_FOUND: '用户状态异常，请重新登录'
+  USER_NOT_FOUND: '用户状态异常，请重新登录',
+  SELF_POST: '自己的帖子无需马住'
 }
 
 function errorMessage(error, fallback) {

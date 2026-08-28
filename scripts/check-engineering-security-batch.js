@@ -20,6 +20,7 @@ const publishPost = read('cloudfunctions/publishPost/index.js')
 const postPage = read('miniprogram/pages/post/post.js')
 const voteFunction = read('cloudfunctions/VoteOption/index.js')
 const plate2Data = read('miniprogram/utils/plate2-data.js')
+const likeFunction = read('cloudfunctions/dianzan/index.js')
 assert(publishPost.includes('cloud.getWXContext().OPENID'))
 assert(publishPost.includes('db.runTransaction(async (transaction)'))
 assert(publishPost.includes("collection('ss').add"))
@@ -31,6 +32,7 @@ assert(postPage.includes('var reviewResults = await Promise.all(['))
 assert(voteFunction.includes("event.action === 'getVoteState'"))
 assert(plate2Data.includes("action: 'getVoteState'"))
 assert(!plate2Data.includes("db.collection('VoteOption')"))
+assert(likeFunction.includes("event.type === 'mazhu'"))
 for (const message of ['文字审核失败', '图片审核失败', '图片上传失败', '网络失败，请重试']) {
   assert(postPage.includes(message), `发帖页缺少失败提示：${message}`)
 }
@@ -39,6 +41,7 @@ for (const loading of ['准备发送...', '就快好了...', '即将完成...'])
 }
 
 const plate2 = read('miniprogram/pages/plate2/plate2.js')
+assert(plate2.includes("callCloudFunction('dianzan', { type: 'mazhu'"))
 const voteModule = read('miniprogram/utils/plate2-vote.js')
 const commentModule = read('miniprogram/utils/plate2-comments.js')
 const modules = {
