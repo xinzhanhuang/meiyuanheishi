@@ -19,11 +19,18 @@ assert(!checknotice.includes('event.glids'))
 const publishPost = read('cloudfunctions/publishPost/index.js')
 const postPage = read('miniprogram/pages/post/post.js')
 assert(publishPost.includes('cloud.getWXContext().OPENID'))
+assert(publishPost.includes('db.runTransaction(async (transaction)'))
 assert(publishPost.includes("collection('ss').add"))
 assert(publishPost.includes("collection('VoteOption').add"))
 assert(publishPost.includes("collection('users').doc(actor._id).update"))
 assert(postPage.includes("name: 'publishPost'"))
 assert(!postPage.includes("db.collection('ss').add"))
+for (const message of ['文字审核失败', '图片审核失败', '图片上传失败', '网络失败，请重试']) {
+  assert(postPage.includes(message), `发帖页缺少失败提示：${message}`)
+}
+for (const loading of ['准备发送...', '就快好了...', '即将完成...']) {
+  assert(postPage.includes(loading), `发帖页应保留加载提示：${loading}`)
+}
 
 const plate2 = read('miniprogram/pages/plate2/plate2.js')
 const voteModule = read('miniprogram/utils/plate2-vote.js')

@@ -64,12 +64,10 @@ Page({
         }
       });
       //console.log(res.result.errCode);
-      if (res.result.errCode == 0)
-        return true;
-      return false;
+      return res.result.errCode == 0;
     } catch (err) {
-      console.log(err);
-      return false;
+      console.error('文字审核请求失败', err);
+      throw err;
     }
   },
   /**
@@ -89,7 +87,7 @@ Page({
       return res.result.errCode
     } catch (err) {
       console.log("云检测错误", err);
-      return 1;
+      throw err;
     }
   },
   /**
@@ -104,7 +102,8 @@ Page({
         success: res => {
           //console.log("刚转换完",res.data)
           resolve(res.data)
-        }
+        },
+        fail: reject
       })
     })
   },
@@ -374,10 +373,12 @@ Page({
       mask: true
     })
 
-    if (text.length > 0) {
-      var checkOk = await this.checkStr(text);
-    } else {
-      var checkOk = true
+    try {
+      var checkOk = text.length > 0 ? await this.checkStr(text) : true
+    } catch (err) {
+      wx.hideLoading()
+      wx.showToast({ title: '网络失败，请重试', icon: 'none', duration: 2000 })
+      return
     }
 
 
@@ -386,7 +387,7 @@ Page({
     if (!checkOk) {
       wx.hideLoading({}), //审核不通过隐藏
         wx.showToast({
-          title: '文本或标签含有违规内容',
+          title: '文字审核失败',
           icon: 'none',
           duration: 2000,
         })
@@ -421,11 +422,17 @@ Page({
       if (!imageformat) {
         var format = "png"
         console.log("imageformat", imageformat)
-        var imgok = await that.imgcheck()
+        try {
+          var imgok = await that.imgcheck()
+        } catch (err) {
+          wx.hideLoading()
+          wx.showToast({ title: '网络失败，请重试', icon: 'none', duration: 2000 })
+          return
+        }
         if (!imgok) {
           wx.hideLoading({}), //审核不通过隐藏
             wx.showToast({
-              title: '图片检测出现问题',
+              title: '图片审核失败',
               icon: 'none',
               duration: 2000,
             })
@@ -434,11 +441,17 @@ Page({
         }
       } else {
         var format = "GIF"
-        var imgok = await that.GIFimgcheck()
+        try {
+          var imgok = await that.GIFimgcheck()
+        } catch (err) {
+          wx.hideLoading()
+          wx.showToast({ title: '网络失败，请重试', icon: 'none', duration: 2000 })
+          return
+        }
         if (!imgok) {
           wx.hideLoading({}), //审核不通过隐藏
             wx.showToast({
-              title: '动图检测出现问题',
+              title: '图片审核失败',
               icon: 'none',
               duration: 2000,
             })
@@ -529,7 +542,7 @@ Page({
       } catch (err) {
         wx.hideLoading()
         wx.showToast({
-          title: '上传失败',
+          title: '图片上传失败',
           icon: 'none'
         })
       }
@@ -584,7 +597,7 @@ Page({
       //--------返回结果
     } catch (err) {
       console.log("imgcheck错误", err);
-      return false;
+      throw err;
     }
   },
 
@@ -623,7 +636,7 @@ Page({
       return true
     } catch (err) {
       console.log("GIFimgcheck错误", err);
-      return false;
+      throw err;
     }
   },
   /**
@@ -677,7 +690,10 @@ Page({
       wx.switchTab({ url: '/pages/index/index' })
     } catch (err) {
       console.error('发布帖子失败', err)
-      wx.showToast({ title: '发布失败，请稍后重试', icon: 'none' })
+      const message = err && err.errMsg && /network|timeout|connection|request:fail/i.test(err.errMsg)
+        ? '网络失败，请重试'
+        : '发布失败，请稍后重试'
+      wx.showToast({ title: message, icon: 'none' })
     } finally {
       this._posting = false
       wx.hideLoading()

@@ -24,36 +24,38 @@ exports.main = async (event = {}) => {
     zhuanye: profile.zhuanye || ''
   })
   const voteOption = Array.isArray(event.voteOption) ? event.voteOption.slice(0, 5) : []
-  const addResult = await db.collection('ss').add({
-    data: {
-      voteNumberPerPerson: event.voteNumberPerPerson,
-      votepeopleNumber: 0,
-      voteOption,
-      isEnd: false,
-      ss_xx,
-      time: now
-    }
-  })
-
-  if (voteOption.length) {
-    await Promise.all(voteOption.map((option) => db.collection('VoteOption').add({
-      data: { id: addResult._id, voteOption: option, voteNumber: 0 }
-    })))
-  }
-
   const orderdetail = ss_xx.orderdetail || {}
-  const record = {
-    time: now,
-    nr: orderdetail.ordertitle || ss_xx.nr || `分享了${(ss_xx.tp || []).length}张图片`,
-    id: addResult._id,
-    weigui: false,
-    tp: ss_xx.tp || [],
-    type: orderdetail.ordertitle ? 'order' : 'post',
-    ISorderdetail: Boolean(orderdetail.openlocationtitle)
-  }
-  await db.collection('users').doc(actor._id).update({
-    data: { wenzhang: _.push({ each: [record], slice: -50 }) }
-  })
+  return db.runTransaction(async (transaction) => {
+    const addResult = await transaction.collection('ss').add({
+      data: {
+        voteNumberPerPerson: event.voteNumberPerPerson,
+        votepeopleNumber: 0,
+        voteOption,
+        isEnd: false,
+        ss_xx,
+        time: now
+      }
+    })
 
-  return { success: true, id: addResult._id, record }
+    for (const option of voteOption) {
+      await transaction.collection('VoteOption').add({
+        data: { id: addResult._id, voteOption: option, voteNumber: 0 }
+      })
+    }
+
+    const record = {
+      time: now,
+      nr: orderdetail.ordertitle || ss_xx.nr || `分享了${(ss_xx.tp || []).length}张图片`,
+      id: addResult._id,
+      weigui: false,
+      tp: ss_xx.tp || [],
+      type: orderdetail.ordertitle ? 'order' : 'post',
+      ISorderdetail: Boolean(orderdetail.openlocationtitle)
+    }
+    await transaction.collection('users').doc(actor._id).update({
+      data: { wenzhang: _.push({ each: [record], slice: -50 }) }
+    })
+
+    return { success: true, id: addResult._id, record }
+  })
 }
