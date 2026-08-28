@@ -12,7 +12,8 @@ const post = util.normalizePost({
 assert.strictEqual(post.ss_xx.nr, '保留内容');
 ['tp', 'huifunr', 'dianzanid', 'Mazhu', 'fujian'].forEach(key => assert(Array.isArray(post.ss_xx[key])));
 assert.deepStrictEqual(post.ss_xx.jubao, [[], 0]);
-assert.deepStrictEqual(post.ss_xx.orderdetail, {});
+assert.deepStrictEqual(post.ss_xx.orderdetail, { takeorder: false });
+assert.strictEqual(post.ss_xx.isover, false);
 assert.strictEqual(post.ss_xx.huifunr[0].name, '');
 assert.deepStrictEqual(post.ss_xx.huifunr[0].huifu[0].tp, []);
 assert.strictEqual(post.ss_xx.huifunr[0].pldianzannb, 0);

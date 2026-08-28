@@ -40,14 +40,14 @@ async function managePost(event, actor) {
   }
 
   if (event.action === 'toggleActivity') {
-    const isover = !Boolean(detail.isover)
+    const isover = typeof event.isover === 'boolean' ? event.isover : !Boolean(detail.isover)
     await db.collection('ss').doc(event.postId).update({ data: { 'ss_xx.isover': isover } })
     return { success: true, action: event.action, isover }
   }
 
   if (event.action === 'toggleOrder') {
     const orderdetail = detail.orderdetail || {}
-    const takeorder = !Boolean(orderdetail.takeorder)
+    const takeorder = typeof event.takeorder === 'boolean' ? event.takeorder : !Boolean(orderdetail.takeorder)
     const updates = { 'ss_xx.orderdetail.takeorder': takeorder }
     if (!takeorder) {
       updates['ss_xx.orderdetail.takeorderid'] = ''

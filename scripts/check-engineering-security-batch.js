@@ -42,6 +42,8 @@ for (const action of ['editPost', 'toggleActivity', 'toggleOrder', 'deletePost']
 assert(plate2.includes("action: 'editPost'"))
 assert(managementModule.includes("action: 'toggleActivity'"))
 assert(managementModule.includes("action: 'toggleOrder'"))
+assert(managementModule.includes('isover: targetIsOver'))
+assert(managementModule.includes('takeorder: targetTakeOrder'))
 assert(managementModule.includes("action: 'deletePost'"))
 assert(!managementModule.includes("db.collection('ss')"))
 for (const message of ['文字审核失败', '图片审核失败', '图片上传失败', '网络失败，请重试']) {

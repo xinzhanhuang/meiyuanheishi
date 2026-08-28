@@ -307,6 +307,8 @@ const util = {
     if (!Array.isArray(detail.jubao[0])) detail.jubao[0] = [];
     if (typeof detail.jubao[1] !== 'number') detail.jubao[1] = 0;
     if (!detail.orderdetail || typeof detail.orderdetail !== 'object') detail.orderdetail = {};
+    detail.isover = detail.isover === true;
+    detail.orderdetail.takeorder = detail.orderdetail.takeorder === true;
     ['dianzannb', 'huifunb', 'look', 'downloads', 'remark_num'].forEach(key => {
       if (typeof detail[key] !== 'number') detail[key] = 0;
     });

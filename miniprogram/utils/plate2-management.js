@@ -105,7 +105,12 @@ module.exports = {
 
   async gameover() {
   try {
-    const result = await callCloudFunction('delete', { action: 'toggleActivity', postId: this.data.id });
+    const targetIsOver = this.data.ss_xx.ss_xx.isover !== true;
+    const result = await callCloudFunction('delete', {
+      action: 'toggleActivity',
+      postId: this.data.id,
+      isover: targetIsOver
+    });
     this.setData({ show: false, 'ss_xx.ss_xx.isover': result.isover });
     app.shuaxin = true;
     wx.showToast({ title: result.isover ? '活动结束' : '活动恢复' });
@@ -117,7 +122,12 @@ module.exports = {
 
   async oderover() {
   try {
-    const result = await callCloudFunction('delete', { action: 'toggleOrder', postId: this.data.id });
+    const targetTakeOrder = this.data.ss_xx.ss_xx.orderdetail.takeorder !== true;
+    const result = await callCloudFunction('delete', {
+      action: 'toggleOrder',
+      postId: this.data.id,
+      takeorder: targetTakeOrder
+    });
     this.setData({
       show: false,
       'ss_xx.ss_xx.orderdetail.takeorder': result.takeorder,
