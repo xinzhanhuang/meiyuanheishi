@@ -112,7 +112,7 @@ Page({
 
 
   /**
-   * 统一身份验证
+   * 统一身份验证：仅需 OpenID 账号，个人资料均可选。
    * @returns {boolean} true:通过 false:不通过(已弹窗)
    */
   checkFullLogin() {
@@ -134,72 +134,6 @@ Page({
             app.ss_xxid = ss_xxid;
             wx.switchTab({
               url: "/pages/my/wd/wd"
-            });
-          }
-        }
-      });
-      return false;
-    }
-
-    // 2. 手机
-    if (!app.userInfo.phone) {
-      wx.showModal({
-        title: '💡',
-        content: '登录可进行操作，是否授权登录？',
-        showCancel: true,
-        confirmText: '是',
-        confirmColor: '#20e606',
-        cancelText: '否',
-        cancelColor: '#8d8d8d',
-        success(res) {
-          if (res.confirm) {
-            console.log('用户点击确定');
-            wx.navigateTo({
-              url: '/pages/my/set/set?phone=0' + '&ss_xxid=' + ss_xxid,
-            });
-          }
-        }
-      });
-      return false;
-    }
-
-    // 3. 用户名
-    if (!app.userInfo.userinfo.username || app.userInfo.userinfo.username == "微信用户") {
-      wx.showModal({
-        title: '💡',
-        content: '登录可进行操作，是否授权登录？',
-        showCancel: true,
-        confirmText: '是',
-        confirmColor: '#20e606',
-        cancelText: '否',
-        cancelColor: '#8d8d8d',
-        success(res) {
-          if (res.confirm) {
-            console.log('用户点击确定');
-            wx.navigateTo({
-              url: '/pages/my/set/set?name=0' + '&ss_xxid=' + ss_xxid,
-            });
-          }
-        }
-      });
-      return false;
-    }
-
-    // 4. 性别
-    if (!app.userInfo.userinfo.gender) {
-      wx.showModal({
-        title: '💡',
-        content: '登录可进行操作，是否授权登录？',
-        showCancel: true,
-        confirmText: '是',
-        confirmColor: '#20e606',
-        cancelText: '否',
-        cancelColor: '#8d8d8d',
-        success(res) {
-          if (res.confirm) {
-            console.log('用户点击确定');
-            wx.navigateTo({
-              url: '/pages/my/set/set?gender=0' + '&ss_xxid=' + ss_xxid,
             });
           }
         }
@@ -1816,7 +1750,7 @@ Page({
     if (app.userInfo._id == this.data.ss_xx.ss_xx.lzid) {
       var name = "楼主";
     } else {
-      var name = app.userInfo.userinfo.username;
+      var name = app.userInfo.userinfo.username || '校园用户';
     }
     var pinglunnr = {
       isorder: this.data.ss_xx.ss_xx.orderdetail.ordertitle ? true : false,
@@ -1825,8 +1759,8 @@ Page({
       pinglunID: this.data.id + new Date().getTime(), // 评论的id
       liuyan: this.data.liuyan,
       title: this.data.ss_xx.title,
-      photo: app.userInfo.userinfo.userphoto,
-      gender: app.userInfo.userinfo.gender, // 性别
+      photo: app.userInfo.userinfo.userphoto || '/images/message/touxiang1.png',
+      gender: app.userInfo.userinfo.gender || '', // 性别
       name: name,
       time: new Date().getTime(), // 发布时间
       plrid: app.userInfo._id, // 评论人我的id
@@ -1834,7 +1768,7 @@ Page({
       wbnr: text,
       tp: [], // 图片数组！！！！！！！！！数组缺少图片
       ywnr: this.data.ss_xx.ss_xx.nr,
-      zhuanye: app.userInfo.userinfo.zhuanye,
+      zhuanye: app.userInfo.userinfo.zhuanye || '',
       louzhu: louzhu,
       niming: niming,
       ssid: this.data.id,
@@ -3037,31 +2971,6 @@ Page({
       });
       return;
     }
-    if (app.userInfo.phone == undefined || app.userInfo.phone == null || app.userInfo.phone == "") {
-      wx.showModal({
-        title: '💡',
-        content: '登录可进行操作，是否授权登录？',
-        showCancel: true,
-        confirmText: '是',
-        confirmColor: '#20e606',
-        cancelText: '否',
-        cancelColor: '#8d8d8d',
-        success(res) {
-          if (res.confirm) {
-            console.log('用户点击确定');
-            wx.navigateTo({
-              url: '/pages/my/set/set?phone=0' + '&ss_xxid=' + ss_xxid,
-            });
-            return;
-          } else if (res.cancel) {
-            console.log('用户点击取消');
-            return;
-          }
-        }
-      });
-      return;
-    }
-
     // 未登录
     if (!this.checkFullLogin()) return;
 

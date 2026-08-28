@@ -1,0 +1,21 @@
+const assert = require('assert')
+const fs = require('fs')
+
+const source = fs.readFileSync('miniprogram/pages/plate2/plate2.js', 'utf8')
+const checkStart = source.indexOf('checkFullLogin() {')
+const checkEnd = source.indexOf('\n  },', checkStart)
+const check = source.slice(checkStart, checkEnd)
+const commentStart = source.indexOf('async fasong() {')
+const commentEnd = source.indexOf('\n  fbpl(', commentStart)
+const comment = source.slice(commentStart, commentEnd)
+
+assert(check.includes('app.userInfo.userinfo.login != true'), '详情互动仍应要求账号登录')
+assert(!check.includes('app.userInfo.phone'), '详情互动不应强制手机号')
+assert(!check.includes('userinfo.username'), '详情互动不应强制昵称')
+assert(!check.includes('userinfo.gender'), '详情互动不应强制性别')
+assert(comment.includes("username || '校园用户'"), '评论应提供默认昵称')
+assert(comment.includes("userphoto || '/images/message/touxiang1.png'"), '评论应提供默认头像')
+assert(comment.includes("userinfo.gender || ''"), '评论应允许空性别')
+assert(comment.includes("userinfo.zhuanye || ''"), '评论应允许空专业')
+
+console.log('详情互动资料可选检查通过')
