@@ -26,6 +26,16 @@ exports.main = async (event, context) => {
     }
   }
 
+  if (event && event.action === 'incrementDownload') {
+    if (typeof id !== 'string' || !id.trim()) {
+      return { success: false, errCode: 'INVALID_ID', errMsg: 'Missing post id' }
+    }
+    const result = await cloud.database().collection('tianmeizhoubian').doc(id).update({
+      data: { 'ss_xx.downloads': cloud.database().command.inc(1) }
+    })
+    return { success: true, action: event.action, stats: result.stats }
+  }
+
   if (typeof id !== 'string' || !id.trim()) {
     return { success: false, errCode: 'INVALID_ID', errMsg: 'Missing post id' }
   }

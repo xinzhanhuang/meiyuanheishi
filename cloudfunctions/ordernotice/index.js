@@ -13,7 +13,9 @@ exports.main = async (event = {}) => {
   const actor = actorResult.data[0]
   if (!actor) return { success: false, errCode: 'USER_NOT_FOUND' }
 
-  const collectionName = event.liuyan ? 'tj' : 'ss'
+  const collectionName = event.liuyan
+    ? 'tj'
+    : (event.postType === 'zhoubian' ? 'tianmeizhoubian' : 'ss')
   const postResult = await db.collection(collectionName).doc(event.orderid).get()
   const post = postResult.data || {}
   const detail = post.ss_xx || {}
@@ -37,7 +39,7 @@ exports.main = async (event = {}) => {
     ywnr: ordertitle,
     ssid: event.orderid,
     postId: event.orderid,
-    postType: 'ss',
+    postType: event.postType === 'zhoubian' ? 'zhoubian' : 'ss',
     source: 'message',
     id: `${Date.now()}${Math.random().toString(36).slice(2, 11)}`,
     liuyan: Boolean(event.liuyan)
@@ -65,7 +67,9 @@ exports.main = async (event = {}) => {
     try {
       await cloud.openapi.subscribeMessage.send({
         touser: owner._openid,
-        page: `pages/plate2/plate2?id=${event.orderid}&fenxiang=true&liuyan=${Boolean(event.liuyan)}`,
+        page: event.postType === 'zhoubian'
+          ? `pages/plate-zhoubian/plate-zhoubian?id=${event.orderid}&zhoubianfenxiang=true`
+          : `pages/plate2/plate2?id=${event.orderid}&fenxiang=true&liuyan=${Boolean(event.liuyan)}`,
         lang: 'zh_CN',
         data: {
           thing1: { value: ordertitle.slice(0, 20) },

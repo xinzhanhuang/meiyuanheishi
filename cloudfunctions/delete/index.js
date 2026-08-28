@@ -21,8 +21,8 @@ async function managePost(event, actor) {
   if (typeof event.postId !== 'string' || !event.postId) {
     return { success: false, errCode: 'INVALID_ARGUMENT' }
   }
-  const collectionName = event.action === 'deletePost' ? (event.collection || 'ss') : 'ss'
-  if (event.action === 'deletePost' && !POST_COLLECTIONS.has(collectionName)) {
+  const collectionName = event.collection || 'ss'
+  if (!POST_COLLECTIONS.has(collectionName)) {
     return { success: false, errCode: 'INVALID_COLLECTION' }
   }
   const postResult = await db.collection(collectionName).doc(event.postId).get()
@@ -36,17 +36,24 @@ async function managePost(event, actor) {
     const updates = { 'ss_xx.nr': String(event.nr || '') }
     if (detail.orderdetail && detail.orderdetail.openlocationtitle) {
       updates['ss_xx.orderdetail.ordertitle'] = String(event.ordertitle || '')
-      updates['ss_xx.orderdetail.lianxi'] = String(event.lianxi || '')
+      const contactField = collectionName === 'tianmeizhoubian' ? 'phone' : 'lianxi'
+      updates[`ss_xx.orderdetail.${contactField}`] = String(event.phone || event.lianxi || '')
       updates['ss_xx.orderdetail.jg'] = event.jg
       updates['ss_xx.orderdetail.weixin'] = String(event.weixin || '')
     }
-    await db.collection('ss').doc(event.postId).update({ data: updates })
+    if (collectionName === 'tianmeizhoubian') {
+      const allowed = ['zbtitle', 'link', 'lianxi', 'weizhi', 'latitude', 'longitude']
+      for (const field of allowed) {
+        if (event[field] !== undefined) updates[`ss_xx.${field}`] = event[field]
+      }
+    }
+    await db.collection(collectionName).doc(event.postId).update({ data: updates })
     return { success: true, action: event.action }
   }
 
   if (event.action === 'toggleActivity') {
     const isover = typeof event.isover === 'boolean' ? event.isover : !Boolean(detail.isover)
-    await db.collection('ss').doc(event.postId).update({ data: { 'ss_xx.isover': isover } })
+    await db.collection(collectionName).doc(event.postId).update({ data: { 'ss_xx.isover': isover } })
     return { success: true, action: event.action, isover }
   }
 
@@ -58,7 +65,7 @@ async function managePost(event, actor) {
       updates['ss_xx.orderdetail.takeorderid'] = ''
       updates['ss_xx.orderdetail.takeorderphone'] = ''
     }
-    await db.collection('ss').doc(event.postId).update({ data: updates })
+    await db.collection(collectionName).doc(event.postId).update({ data: updates })
     return { success: true, action: event.action, takeorder }
   }
 

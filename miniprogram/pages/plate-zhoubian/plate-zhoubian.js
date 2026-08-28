@@ -509,10 +509,8 @@ Page({
         return;
       }
 
-      db.collection(this.data.ku).doc(that.data.id).update({
-        data: {
-          'ss_xx.nr': textwbnr
-        }
+      cloudCall.callCloudFunction('delete', {
+        action: 'editPost', collection: 'tianmeizhoubian', postId: that.data.id, nr: textwbnr
       }).then(res => {
         wx.showToast({
           title: '修改成功',
@@ -549,14 +547,9 @@ Page({
         return;
       }
 
-      db.collection(this.data.ku).doc(that.data.id).update({
-        data: {
-          'ss_xx.nr': textwbnr,
-          'ss_xx.orderdetail.ordertitle': ordertitle,
-          'ss_xx.orderdetail.phone': phone,
-          'ss_xx.orderdetail.jg': jg,
-          'ss_xx.orderdetail.weixin': weixin,
-        }
+      cloudCall.callCloudFunction('delete', {
+        action: 'editPost', collection: 'tianmeizhoubian', postId: that.data.id,
+        nr: textwbnr, ordertitle, phone, jg, weixin
       }).then(res => {
         wx.showToast({
           title: '修改成功',
@@ -985,66 +978,9 @@ Page({
 
     //console.log(this.data.ss_xx)
     if (star_num > 0) {
-      var huifunrnum = app.ssinfo.huifunr.length
-      var star_num = Number(this.data.star_num) // 获取用户新评分
-      var ss_xx = app.ssinfo.ss_xx
-      var genxinid = ss_xx._id
-
-      // console.log("😄hahhahahahah",huifunrnum,star_num)
-      if (huifunrnum == 1) {
-        var remark_num123 = star_num.toPrecision(3)// 所有评分之和除以总评论次数（含小数点）
-        var int = Math.floor(remark_num123);  // 向下取整-得到整颗星的个数
-        var percent = (remark_num123 - int) * 100;  // 非整颗星的百分比 
-
-        // console.log("hahhahahahah",genxinid)
-
-        db.collection("tianmeizhoubian").doc(genxinid).update({
-          data: {
-            "ss_xx.remark_num": remark_num123,
-            "ss_xx.percent": percent,
-            "ss_xx.int": int,
-          }
-        }).then(res => {
-          console.log('更新成功')
-          // this.setData({
-          // 	number: 2,
-          // 	num: 2,
-          // })
-        }).catch(err => {
-          console.log('更新失败', err)//失败提示错误信息
-        })
-
-      } else if (huifunrnum > 1) {
-        var remark_num = app.ssinfo.remark_num// 回复人数 0、1、2
-        var huifunrnum1 = Number(huifunrnum) - 1
-        var remark_num1 = Number(remark_num)     // 获取的评分
-        var totalstar_num = remark_num1 * huifunrnum1// 之前所有评分之和
-        var newstar_num = Number(totalstar_num) + star_num // 之前评分和+新用户评分
-        var gengxin = newstar_num / huifunrnum;      // 所有评分之和除以总评论次数
-        var remark_num123 = gengxin.toPrecision(3)    // 所有评分之和除以总评论次数（含小数点）
-        var int = Math.floor(remark_num123);  // 向下取整-得到整颗星的个数
-        var percent = (remark_num123 - int) * 100;  // 非整颗星的百分比
-
-        // console.log("3成功hahahaha", int,percent)
-        // console.log("😄哈哈哈哈哈哈哈哈",remark_num123,newstar_num,remark_num,huifunrnum1,star_num,this.data._id)
-        // console.log("hahhahahahah",genxinid)
-
-        db.collection("tianmeizhoubian").doc(genxinid).update({
-          data: {
-            "ss_xx.remark_num": remark_num123,
-            "ss_xx.percent": percent,
-            "ss_xx.int": int,
-          }
-        }).then(res => {
-          console.log('更新成功')
-          // this.setData({
-          // 	number: 2,
-          // 	num: 2,
-          // })
-        }).catch(err => {
-          console.log('更新失败', err)//失败提示错误信息
-        })
-      }
+      cloudCall.callCloudFunction('fbzbpj', {
+        action: 'ratePost', id: this.data.id, rating: Number(this.data.star_num)
+      }).catch(err => console.log('更新评分失败', err))
     }
 
     app.shuaxin = true
@@ -1079,12 +1015,8 @@ Page({
           });
         }
 
-        db.collection('users').doc(app.userInfo._id).update({
-          data: {
-            msgnb: msgnb,
-            // allow:allow
-          }
-        });
+        cloudCall.callCloudFunction('login', { action: 'setMessageBadge', msgnb })
+          .catch(err => console.error('订阅计数保存失败', err));
         console.log('增加了所有授权');
       },
 
@@ -1409,10 +1341,8 @@ Page({
           // For now I follow "Shows Completed".
 
           // Increment Download Count
-          db.collection('tianmeizhoubian').doc(that.data.id).update({
-            data: {
-              'ss_xx.downloads': _.inc(1)
-            }
+          cloudCall.callCloudFunction('look', {
+            action: 'incrementDownload', id: that.data.id
           }).then(res => {
             console.log("Download count incremented");
             // Update local state
@@ -1787,15 +1717,13 @@ Page({
       cancelColor: '#000000',
       success(res) {
         if (res.confirm) {
-          that.setData({ ss_xx: 0 });
-          wx.showToast({ title: '已删除', icon: "none" });
-
-          db.collection(that.data.ku).doc(that.data.id).get().then((res) => {
-            var tp = res.data.ss_xx.tp;
-            if (tp && tp.length > 0) {
-              wx.cloud.deleteFile({ fileList: tp });
-            }
-            db.collection(that.data.ku).doc(that.data.id).remove();
+          cloudCall.callCloudFunction('delete', {
+            action: 'deletePost', collection: 'tianmeizhoubian', postId: that.data.id
+          }).then(() => {
+            that.setData({ ss_xx: 0 });
+            wx.showToast({ title: '已删除', icon: "none" });
+          }).catch(err => {
+            wx.showToast({ title: cloudCall.errorMessage(err, '删除失败'), icon: 'none' });
           });
         }
       }
@@ -1813,47 +1741,24 @@ Page({
       const openlocationtitle = this.data.ss_xx.ss_xx.orderdetail && this.data.ss_xx.ss_xx.orderdetail.openlocationtitle;
 
       if (openlocationtitle) {
-        // Order Logic
-        var isover = this.data.ss_xx.ss_xx.orderdetail.takeorder;
-        if (!isover) {
-          db.collection(this.data.ku).doc(this.data.id).update({
-            data: { 'ss_xx.orderdetail.takeorder': true }
-          }).then(res => {
-            wx.showToast({ title: '结束' });
-            this.setData({ "ss_xx.ss_xx.orderdetail.takeorder": true });
-            app.shuaxin = true;
-          });
-        } else {
-          db.collection(this.data.ku).doc(this.data.id).update({
-            data: {
-              'ss_xx.orderdetail.takeorder': false,
-              'ss_xx.orderdetail.takeorderid': "",
-              'ss_xx.orderdetail.takeorderphone': "",
-            }
-          }).then(res => {
-            wx.showToast({ title: '已恢复' });
-            this.setData({ "ss_xx.ss_xx.orderdetail.takeorder": false });
-            app.shuaxin = true;
-          });
-        }
+        var targetTakeOrder = !this.data.ss_xx.ss_xx.orderdetail.takeorder;
+        cloudCall.callCloudFunction('delete', {
+          action: 'toggleOrder', collection: 'tianmeizhoubian', postId: this.data.id,
+          takeorder: targetTakeOrder
+        }).then(() => {
+          wx.showToast({ title: targetTakeOrder ? '结束' : '已恢复' });
+          this.setData({ "ss_xx.ss_xx.orderdetail.takeorder": targetTakeOrder });
+          app.shuaxin = true;
+        });
       } else {
-        // Activity Logic
-        var isover = this.data.ss_xx.ss_xx.isover;
-        if (!isover) {
-          db.collection(this.data.ku).doc(this.data.id).update({
-            data: { 'ss_xx.isover': true }
-          }).then(res => {
-            wx.showToast({ title: '已结束' });
-            this.setData({ "ss_xx.ss_xx.isover": true });
-          });
-        } else {
-          db.collection(this.data.ku).doc(this.data.id).update({
-            data: { 'ss_xx.isover': false }
-          }).then(res => {
-            wx.showToast({ title: '已恢复' });
-            this.setData({ "ss_xx.ss_xx.isover": false });
-          });
-        }
+        var targetIsOver = !this.data.ss_xx.ss_xx.isover;
+        cloudCall.callCloudFunction('delete', {
+          action: 'toggleActivity', collection: 'tianmeizhoubian', postId: this.data.id,
+          isover: targetIsOver
+        }).then(() => {
+          wx.showToast({ title: targetIsOver ? '已结束' : '已恢复' });
+          this.setData({ "ss_xx.ss_xx.isover": targetIsOver });
+        });
       }
     }
   },
@@ -1892,18 +1797,21 @@ Page({
               if (res.confirm) {
                 var takeorderphone = res.content;
                 var takeordername = app.userInfo.userinfo.username;
-                db.collection(this.data.ku).doc(this.data.id).update({
-                  data: {
-                    'ss_xx.orderdetail.takeorder': true,
-                    'ss_xx.orderdetail.takeorderid': _id,
-                    'ss_xx.orderdetail.takeorderphone': takeorderphone,
-                    'ss_xx.orderdetail.takeordername': takeordername
-                  }
+                cloudCall.callCloudFunction('ordernotice', {
+                  orderid: this.data.id,
+                  postType: 'zhoubian',
+                  ordertitle: this.data.ss_xx.ss_xx.orderdetail.ordertitle,
+                  takeordername,
+                  takeorderphone,
+                  takeorderphoto: app.userInfo.userinfo.userphoto,
+                  liuyan: false
                 }).then(res => {
                   wx.showToast({ title: '接单成功！' });
+                  app.shuaxin = true;
+                  this.setData({ 'ss_xx.ss_xx.orderdetail.takeorder': true });
+                }).catch(err => {
+                  wx.showToast({ title: cloudCall.errorMessage(err, '接单失败'), icon: 'none' });
                 });
-                app.shuaxin = true;
-                this.setData({ 'ss_xx.ss_xx.orderdetail.takeorder': true });
                 // Notification logic omitted for brevity, can be added if needed
               }
             }
@@ -2145,9 +2053,11 @@ Page({
 
     wx.showLoading({ title: '更新中...', mask: true });
 
-    // 更新数据库 (使用当前集合 data.ku)
-    db.collection(this.data.ku).doc(id).update({
-      data: updateData
+    cloudCall.callCloudFunction('delete', {
+      action: 'editPost', collection: 'tianmeizhoubian', postId: id,
+      nr: ss_xx.nr, zbtitle: ss_xx.zbtitle, link: ss_xx.link,
+      lianxi: ss_xx.lianxi, weizhi: ss_xx.weizhi,
+      latitude: ss_xx.latitude, longitude: ss_xx.longitude
     }).then(res => {
       wx.hideLoading();
       wx.showToast({

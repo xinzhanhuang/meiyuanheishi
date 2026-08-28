@@ -14,14 +14,36 @@ cloud.init({
 exports.main = async (event = {}, context) => {
   const wxContext = cloud.getWXContext()
   if (!wxContext.OPENID) return { success: false, errCode: 'UNAUTHENTICATED' }
-  if (!event.pinglunnr || !Array.isArray(event.pd)) {
-    return { success: false, errCode: 'INVALID_ARGUMENT' }
-  }
   const actorResult = await cloud.database().collection('users').where({
     _openid: wxContext.OPENID
   }).limit(1).get()
   const actor = actorResult.data[0]
   if (!actor) return { success: false, errCode: 'USER_NOT_FOUND' }
+
+  if (event.action === 'ratePost') {
+    const rating = Number(event.rating)
+    if (typeof event.id !== 'string' || !event.id || !Number.isInteger(rating) || rating < 1 || rating > 5) {
+      return { success: false, errCode: 'INVALID_ARGUMENT' }
+    }
+    return cloud.database().runTransaction(async (transaction) => {
+      const result = await transaction.collection('tianmeizhoubian').doc(event.id).get()
+      const detail = (result.data && result.data.ss_xx) || {}
+      const count = Math.max(1, Array.isArray(detail.huifunr) ? detail.huifunr.length : 1)
+      const previousCount = Math.max(0, count - 1)
+      const average = ((Number(detail.remark_num) || 0) * previousCount + rating) / count
+      const remarkNum = Number(average.toPrecision(3))
+      const integer = Math.floor(remarkNum)
+      await transaction.collection('tianmeizhoubian').doc(event.id).update({ data: {
+        'ss_xx.remark_num': remarkNum,
+        'ss_xx.percent': (remarkNum - integer) * 100,
+        'ss_xx.int': integer
+      } })
+      return { success: true, action: event.action, remark_num: remarkNum }
+    })
+  }
+  if (!event.pinglunnr || !Array.isArray(event.pd)) {
+    return { success: false, errCode: 'INVALID_ARGUMENT' }
+  }
 
   const commentTime = Date.now()
   event.pinglunnr.plrid = actor._id
