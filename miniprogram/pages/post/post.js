@@ -373,93 +373,44 @@ Page({
       mask: true
     })
 
+    var img = this.data.imgs //图片路径赋值给变量img
+    var that = this //用that表当前外部对象
+    that.setData({
+      Imgs: []
+    })
+    var format = "png"
+    var imageCheckPromise = Promise.resolve(true)
+    if (img.length != 0) {
+      var index = img[0].lastIndexOf(".")
+      var ext = img[0].substring(index + 1)
+      console.log("imageformat", ext.toString())
+      var imageformat = ext.toLowerCase() == "gif"
+      format = imageformat ? "GIF" : "png"
+      imageCheckPromise = imageformat ? that.GIFimgcheck() : that.imgcheck()
+    }
+
+    // 文字和图片互不依赖，并行审核以缩短带图发帖等待时间。
     try {
-      var checkOk = text.length > 0 ? await this.checkStr(text) : true
+      var reviewResults = await Promise.all([
+        text.length > 0 ? this.checkStr(text) : Promise.resolve(true),
+        imageCheckPromise
+      ])
+      var checkOk = reviewResults[0]
+      var imgok = reviewResults[1]
     } catch (err) {
       wx.hideLoading()
       wx.showToast({ title: '网络失败，请重试', icon: 'none', duration: 2000 })
       return
     }
-
-
-
-    //开始审核文本
     if (!checkOk) {
-      wx.hideLoading({}), //审核不通过隐藏
-        wx.showToast({
-          title: '文字审核失败',
-          icon: 'none',
-          duration: 2000,
-        })
-      return //这个return返回，停止继续执行
+      wx.hideLoading()
+      wx.showToast({ title: '文字审核失败', icon: 'none', duration: 2000 })
+      return
     }
-
-
-
-    var img = this.data.imgs //图片路径赋值给变量img
-    var that = this //用that表当前外部对象
-    //开始图片审核，图片数量＞0时
-    that.setData({
-      Imgs: []
-    })
-    if (img.length != 0) {
-
-
-      // /////判断格式
-      var index = img[0].lastIndexOf(".")
-      var ext = img[0].substring(index + 1)
-      console.log("imageformat", ext.toString())
-
-      if (ext.toString() == "GIF") {
-        var imageformat = true
-      } else if (ext.toString() == "gif") {
-        var imageformat = true
-      } else {
-        var imageformat = false
-
-      }
-
-      if (!imageformat) {
-        var format = "png"
-        console.log("imageformat", imageformat)
-        try {
-          var imgok = await that.imgcheck()
-        } catch (err) {
-          wx.hideLoading()
-          wx.showToast({ title: '网络失败，请重试', icon: 'none', duration: 2000 })
-          return
-        }
-        if (!imgok) {
-          wx.hideLoading({}), //审核不通过隐藏
-            wx.showToast({
-              title: '图片审核失败',
-              icon: 'none',
-              duration: 2000,
-            })
-          console.log("成功")
-          return //这个return返回，停止继续执行
-        }
-      } else {
-        var format = "GIF"
-        try {
-          var imgok = await that.GIFimgcheck()
-        } catch (err) {
-          wx.hideLoading()
-          wx.showToast({ title: '网络失败，请重试', icon: 'none', duration: 2000 })
-          return
-        }
-        if (!imgok) {
-          wx.hideLoading({}), //审核不通过隐藏
-            wx.showToast({
-              title: '图片审核失败',
-              icon: 'none',
-              duration: 2000,
-            })
-          //console.log("图片违法")
-          return //这个return返回，停止继续执行
-        }
-      }
-
+    if (!imgok) {
+      wx.hideLoading()
+      wx.showToast({ title: '图片审核失败', icon: 'none', duration: 2000 })
+      return
     }
 
     //判断 默认选择器分类[0,0]
@@ -569,11 +520,6 @@ Page({
       if (app.system1.system.tpcheck) {
         //need
         //--------经过上面过程已经压缩完毕，再整体取buffer检测
-        wx.showLoading({
-          title: '图片审核...',
-          mask: true
-        })
-
         // 直接使用已压缩的图片(1000px)进行检测，省去生成缩略图的步骤
         // 并行执行图片内容检测
         const checkPromises = imgs.map(async (filePath) => {
@@ -610,11 +556,6 @@ Page({
 
       console.log("ischeck?:", app.system1.system.tpcheck)
       if (app.system1.system.tpcheck) {
-        wx.showLoading({
-          title: '动图审核...',
-          mask: true
-        })
-
         // 并行执行图片内容检测
         const checkPromises = imgs.map(async (filePath) => {
           const buffer = await that.qubuffer(filePath);

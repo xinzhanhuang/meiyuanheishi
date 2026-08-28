@@ -25,6 +25,7 @@ assert(publishPost.includes("collection('VoteOption').add"))
 assert(publishPost.includes("collection('users').doc(actor._id).update"))
 assert(postPage.includes("name: 'publishPost'"))
 assert(!postPage.includes("db.collection('ss').add"))
+assert(postPage.includes('var reviewResults = await Promise.all(['))
 for (const message of ['文字审核失败', '图片审核失败', '图片上传失败', '网络失败，请重试']) {
   assert(postPage.includes(message), `发帖页缺少失败提示：${message}`)
 }
