@@ -6,38 +6,44 @@ cloud.init({
 })
 
 exports.main = async (event, context) => {
-  console.log(event.id)
-  var id=event.id
-  var type=event.type
-  var num=event.num
-  if(type=='ss'){
-
-    if(num==1){
-      var num1=1
-    }else{
-      var num1=6
+  const id = event && event.id
+  const type = event && event.type
+  const targets = {
+    ss: {
+      collection: 'ss',
+      field: 'ss_xx.look',
+      increment: event.num == 1 ? 1 : 6
+    },
+    tianmeizhoubian: {
+      collection: 'tianmeizhoubian',
+      field: 'ss_xx.zoubianlook',
+      increment: 7
+    },
+    tj: {
+      collection: 'tj',
+      field: 'look',
+      increment: 1
     }
-
-    cloud.database().collection('ss').doc(id).update({
-      data:{
-        'ss_xx.look':cloud.database().command.inc(num1)
-      }
-    })
-    
-  }else if(type=='tianmeizhoubian'){
-
-    cloud.database().collection('tianmeizhoubian').doc(id).update({
-        data:{
-          'ss_xx.zoubianlook':cloud.database().command.inc(7)
-        }
-      })
-
-  } else{
-    cloud.database().collection('tj').doc(id).update({
-      data:{
-        'look':cloud.database().command.inc(1)
-      }
-    })
   }
-  
+
+  if (typeof id !== 'string' || !id.trim()) {
+    return { success: false, errCode: 'INVALID_ID', errMsg: 'Missing post id' }
+  }
+  if (!targets[type]) {
+    return { success: false, errCode: 'INVALID_TYPE', errMsg: 'Unsupported post type' }
+  }
+
+  const target = targets[type]
+  const updateResult = await cloud.database().collection(target.collection).doc(id).update({
+    data: {
+      [target.field]: cloud.database().command.inc(target.increment)
+    }
+  })
+
+  return {
+    success: true,
+    type,
+    increment: target.increment,
+    stats: updateResult.stats
+  }
 }
