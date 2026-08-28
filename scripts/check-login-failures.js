@@ -7,7 +7,7 @@ const saveStart = profile.indexOf('tijiao(e) {');
 const saveEnd = profile.indexOf('\n  genderchoose1()', saveStart);
 const saveFlow = profile.slice(saveStart, saveEnd);
 
-assert.strictEqual((login.match(/title: '已取消登录'/g) || []).length, 2);
+assert(!login.includes('wx.getUserProfile'));
 assert(login.includes("title: '登录失败，请稍后重试'"));
 assert(saveFlow.includes('wx.hideLoading()'));
 assert(saveFlow.includes('consumePendingPostTarget'));

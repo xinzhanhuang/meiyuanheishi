@@ -83,92 +83,86 @@ Page({
   },
 
   /**
-   * 获取用户头像及认证信息（登录）
+   * 仅使用 OpenID 登录，头像、昵称和手机号均为可选资料。
    */
-  getather() {
+  async getather() {
     var ss_xxid = app.ss_xxid ? app.ss_xxid : 'nothing'
     console.log("携带参数ss_xxid:", ss_xxid)
     wx.showLoading({
       title: '登陆中',
     })
-    wx.getUserProfile({
-      desc: '用于获取头像与昵称', // 声明获取用户个人信息后的用途
-      success: (a) => {
-        let userInfo = a.userInfo;
-        if (userInfo) {
-          wx.showLoading({
-            title: '登陆中',
-          })
-          // 创建新用户记录
-          db.collection('users').add({
-            data: {
-              logintime: new Date().getTime(),
-              ban: false,
-              msgnb: [0, 0],
-              allow: true,
-              online: true,
-              wenzhang: [],
-              message: [],
-              dzmessage: [],
-              pinglunguode: [],
-              weiguinb: 0,
-              phone: this.data.phone,
-              userinfo: {
-                userphoto: userInfo.avatarUrl,
-                username: userInfo.nickName,
-                gender: userInfo.gender,
-                anonymous: "",
-                zhuanye: "",
-                isVIP: false,
-                login: true,
-                LCU: false
-              },
-            }
-          }).then((res) => {
-            // 登录成功后开启监听
-            this.jianting(res._id)
-            app.jianting = true
-            app.userInfo._id = res._id // 修正: res.id -> res._id
 
-            // 获取完整的用户信息
-            return db.collection('users').doc(res._id).get().then((res) => {
-              app.userInfo = Object.assign(app.userInfo, res.data);
-              console.log("登录成功，用户信息:", res.data);
-              wx.hideLoading()
+    try {
+      const loginRes = await wx.cloud.callFunction({ name: 'login', data: {} })
+      const openid = loginRes && loginRes.result && loginRes.result.openid
+      if (!openid) throw new Error('login did not return openid')
 
-              // 更新页面数据
-              this.setData({
-                userphoto: app.userInfo.userinfo.userphoto,
-                username: app.userInfo.userinfo.username,
-                anonymous: app.userInfo.userinfo.anonymous,
-                isVIP: app.userInfo.userinfo.isVIP,
-                login: true,
-                wenzhang: app.userInfo.wenzhang,
-                message: app.userInfo.message,
-                gender: app.userInfo.userinfo.gender,
-              })
+      const userRes = await db.collection('users').where({ _openid: openid }).get()
+      let user = userRes.data[0]
 
-              // 跳转到设置页面
-              wx.navigateTo({
-                url: '/pages/my/set/set?ss_xxid=' + ss_xxid,
-              })
-            })
-          }).catch((err) => {
-            console.error('创建或读取用户失败', err)
-            wx.hideLoading()
-            wx.showToast({ title: '登录失败，请稍后重试', icon: 'none' })
-          })
-        } else {
-          wx.hideLoading()
-          wx.showToast({ title: '已取消登录', icon: 'none' })
+      if (!user) {
+        user = {
+          logintime: new Date().getTime(),
+          ban: false,
+          msgnb: [0, 0],
+          allow: true,
+          online: true,
+          wenzhang: [],
+          message: [],
+          dzmessage: [],
+          pinglunguode: [],
+          weiguinb: 0,
+          phone: '',
+          registrationCompleted: true,
+          userinfo: {
+            userphoto: '/images/message/touxiang1.png',
+            username: '校园用户',
+            gender: '',
+            anonymous: '',
+            zhuanye: '',
+            isVIP: false,
+            login: true,
+            LCU: false
+          }
         }
-      },
-      fail: res => {
-        console.log("获取用户信息失败", res)
-        wx.hideLoading()
-        wx.showToast({ title: '已取消登录', icon: 'none' })
+        const addRes = await db.collection('users').add({ data: user })
+        user._id = addRes._id
+        user._openid = openid
+      } else if (!user.userinfo || user.userinfo.login !== true) {
+        user.userinfo = Object.assign({
+          userphoto: '/images/message/touxiang1.png',
+          username: '校园用户'
+        }, user.userinfo, { login: true })
+        await db.collection('users').doc(user._id).update({
+          data: { userinfo: user.userinfo, online: true }
+        })
       }
-    })
+
+      app.userInfo = Object.assign(app.userInfo, user)
+      this.jianting(user._id)
+      app.jianting = true
+      this.setData({
+        userphoto: user.userinfo.userphoto || '/images/message/touxiang1.png',
+        username: user.userinfo.username || '校园用户',
+        anonymous: user.userinfo.anonymous || '',
+        isVIP: user.userinfo.isVIP === true,
+        login: true,
+        wenzhang: user.wenzhang || [],
+        message: user.message || [],
+        gender: user.userinfo.gender || ''
+      })
+      wx.hideLoading()
+      wx.showToast({ title: '登录成功', icon: 'success' })
+
+      if (this.resumePendingPost()) return
+      if (ss_xxid !== 'nothing') {
+        wx.navigateTo({ url: '/pages/plate2/plate2?id=' + encodeURIComponent(ss_xxid) })
+      }
+    } catch (err) {
+      console.error('登录或创建用户失败', err)
+      wx.hideLoading()
+      wx.showToast({ title: '登录失败，请稍后重试', icon: 'none' })
+    }
   },
 
 
