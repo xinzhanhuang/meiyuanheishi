@@ -166,6 +166,8 @@ Page({
     var liuyan = e.currentTarget.dataset.liuyan
     var type = e.currentTarget.dataset.type
     var postType = e.currentTarget.dataset.postType || (type == 'zhoubiantype' ? 'zhoubian' : 'ss')
+    var legacyCommentTypes = ['pinglun', 'huifu', 'zhoubiantype', 'Mazhupinglun']
+    var commentId = e.currentTarget.dataset.commentId || (legacyCommentTypes.includes(type) ? id : '')
 
     console.log("id:", id, type)
     //console.log(ssid)
@@ -209,15 +211,15 @@ Page({
       wx.navigateTo({
         url: "../../post-zhoubian/post-zhoubian?id=" + ssid + "&isEdit=true"
       })
-    } else if (postType == 'zhoubian' || postType == 'tj') {
-      wx.navigateTo({
-        url: utils.getPostTargetUrl({ postId: e.currentTarget.dataset.postId || ssid, postType, commentId: e.currentTarget.dataset.commentId || id, replyId: e.currentTarget.dataset.replyId, source: 'message', liuyan })
-      })
     } else {
       wx.navigateTo({
-        url: utils.getPostTargetUrl({ postId: e.currentTarget.dataset.postId || ssid, postType, commentId: e.currentTarget.dataset.commentId || id, replyId: e.currentTarget.dataset.replyId, source: 'message', liuyan })
+        url: utils.getPostTargetUrl(utils.getPostTarget({
+          postId: e.currentTarget.dataset.postId || ssid,
+          postType, commentId, replyId: e.currentTarget.dataset.replyId,
+          source: 'message', liuyan,
+          schoolId: e.currentTarget.dataset.schoolId
+        }, postType))
       })
-
     }
   },
 

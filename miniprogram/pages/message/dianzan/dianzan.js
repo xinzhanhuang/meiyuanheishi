@@ -160,15 +160,15 @@ Page({
 
         // Auto-delete removed per request.
 
-        if (postType == 'zhoubian' || postType == 'tj') {
-            wx.navigateTo({
-                url: utils.getPostTargetUrl({ postId: e.currentTarget.dataset.postId || ssid, postType, commentId: e.currentTarget.dataset.commentId, source: 'message', liuyan })
-            })
-        } else {
-            wx.navigateTo({
-                url: utils.getPostTargetUrl({ postId: e.currentTarget.dataset.postId || ssid, postType, commentId: e.currentTarget.dataset.commentId, source: 'message', liuyan })
-            })
-        }
+        wx.navigateTo({
+            url: utils.getPostTargetUrl(utils.getPostTarget({
+                postId: e.currentTarget.dataset.postId || ssid,
+                postType, commentId: e.currentTarget.dataset.commentId,
+                replyId: e.currentTarget.dataset.replyId,
+                source: 'message', liuyan,
+                schoolId: e.currentTarget.dataset.schoolId
+            }, postType))
+        })
     },
 
 })

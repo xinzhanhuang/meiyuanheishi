@@ -3,10 +3,14 @@ const fs = require('fs');
 
 ['index', 'plate1', 'plate4', 'zuiretiezi'].forEach(name => {
   const source = fs.readFileSync(`miniprogram/pages/${name}/${name}.js`, 'utf8');
+  assert(source.includes('getPostTargetUrl'), `${name} 详情入口未使用统一路由`);
   source.split('\n').filter(line => line.includes('plate2/plate2?')).forEach(route => {
     assert(!route.includes('choosetitle1='), `${name} detail route carries category array`);
     assert(!route.includes('zuiress_xx1='), `${name} detail route carries hot-post array`);
   });
+});
+['checkuser', 'plate3', 'audit-list'].forEach(name => {
+  assert(fs.readFileSync(`miniprogram/pages/${name}/${name}.js`, 'utf8').includes('getPostTargetUrl'), `${name} 详情入口未使用统一路由`);
 });
 const detail = fs.readFileSync('miniprogram/utils/plate2-lifecycle.js', 'utf8');
 assert(detail.includes('var zuiress_xx1 = app.zuiress_xx1 || false;'));

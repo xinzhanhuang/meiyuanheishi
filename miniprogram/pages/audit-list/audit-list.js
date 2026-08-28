@@ -1,5 +1,6 @@
 const app = getApp();
 const db = wx.cloud.database();
+const utils = require('../../utils/util');
 
 Page({
     data: {
@@ -54,7 +55,7 @@ Page({
         const id = e.currentTarget.dataset.id;
         // 进入详情页
         wx.navigateTo({
-            url: `/pages/plate-zhoubian/plate-zhoubian?id=${id}&fenxiang=false`
+            url: utils.getPostTargetUrl({ postId: id, postType: 'zhoubian', source: 'admin' })
         });
     },
 

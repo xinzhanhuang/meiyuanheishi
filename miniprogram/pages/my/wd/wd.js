@@ -178,16 +178,16 @@ Page({
               if (this.resumePendingPost()) return
 
               // 处理分享跳转
-              if (app.fenxiang == "ture") {
+              if (app.fenxiang == "ture" || app.fenxiang == "true") {
                 app.fenxiang = "false"
                 wx.navigateTo({
-                  url: "/pages/plate2/plate2?id=" + app.fxssid + "&fenxiang=false"
+                  url: utils.getPostTargetUrl({ postId: app.fxssid, postType: 'ss', source: 'login' })
                 })
               }
-              if (app.zhoubianfenxiang == "true") {
+              if (app.zhoubianfenxiang == "true" || app.zhoubianfenxiang == "ture") {
                 app.zhoubianfenxiang = "false"
                 wx.navigateTo({
-                  url: "/pages/plate-zhoubian/plate-zhoubian?id=" + app.fxssid + "&zhoubianfenxiang=false"
+                  url: utils.getPostTargetUrl({ postId: app.fxssid, postType: 'zhoubian', source: 'login' })
                 })
               }
               if (ss_xxid) {
@@ -231,10 +231,10 @@ Page({
 
       if (this.resumePendingPost()) return
 
-      if (app.fenxiang == "ture") {
+      if (app.fenxiang == "ture" || app.fenxiang == "true") {
         app.fenxiang = "false"
         wx.navigateTo({
-          url: "/pages/plate2/plate2?id=" + app.fxssid + "&fenxiang=false"
+          url: utils.getPostTargetUrl({ postId: app.fxssid, postType: 'ss', source: 'login' })
         })
       }
     }

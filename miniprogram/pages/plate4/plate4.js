@@ -2,6 +2,7 @@ const app = getApp()
 const db = wx.cloud.database()
 const _ = db.command
 const { callCloudFunction } = require('../../utils/cloud-call')
+const utils = require('../../utils/util')
 
 Page({
   timer: null, // Debounce timer
@@ -521,7 +522,7 @@ Page({
         love = 'false'
       }
       wx.navigateTo({
-        url: "../plate2/plate2?id=" + id + "&fenxiang=false&liuyan=false&love=" + love + "&reping=" + reping + "&openid=" + openid + "&lzid=" + lzid + "&takeorderid=" + takeorderid + "&openlocationtitle=" + openlocationtitle + "&DONOT=000",
+        url: utils.getPostTargetUrl({ postId: id, postType: 'ss', source: 'search' }),
       })
       this.setData({
         index: index

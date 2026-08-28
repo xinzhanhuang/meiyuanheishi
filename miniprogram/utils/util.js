@@ -274,13 +274,18 @@ const util = {
   getPostTarget(options, defaultPostType) {
     const source = options || {};
     const isMessage = source.liuyan === true || source.liuyan === 'true';
+    const rawType = source.postType || defaultPostType || 'ss';
+    const postType = ['zhoubian', 'tianmeizhoubian', 'zhoubiantype'].includes(rawType)
+      ? 'zhoubian'
+      : (rawType === 'tj' ? (defaultPostType || 'ss') : 'ss');
     return {
       postId: source.postId || source.id || '',
-      postType: source.postType || defaultPostType,
+      postType,
       commentId: source.commentId || '',
       replyId: source.replyId || '',
       source: source.source || '',
-      liuyan: isMessage
+      schoolId: source.schoolId || '',
+      liuyan: isMessage || rawType === 'tj'
     };
   },
   getPostTargetUrl(target) {
@@ -294,6 +299,7 @@ const util = {
     ];
     if (target.commentId) params.push(`commentId=${encodeURIComponent(target.commentId)}`);
     if (target.replyId) params.push(`replyId=${encodeURIComponent(target.replyId)}`);
+    if (target.schoolId) params.push(`schoolId=${encodeURIComponent(target.schoolId)}`);
     if (target.liuyan || type === 'tj') params.push('liuyan=true');
     return `${page}?${params.join('&')}`;
   },

@@ -89,7 +89,7 @@ Page({
   //生命周期函数--监听页面加载
   onLoad: function (options) {
     const target = utils.getPostTarget(options, 'zhoubian');
-    this.commentId = target.commentId;
+    this.commentId = target.replyId || target.commentId;
     var id = target.postId;
     const isSharedEntry = options.zhoubianfenxiang === 'true' || options.zhoubianfenxiang === 'ture';
 
@@ -218,7 +218,7 @@ Page({
           this.setData({ _openid: app.userInfo._openid, id, _id: app.userInfo._id })
           return
         }
-        app.setPendingPostTarget({ postId: id, postType: 'zhoubian', commentId: this.commentId, source: 'share', liuyan: liuyan === 'true' })
+        app.setPendingPostTarget(Object.assign({}, target, { source: target.source || 'share' }))
         wx.showToast({ title: '还未登录', icon: 'none', duration: 1500 })
         app.zhoubianfenxiang = "true"
       }).catch((err) => {

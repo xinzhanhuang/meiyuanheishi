@@ -1,4 +1,5 @@
 var app = getApp()
+var utils = require('../../utils/util')
 Page({
 
   data: {
@@ -126,16 +127,13 @@ Page({
     var type = e.currentTarget.dataset.type
 
 
-    if (type == 'zhoubiantype') {
-      wx.navigateTo({
-        url: "../plate-zhoubian/plate-zhoubian?id=" + ssid + "&fenxiang=false&liuyan=false"
+    wx.navigateTo({
+      url: utils.getPostTargetUrl({
+        postId: ssid,
+        postType: type == 'zhoubiantype' ? 'zhoubian' : 'ss',
+        source: 'profile'
       })
-    } else if (type != 'zhoubiantype') {
-      wx.navigateTo({
-        url: "../plate2/plate2?id=" + ssid + "&fenxiang=false&liuyan=false"
-      })
-
-    }
+    })
 
 
 

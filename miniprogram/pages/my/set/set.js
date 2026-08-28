@@ -596,12 +596,12 @@ Page({
       var target = app.consumePendingPostTarget()
       if (target) {
         wx.navigateTo({ url: utils.getPostTargetUrl(target) })
-      } else if (app.fenxiang == "ture") {
+      } else if (app.fenxiang == "ture" || app.fenxiang == "true") {
         app.fenxiang = "false"
-        wx.navigateTo({ url: "/pages/plate2/plate2?id=" + app.fxssid + "&fenxiang=false" })
-      } else if (app.zhoubianfenxiang == "true") {
+        wx.navigateTo({ url: utils.getPostTargetUrl({ postId: app.fxssid, postType: 'ss', source: 'login' }) })
+      } else if (app.zhoubianfenxiang == "true" || app.zhoubianfenxiang == "ture") {
         app.zhoubianfenxiang = "false"
-        wx.navigateTo({ url: "/pages/plate-zhoubian/plate-zhoubian?id=" + app.fxssid + "&zhoubianfenxiang=false" })
+        wx.navigateTo({ url: utils.getPostTargetUrl({ postId: app.fxssid, postType: 'zhoubian', source: 'login' }) })
       } else if (ss_xxid != "nothing") {
         wx.navigateTo({ url: "/pages/plate2/plate2?id=" + ss_xxid })
       } else {

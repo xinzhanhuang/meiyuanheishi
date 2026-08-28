@@ -14,6 +14,8 @@ writers.forEach(name => {
   const source = fs.readFileSync(`miniprogram/pages/message/${name}/${name}.js`, 'utf8');
   assert(source.includes('getPostTargetUrl'));
   assert(source.includes('dataset.postId || ssid'));
+  assert(source.includes('dataset.replyId'));
+  assert(source.includes('dataset.schoolId'));
 });
 assert.strictEqual(
   util.getPostTargetUrl({ postId: 'p', postType: 'ss', commentId: 'c', replyId: 'r', source: 'message', liuyan: true }),

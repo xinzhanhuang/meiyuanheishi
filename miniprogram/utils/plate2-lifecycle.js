@@ -6,7 +6,7 @@ module.exports = {
 
   onLoad: function (options) {
   const target = utils.getPostTarget(options, 'ss');
-  this.commentId = target.commentId;
+  this.commentId = target.replyId || target.commentId;
   // Initialize window metrics for top-based positioning
   const sys = wx.getSystemInfoSync();
   this.windowHeight = sys.windowHeight;
@@ -180,7 +180,7 @@ module.exports = {
     }).then((res) => {
       if (res.data[0]) app.userInfo = Object.assign(app.userInfo, res.data[0]);
       if (app.userInfo._openid) return applyUserState();
-      app.setPendingPostTarget({ postId: id, postType: 'ss', commentId: this.commentId, source: 'share', liuyan: liuyan === 'true' });
+      app.setPendingPostTarget(Object.assign({}, target, { source: target.source || 'share' }));
       wx.showToast({ title: '还未登录', icon: 'none', duration: 1500 });
     }).catch((err) => {
       console.warn('分享入口登录状态读取失败', err);

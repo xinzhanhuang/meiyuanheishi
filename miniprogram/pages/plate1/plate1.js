@@ -1,5 +1,6 @@
 var db = wx.cloud.database()
 var app = getApp()
+var utils = require('../../utils/util')
 Page({
   //页面的初始数据
   data: {
@@ -361,7 +362,7 @@ Page({
 
 
     wx.navigateTo({
-      url: "../plate2/plate2?id=" + id + "&fenxiang=false&liuyan=false&love=" + love + "&DONOT=111"
+      url: utils.getPostTargetUrl({ postId: id, postType: 'ss', source: 'category' })
     })
 
     this.setData({

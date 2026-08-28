@@ -1,5 +1,6 @@
 var db = wx.cloud.database()
 const app = getApp()
+const utils = require('../../utils/util')
 
 
 
@@ -144,7 +145,7 @@ Page({
       love = 'false'
     }
     wx.navigateTo({
-      url: "../plate2/plate2?id=" + id + "&fenxiang=false&liuyan=false&love=" + love + "&reping=" + reping + "&openid=" + openid + "&lzid=" + lzid + "&takeorderid=" + takeorderid + "&openlocationtitle=" + openlocationtitle
+      url: utils.getPostTargetUrl({ postId: id, postType: 'ss', source: 'profile' })
     })
     this.setData({
       index: index
