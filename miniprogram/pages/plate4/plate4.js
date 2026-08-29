@@ -1,8 +1,9 @@
 const app = getApp()
-const db = wx.cloud.database()
-const _ = db.command
-const { callCloudFunction } = require('../../utils/cloud-call')
 const utils = require('../../utils/util')
+const userService = require('../../services/user-service')
+const postService = require('../../services/post-service')
+const postListService = require('../../services/post-list-service')
+const _ = postListService.command
 
 Page({
   timer: null, // Debounce timer
@@ -193,15 +194,12 @@ Page({
               cc = '分享的' + e.currentTarget.dataset.tp + '张图片'
             }
             console.log("cc:", cc)
-            wx.cloud.callFunction({
-              name: "jubaoplus",
-              data: {
+            postService.moderatePost({
                 id: ssid,
                 time: new Date().getTime(),//发布时间
                 ywnr: cc,//这里没有判断空文本的情况！！！
                 jbrid: app.userInfo._id,//举报人
                 type: 'ss'
-              }
             })
             wx.showToast({
               title: '封了',
@@ -395,25 +393,23 @@ Page({
       //按照时间排取消时间限制，
       zuixinorzuire = "time"
       var yizhou = 0
-      var openlocationtitle = db.command.neq("111")
+      var openlocationtitle = _.neq("111")
     } else {
       //搜索派单信息
       zuixinorzuire = "time"
       var yizhou = this.data.yizhou
-      var openlocationtitle = db.command.neq("")
+      var openlocationtitle = _.neq("")
 
 
     }
 
 
 
-    db.collection('ss').where({
-      'ss_xx.jubao.1': db.command.lte(19),
-      time: db.command.gt(yizhou),
+    postListService.queryPosts({ where: {
+      'ss_xx.jubao.1': _.lte(19),
+      time: _.gt(yizhou),
       "ss_xx.orderdetail.openlocationtitle": openlocationtitle
-
-    }).orderBy(zuixinorzuire, 'desc')
-      .skip(head).get().then(async (res) => {
+    }, orderBy: zuixinorzuire, skip: head }).then(async (res) => {
         // console.log(res.data)
 
 
@@ -631,7 +627,7 @@ Page({
       mask: true
     })
     //console.log("查询")//
-    db.collection("ss").where(_.and([
+    postListService.queryPosts({ where: _.and([
       _.or([
         {
           "ss_xx.nr": {
@@ -652,10 +648,10 @@ Page({
         time: _.gt(yizhou)
       }
 
-    ])).orderBy('time', 'desc').get().then(async (res) => {
+    ]), orderBy: 'time' }).then(async (res) => {
       console.log(res.data)//这里一下取回了所有
 
-      callCloudFunction('login', { action: 'recordSearch', keyword: keywords }).then(updateRes => {
+      userService.runUserAction('recordSearch', { keyword: keywords }).then(updateRes => {
         console.log('搜索记录已保存', updateRes)
         console.log('用户搜索记录已更新', updateRes);
 
@@ -842,19 +838,15 @@ Page({
   getSuggestions(keyword, reqId) {
     if (!keyword || !keyword.trim()) return;
 
-    wx.cloud.callFunction({
-      name: 'getSearchSuggestions',
-      data: { keyword: keyword }
-    }).then(res => {
+    postListService.getSearchSuggestions(keyword).then(cloudList => {
       // Race Condition Check: If newer input exists, discard this result
       if (reqId !== this.suggestionRequestId) {
         console.log('Discarding outdated cloud result', reqId);
         return;
       }
 
-      console.log('Cloud API Result:', res.result);
-      if (res.result && res.result.list) {
-        const cloudList = res.result.list;
+      console.log('Cloud API Result:', cloudList);
+      if (cloudList) {
         const localList = this.data.suggestionList; // Current local results
 
         // Merge: Local + Cloud (Deduplicate)
@@ -999,9 +991,7 @@ Page({
     var lzid = this.data.ss_xx[index]._openid
     var ywnr = this.data.ss_xx[index].ss_xx.nr
 
-    wx.cloud.callFunction({
-      name: "dianzan",
-      data: {
+    postService.toggleLike({
         id: id,
         dzrid: _id,
         type: 'ss',
@@ -1010,7 +1000,6 @@ Page({
         time: time,
         lzid: lzid,
         ywnr: ywnr
-      }
     })
 
     var ss_xx = this.data.ss_xx
@@ -1094,21 +1083,16 @@ Page({
 
     console.log("提取的标签数组:", tagsArray);
 
-    wx.cloud.callFunction({
-      name: 'getTagPostCount',
-      data: {
-        tags: tagsArray
-      },
-      success: function (res) {
+    postListService.getTagPostCounts(tagsArray).then(function (tagCounts) {
         console.log('云函数调用成功');
-        console.log('云函数返回结果:', res);
-        console.log('result 数据:', res.result);
+        console.log('云函数返回结果:', tagCounts);
+        console.log('result 数据:', tagCounts);
 
-        if (res.result && typeof res.result === 'object') {
+        if (tagCounts && typeof tagCounts === 'object') {
           // 为每个标签项添加帖子数量
           var updatedChoosetitleArray = choosetitleArray.map(function (item) {
             var tagName = item.title11 || item;
-            var tagData = res.result[tagName] || { total: 0, normal: 0, reported: 0 };
+            var tagData = tagCounts[tagName] || { total: 0, normal: 0, reported: 0 };
             console.log('标签:', tagName, '统计数据:', tagData);
             return {
               ...item,
@@ -1131,11 +1115,9 @@ Page({
         } else {
           console.log('云函数返回的数据格式不正确');
         }
-      },
-      fail: function (err) {
+      }).catch(function (err) {
         console.error('获取标签帖子数量失败：', err);
-      }
-    });
+      });
   },
 
   // Adapter methods for post-item component

@@ -1,6 +1,9 @@
-var db = wx.cloud.database()
 var app = getApp()
 var utils = require('../../utils/util')
+var userService = require('../../services/user-service')
+var postService = require('../../services/post-service')
+var postListService = require('../../services/post-list-service')
+var command = postListService.command
 Page({
   //页面的初始数据
   data: {
@@ -54,15 +57,15 @@ Page({
       mask: true
     })
     //console.log("查询")//
-    db.collection("ss").where({
+    postListService.queryPosts({ where: {
       'ss_xx.choosetitle': this.data.choosetitle,
       "ss_xx.nr": {
         $regex: '.*' + text,
         $options: 'i'
       },
-      time: db.command.gt(yizhou),
+      time: command.gt(yizhou),
       // "ss_xx.orderdetail.openlocationtitle": openlocationtitle
-    }).orderBy('time', 'desc').get().then(async (res) => {
+    }, orderBy: 'time', skip: 0 }).then(async (res) => {
       console.log(res.data)//这里一下取回了所有
       wx.hideLoading({})
       var xx = await this.love(res.data)
@@ -153,16 +156,10 @@ Page({
       //     title: '检查登录',
       //     mask:true
       //   })
-      wx.cloud.callFunction({
-        name: 'login',
-        data: {}
-      }).then((res) => {
-        //console.log("获取到openid:",res.result.openid);
-        db.collection("users").where({
-          _openid: res.result.openid
-        }).get().then((res) => {
+      userService.getOpenId().then((openid) => {
+        userService.getByOpenId(openid).then((user) => {
           //console.log("首页登录取到的对应openid的信息：",res.data[0]);
-          app.userInfo = Object.assign(app.userInfo, res.data[0]);
+          app.userInfo = Object.assign(app.userInfo, user || {});
 
           this.jiazai()
           wx.hideLoading()
@@ -242,11 +239,11 @@ Page({
     }
     /////////////////
 
-    db.collection('ss').where({
+    postListService.queryPosts({ where: {
       'ss_xx.choosetitle': this.data.choosetitle,
-      'ss_xx.jubao.1': db.command.lte(19),
-      time: db.command.gt(yizhou)
-    }).orderBy(zuixinorzuire, 'desc').skip(head).get().then(async (res) => {
+      'ss_xx.jubao.1': command.lte(19),
+      time: command.gt(yizhou)
+    }, orderBy: zuixinorzuire, skip: head }).then(async (res) => {
       console.log(res)//这里已经取到了相应的数组
       if (res.data == "") {
         this.setData({
@@ -533,9 +530,7 @@ Page({
     var lzid = this.data.ss_xx[index]._openid
     var ywnr = this.data.ss_xx[index].ss_xx.nr
 
-    wx.cloud.callFunction({
-      name: "dianzan",
-      data: {
+    postService.toggleLike({
         id: id,
         dzrid: _id,
         type: 'ss',
@@ -544,7 +539,6 @@ Page({
         time: time,
         lzid: lzid,
         ywnr: ywnr
-      }
     })
     var ss_xx = this.data.ss_xx
     if (this.data.ss_xx[index].love) {

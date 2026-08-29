@@ -1,8 +1,9 @@
 const app = getApp()
-const db = wx.cloud.database()
-const _ = db.command
-const { callCloudFunction } = require('../../utils/cloud-call')
 const utils = require('../../utils/util')
+const userService = require('../../services/user-service')
+const postService = require('../../services/post-service')
+const postListService = require('../../services/post-list-service')
+const _ = postListService.command
 
 Page({
   //页面的初始数据！！！！！！！！！！！！！！
@@ -84,16 +85,10 @@ Page({
     var systeminfo = wx.getWindowInfo()
 
     if (logined != true) {
-      wx.cloud.callFunction({
-        name: 'login',
-        data: {}
-      }).then((res) => {
-        //console.log("获取到openid:",res.result.openid);
-        db.collection("users").where({
-          _openid: res.result.openid
-        }).get().then((res) => {
+      userService.getOpenId().then((openid) => {
+        userService.getByOpenId(openid).then((user) => {
           //console.log("首页登录取到的对应openid的信息：",res.data[0]);
-          app.userInfo = Object.assign(app.userInfo, res.data[0]);
+          app.userInfo = Object.assign(app.userInfo, user || {});
 
           this.jiazai()
           wx.hideLoading()
@@ -282,43 +277,42 @@ Page({
       zuixinorzuire = "ss_xx.huifunb"
       var limit = 20
       var yizhou = this.data.yizhou
-      var openlocationtitle = db.command.eq("")
+      var openlocationtitle = _.eq("")
       var query = {
-        'ss_xx.jubao.1': db.command.lte(19),
+        'ss_xx.jubao.1': _.lte(19),
         "ss_xx.orderdetail.openlocationtitle": openlocationtitle
       };
-      query['time'] = db.command.gt(yizhou);
+      query['time'] = _.gt(yizhou);
     } else if (zuixinorzuire == 1) {
       // Month
       zuixinorzuire = "ss_xx.huifunb"
       var limit = 20
       var yizhou = this.data.yizhou
-      var openlocationtitle = db.command.eq("")
+      var openlocationtitle = _.eq("")
       var query = {
-        'ss_xx.jubao.1': db.command.lte(19),
+        'ss_xx.jubao.1': _.lte(19),
         "ss_xx.orderdetail.openlocationtitle": openlocationtitle
       };
-      query['time'] = db.command.gt(yizhou);
+      query['time'] = _.gt(yizhou);
     } else {
       // History
       zuixinorzuire = "ss_xx.huifunb"
       var limit = 5
       var yizhou = this.data.yizhou
-      var openlocationtitle = db.command.eq("")
+      var openlocationtitle = _.eq("")
       var query = {
-        'ss_xx.jubao.1': db.command.lte(19),
+        'ss_xx.jubao.1': _.lte(19),
         "ss_xx.orderdetail.openlocationtitle": openlocationtitle
       };
-      query['ss_xx.huifunb'] = db.command.gt(20);
+      query['ss_xx.huifunb'] = _.gt(20);
     }
     /////////////////
     if (this.data.ss_xx1.length < 1) {
-      db.collection('ss').limit(5).where({
-        'ss_xx.jubao.1': db.command.lte(19),
-        'time': db.command.gt(yizhou),
+      postListService.queryPosts({ where: {
+        'ss_xx.jubao.1': _.lte(19),
+        'time': _.gt(yizhou),
         "ss_xx.orderdetail.openlocationtitle": openlocationtitle
-      }).orderBy('ss_xx.dianzannb', 'desc')
-        .field({
+      }, orderBy: 'ss_xx.dianzannb', limit: 5, limitBeforeOrderBy: true, field: {
           _id: true,
           _openid: true,
           love: true,
@@ -326,8 +320,7 @@ Page({
           'ss_xx.tp': true,
           'ss_xx.look': true,
           'ss_xx.orderdetail.openlocationtitle': true
-        })
-        .skip(0).get().then(async (res) => {
+        }, skip: 0 }).then(async (res) => {
           console.log(res.data)
           var ss_xx1 = res.data
           this.setData({
@@ -343,11 +336,7 @@ Page({
     ///////////////////
 
 
-    db.collection('ss').where(
-      query
-
-    ).limit(limit).orderBy(zuixinorzuire, 'desc')
-      .field({
+    postListService.queryPosts({ where: query, limit: limit, limitBeforeOrderBy: true, orderBy: zuixinorzuire, field: {
         _id: true,
         _openid: true,
         love: true,
@@ -370,8 +359,7 @@ Page({
         'ss_xx.firsttime': true,
         'ss_xx.dianzanid': true,
         'voteOption': true
-      })
-      .skip(head).get().then(async (res) => {
+      }, skip: head }).then(async (res) => {
         console.log(res.data)
 
 
@@ -665,9 +653,7 @@ Page({
     var lzid = this.data.ss_xx[index]._openid
     var ywnr = this.data.ss_xx[index].ss_xx.nr
 
-    wx.cloud.callFunction({
-      name: "dianzan",
-      data: {
+    postService.toggleLike({
         id: id,
         dzrid: _id,
         type: 'ss',
@@ -676,7 +662,6 @@ Page({
         time: time,
         lzid: lzid,
         ywnr: ywnr
-      }
     })
     var ss_xx = this.data.ss_xx
     if (this.data.ss_xx[index].love) {
@@ -713,7 +698,7 @@ Page({
   logintime() {
     var now = new Date().getTime()
     console.log(app.userInfo._id)
-    return callCloudFunction('login', { action: 'setLoginTime', logintime: now })
+    return userService.runUserAction('setLoginTime', { logintime: now })
   },
 
 
