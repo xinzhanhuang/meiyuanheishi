@@ -13,57 +13,28 @@ Page({
    * 页面的初始数据
    */
   data: {
-    loading: this,
-    loadingTip: "hhhhhh",
     showList: false,
     loadingHidden: false,
     ss_xx: [],
     ss_xx1: [],
     _ss_xx: [],
-    lunbotu: [],
     yincang: false,
     shuaxin: "",
     search: "",
-    jianting: false,
     zuixinorzuire: 0,
     movehight: 500,
     movehight2: 500,
-    message: [],
     index: -1,
     yizhou: "",
-    scwidth: 0,
-    kong: false,
     jiazaizhong: false,
-    searchcache: "",
-
-    gonggao: {
-      title: "版本更新",
-    },
-    isover: "",
-    guznzhugzh: false,
-    option11111: ["A", "B", "C", "D", "E"],
-    modalHidden: true,
-    cancelanniu: true,
 
     // 页面显示相关
-    page_show: false,
     navHeight: '',
-    menuButtonInfo: {},
     searchMarginTop: 0, // 搜索框上边距
     searchWidth: 0, // 搜索框宽度
     searchHeight: 0,// 搜索框高度
     istrue: false,
     choosetitle: [] // 初始化热门分类数据
-  },
-
-  /**
-   * 模态框确认回调
-   */
-  modalConfirm: function () {
-    app.modalHidden = true
-    this.setData({
-      modalHidden: true
-    })
   },
 
   /**
@@ -97,12 +68,6 @@ Page({
           targetOptions: {
             halfScreen: false // 设置为半屏展示
           }
-        },
-        success(res) {
-          // 跳转成功的逻辑
-        },
-        fail(err) {
-          // 跳转失败的逻辑
         }
       });
     } else {
@@ -172,10 +137,8 @@ Page({
     this.setData({
       movehight: systeminfo.windowHeight,
       movehight2: systeminfo.windowHeight - 80,
-      menuButtonInfo: menuButtonInfo
     })
 
-    console.log(menuButtonInfo)
     const { top, width, height, right } = menuButtonInfo
     const { statusBarHeight } = systeminfo
     const margin = top - statusBarHeight
@@ -190,7 +153,7 @@ Page({
     this.jiazai()
     app.ensureCurrentUser().then(user => {
       if (!user) return
-      this.jianting()
+      this.bindUserWatcher()
       this.logintime()
       this.checkred()
     }).catch(err => console.warn('首页用户会话恢复失败', err))
@@ -230,7 +193,6 @@ Page({
    * 管理员封贴功能
    */
   guanlifengtiezi(e) {
-    console.log(e.currentTarget.dataset)
     if (app.userInfo.userinfo.login != true) {
       return // 没登录
     }
@@ -257,10 +219,7 @@ Page({
     if (mine == true) {
       // 复制帖子ID
       wx.setClipboardData({
-        data: e.currentTarget.dataset.ids,
-        success(res) {
-          console.log("复制成功")
-        }
+        data: e.currentTarget.dataset.ids
       })
 
       // 弹窗确认封贴
@@ -279,8 +238,6 @@ Page({
             if (cc.length == 0) {
               cc = '分享的' + e.currentTarget.dataset.tp + '张图片'
             }
-            console.log("封贴内容:", cc)
-
             // 调用举报云函数
             postService.moderatePost({
                 id: ssid,
@@ -294,8 +251,6 @@ Page({
               icon: 'none',
               duration: 3000
             })
-          } else if (res.cancel) {
-            console.log('用户点击取消')
           }
         }
       })
@@ -325,7 +280,6 @@ Page({
     this.setData({
       shuaxin: "",
       search: "",
-      kong: false,
       ss_xx: [],
     })
     var shuaxin = true
@@ -339,8 +293,6 @@ Page({
     // 计算一周前的时间戳
     var now = new Date().getTime() // 现在的时间
     var yizhou = (now - 3600 * 7000 * 24)
-    console.log("现在：", now)
-    console.log("一周：", yizhou)
     this.setData({
       yizhou: yizhou
     })
@@ -352,8 +304,6 @@ Page({
    * 生命周期函数--监听页面显示
    */
   onShow: function () {
-    var modalHidden = app.modalHidden
-
     // 优先读取缓存红点
     var badgeCount = wx.getStorageSync('badgeCount')
     if (badgeCount > 0) {
@@ -364,14 +314,6 @@ Page({
           console.error("onShow setTabBarBadge failed:", err);
         }
       })
-    }
-
-    if (!modalHidden) {
-      setTimeout(item => {
-        this.setData({
-          modalHidden
-        })
-      }, 500)
     }
 
     this.checkred()
@@ -396,11 +338,9 @@ Page({
         ss_xx[index].ss_xx.look = app.ssinfo.looknb
         var loveinfo = app.loveinfo
         if (loveinfo == 'true') {
-          console.log("返回点赞：", index)
           ss_xx[index].love = true
           app.loveinfo = ""
         } else if (loveinfo == 'false') {
-          console.log("返回取消点赞：", index)
           ss_xx[index].love = false
           app.loveinfo = ""
         }
@@ -430,8 +370,6 @@ Page({
     var dzweidu = Array.isArray(dzmessage) ? dzmessage.length : 0; // 点赞消息数量
     var totalWeidu = weidu + dzweidu; // 总未读数量
 
-    console.log('index checkred检查消息数量:', weidu, '点赞数量:', dzweidu, '总未读:', totalWeidu);
-
     if (totalWeidu != 0) {
       // 有未读消息，设置底部导航栏红点
       wx.setTabBarBadge({
@@ -447,7 +385,7 @@ Page({
         app.hongdian = false
         wx.setStorageSync('badgeCount', 0)
       } catch (e) {
-        console.log('移除红点时出错（可能红点不存在）:', e)
+        console.warn('移除红点时出错（可能红点不存在）:', e)
         app.hongdian = false
         wx.setStorageSync('badgeCount', 0)
       }
@@ -513,7 +451,6 @@ Page({
   tiaozhuan(e) {
     var choosetitle = e.currentTarget.dataset.choosetitle
     app.choosetitle1 = this.data.choosetitle
-    console.log("跳转板块:", choosetitle)
     wx.navigateTo({
       url: "../plate1/plate1?choosetitle=" + choosetitle
     })
@@ -531,17 +468,14 @@ Page({
     var head = 0
     if (shuaxin == true) {
       head = 0
-      console.log("刷新加载，从头开始")
     } else {
       head = this.data.ss_xx.length
-      console.log("加载更多，当前数量:", head)
     }
 
     homeService.getPosts({ orderMode: zuixinorzuire, since: this.data.yizhou, skip: head })
       .then(async (posts) => {
         if (!posts.length) {
           this.setData({
-            kong: true,
             jiazaizhong: false
           })
           wx.stopPullDownRefresh({})
@@ -564,50 +498,17 @@ Page({
 
         // 已加载的帖子此前已排过序；加载更多时只处理新增帖子。
         for (var i = postStartIndex; i < ss_xx_new.length; i++) {
-          // 注意：这里原逻辑似乎有问题，huifunr.push.apply(plxx) 会导致重复添加，但为了保持逻辑不变，我保留原样，只做注释
-          // 原逻辑：plxx是引用，sort后plxx变化，然后又push.apply到自身？
-          // 实际上 ss_xx[i].ss_xx.huifunr 是一个数组，plxx 也是引用这个数组。
-          // sort 是原地排序。
-          // push.apply(plxx) 会把 plxx 的元素再添加到 plxx 尾部，导致数组翻倍？
-          // 这是一个潜在的 bug，但根据"不改变逻辑"的要求，我必须保留它，或者如果它明显是错的，我应该修复它？
-          // 用户说"不要改变功能和逻辑"，如果这是个bug，修复它就是改变逻辑。但如果这是显而易见的错误...
-          // 让我们仔细看原代码：
-          /*
-          var plxx = ss_xx[i].ss_xx.huifunr
-          plxx.sort(...)
-          plxx.forEach(...)
-          ss_xx[i].ss_xx.huifunr.push.apply(plxx) // 这里报错，push.apply 第一个参数是 this，第二个是数组。
-          // 原代码: ss_xx[i].ss_xx.huifunr.push.apply(plxx) -> 应该是 ss_xx[i].ss_xx.huifunr.push.apply(ss_xx[i].ss_xx.huifunr, plxx) 
-          // 但原代码写的是 ss_xx[i].ss_xx.huifunr.push.apply(plxx) 
-          // 这行代码在 JS 中可能是无效的或者报错的，因为 push.apply 需要两个参数 (thisArg, argsArray)。
-          // 如果原代码能运行，可能是小程序环境的特殊性？或者我看错了？
-          // 原代码: ss_xx[i].ss_xx.huifunr.push.apply(plxx)
-          // 这是一个语法错误，apply 的第一个参数是 this。
-          // 也许原作者想写 Array.prototype.push.apply(ss_xx[i].ss_xx.huifunr, plxx) ?
-          // 或者 ss_xx[i].ss_xx.huifunr.push(...plxx) ?
-          // 鉴于原代码可能已经运行在生产环境（或者用户说它是旧代码），我保持原样可能不安全。
-          // 但仔细看 Step 686 的 line 744: ss_xx[i].ss_xx.huifunr.push.apply(plxx)
-          // 这绝对是错的。
-          // 考虑到用户说"不要改变功能和逻辑"，我假设这段代码可能本来就没起作用或者报错被忽略了。
-          // 但为了"优化"，我应该让它至少符合语法。
-          // 可是 plxx 就是 huifunr 本身。 push 自己到自己？那会死循环或者堆栈溢出（如果递归）或者数组长度翻倍。
-          // 我决定注释掉这行可疑代码，或者保持原样。
-          // 为了安全，我保留原样，但添加注释说明。
-          */
-
           var plxx = ss_xx_new[i].ss_xx.huifunr
           if (plxx && plxx.length > 0) {
             plxx.sort(function (a, b) {
               return b.pldianzannb - a.pldianzannb
             });
-            // ss_xx_new[i].ss_xx.huifunr.push.apply(plxx) // 原代码疑有误，暂保留
           }
         }
 
         // 更新数据
         this.setData({
           ss_xx: ss_xx_new,
-          kong: true,
           jiazaizhong: false,
         })
 
@@ -622,8 +523,7 @@ Page({
       }).catch((err) => {
         console.error('首页列表加载失败', err)
         this.setData({
-          jiazaizhong: false,
-          kong: true
+          jiazaizhong: false
         })
         wx.stopPullDownRefresh({})
       })
@@ -636,14 +536,8 @@ Page({
     var id = e.currentTarget.dataset.id
     var title1 = e.currentTarget.dataset.title
     var title = encodeURIComponent(title1)
-    var lzid = e.currentTarget.dataset.lzid
-    var openid = e.currentTarget.dataset.openid
-    var love = e.currentTarget.dataset.love
     var index = e.currentTarget.dataset.index
-    var reping = e.currentTarget.dataset.reping
     var jumptype = e.currentTarget.dataset.jumptype
-    var takeorderid = e.currentTarget.dataset.takeorderid
-    var openlocationtitle = e.currentTarget.dataset.openlocationtitle
     app.choosetitle1 = this.data.choosetitle
 
     if (jumptype == 111) {
@@ -653,22 +547,6 @@ Page({
         url: '/pages/bannerDetail/bannerDetail?title=' + title + "&type=" + type
       })
     } else {
-      console.log("点击索引:", index)
-
-      // 重新计算热帖的点赞状态
-      if (reping == 1111) {
-        var item = this.data.ss_xx1[index]
-        if (item && item.ss_xx.dianzanid && app.userInfo._id) {
-          if (item.ss_xx.dianzanid.indexOf(app.userInfo._id) != -1) {
-            love = true
-          } else {
-            love = false
-          }
-        }
-      }
-
-      love = love ? 'true' : 'false'
-
       wx.navigateTo({
         url: utils.getPostTargetUrl({ postId: id, postType: 'ss', source: 'index' }),
       })
@@ -678,32 +556,10 @@ Page({
     }
   },
 
-
-
-  /**
-   * 预览图片
-   */
-  previewImg: function (e) {
-    // 获取当前图片的下标
-    var index1 = e.currentTarget.dataset.index1
-    var index = e.currentTarget.dataset.tp[1];
-    // 所有图片
-    var imgs = e.currentTarget.dataset.tp[1];
-
-    console.log(index1)
-    wx.previewImage({
-      // 当前显示图片
-      current: index[index1],
-      // 所有图片
-      urls: imgs
-    })
-  },
-
   /**
    * Tabs组件切换监听
    */
   changetitle(e) {
-    console.log("title:", e.detail)
     var zuixinorzuire = this.data.zuixinorzuire
     if (e.detail != zuixinorzuire) {
       // 暂存待机位
@@ -717,12 +573,7 @@ Page({
         ss_xx: ss_xx,
         _ss_xx: _ss_xx,
       })
-      console.log(ss_xx)
       if (ss_xx.length == 0) {
-        this.setData({
-          kong: false
-        })
-        console.log("数组空，加载")
         this.jiazai()
       }
     }
@@ -763,8 +614,6 @@ Page({
     var id = e.currentTarget.dataset.id
     var index = e.currentTarget.dataset.index
 
-    console.log(e.currentTarget.dataset)
-
     var obj = wx.getLaunchOptionsSync()
 
     if (obj.scene == 1154) {
@@ -787,12 +636,7 @@ Page({
         cancelColor: '#FF4D49',
         success(res) {
           if (res.confirm) {
-            console.log('用户点击确定')
             wx.switchTab({ url: "../my/wd/wd" })
-            return
-          } else if (res.cancel) {
-            console.log('用户点击取消')
-            return
           }
         }
       })
@@ -831,13 +675,6 @@ Page({
   },
 
   /**
-   * 消息监听
-   */
-  jianting() {
-    this.bindUserWatcher()
-  },
-
-  /**
    * 监听数据变化处理函数
    */
   jiantingchuli(e) {
@@ -846,31 +683,7 @@ Page({
       return;
     }
 
-    this.checkred();
-
-    // 计算总未读数量
-    const message = app.message || [];
-    const dzmessage = app.userInfo && app.userInfo.dzmessage || [];
-    const weidu = message.length;
-    const dzweidu = dzmessage.length;
-    const totalWeidu = weidu + dzweidu;
-
-    if (totalWeidu > 0) {
-      wx.setTabBarBadge({
-        index: app.myTabIndex,
-        text: totalWeidu.toString()
-      });
-      app.hongdian = true;
-    } else {
-      // 消息数量为0时，强制移除红点
-      try {
-        wx.removeTabBarBadge({ index: app.myTabIndex });
-        app.hongdian = false;
-      } catch (e) {
-        console.log('jiantingchuli: 移除红点时出错:', e);
-        app.hongdian = false;
-      }
-    }
+    this.checkred()
   },
 
   /**
@@ -886,30 +699,14 @@ Page({
   },
 
   /**
-   * 图片预加载失败
-   */
-  imageOnLoadError(e) {
-    console.log("预加载失败：", e)
-  },
-
-  /**
    * 上传此次登陆的时间
    */
   logintime() {
     var now = new Date().getTime()
-    console.log(app.userInfo._id)
     return callCloudFunction('login', { action: 'setLoginTime', logintime: now })
   },
 
-  /**
-   * 跳到post页面 (发布)
-   */
-  /**
-   * 跳到post页面 (发布)
-   */
   add() {
-    console.log("add check user info", app.userInfo)
-
     // 0. 若未登录，直接到登录页面
     if (app.userInfo.userinfo.login != true) {
       wx.switchTab({
@@ -953,7 +750,6 @@ Page({
     var tctitle = "选择话题"
     var posttitle = "说说今天的新鲜事 "
     var choosetitle = JSON.stringify(this.data.choosetitle)
-    console.log("hhjhhhhh", choosetitle)
     wx.navigateTo({
       url: '../post/post?choosetitle=' + choosetitle + "&tctitle=" + tctitle + "&posttitle=" + posttitle + "&choosetitle111=请选择话题"
     })
@@ -984,25 +780,12 @@ Page({
     })
   },
 
-  hotPost() {
-    wx.navigateTo({
-      url: '../post/post',
-    })
-  },
-
   // Adapter methods for post-item component
   onPostTap(e) {
     const { item, index } = e.detail;
-    // Construct dataset expected by xiangqing
     const dataset = {
       id: item._id,
-      love: item.love,
-      index: index,
-      openid: item._openid,
-      lzid: item.ss_xx.lzid,
-      openlocationtitle: item.ss_xx.orderdetail.openlocationtitle,
-      takeorderid: item.ss_xx.orderdetail.takeorderid,
-      reping: '2222'
+      index
     };
 
     this.xiangqing({
@@ -1048,14 +831,6 @@ Page({
     const { index0, index1 } = e.detail;
     const dataset = { index0, index1 };
     this.imageOnLoad2({
-      currentTarget: { dataset }
-    });
-  },
-
-  onPostImageError(e) {
-    const { index0, index1 } = e.detail;
-    const dataset = { index0, index1 };
-    this.imageOnLoadError({
       currentTarget: { dataset }
     });
   },

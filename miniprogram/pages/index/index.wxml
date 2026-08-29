@@ -54,7 +54,7 @@
   <view class="zhuye main-content" style="margin-top:{{navHeight+10}}px;">
     <!-- 广告 -->
     <view class="top0" hidden="{{search}}">
-      <view class="recommend-top-itemshijian1" bindtap="qiandao">
+      <view class="recommend-top-itemshijian1">
         <view class="banner-height">
           <block wx:for="{{bannerList1}}" wx:for-item="item" wx:key="index" wx:if="{{index==3}}">
             <image class="slide_image banner-img-large" src="{{item.cover}}" bindtap="toBannerDetail" data-title="{{item.title}}" data-type="1" />
@@ -164,7 +164,6 @@
           bind:topictap="onPostTopicTap"
           bind:like="onPostLike"
           bind:imageload="onPostImageLoad"
-          bind:imageerror="onPostImageError"
         />
       </view>
     </view>

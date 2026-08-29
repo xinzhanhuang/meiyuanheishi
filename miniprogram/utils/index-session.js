@@ -13,14 +13,5 @@ module.exports = {
   unbindUserWatcher() {
     if (this.unsubscribeUserWatcher) this.unsubscribeUserWatcher()
     this.unsubscribeUserWatcher = null
-  },
-
-  restoreUserSession() {
-    return app.ensureCurrentUser().then(user => {
-      if (!user) return null
-      this.bindUserWatcher()
-      this.checkred()
-      return user
-    })
   }
 }
