@@ -1,15 +1,17 @@
-const db = wx.cloud.database();
 const app = getApp();
-const _ = db.command;
 const utils = require('../../utils/util.js');
 const { submitVote } = require('../../utils/plate2-vote');
-const { callCloudFunction, errorMessage } = require('../../utils/cloud-call');
+const { errorMessage } = require('../../utils/cloud-call');
 const commentMethods = require('../../utils/plate2-comments');
 const shareMethods = require('../../utils/plate2-share');
 const lifecycleMethods = require('../../utils/plate2-lifecycle');
 const managementMethods = require('../../utils/plate2-management');
 const dataMethods = require('../../utils/plate2-data');
 const imageMethods = require('../../utils/plate2-images');
+const interactionMethods = require('../../utils/plate2-interactions');
+const commentService = require('../../services/comment-service');
+const postService = require('../../services/post-service');
+const userService = require('../../services/user-service');
 
 Page({
   ...commentMethods,
@@ -18,6 +20,7 @@ Page({
   ...managementMethods,
   ...dataMethods,
   ...imageMethods,
+  ...interactionMethods,
   /**
    * 页面的初始数据
    */
@@ -336,8 +339,7 @@ Page({
 
     }
     try {
-      await callCloudFunction('delete', {
-        action: 'editPost',
+      await postService.managePost('editPost', {
         postId: this.data.id,
         nr: textwbnr,
         ordertitle,
@@ -461,8 +463,8 @@ Page({
 
     var _id = app.userInfo._id;
     if (_id != this.data.ss_xx.ss_xx.lzid) {
-      db.collection('ss').doc(this.data.id).get().then((res) => {
-        var takeorder = res.data.ss_xx.orderdetail.takeorder;
+      postService.getPost('ss', this.data.id).then((post) => {
+        var takeorder = post && post.ss_xx && post.ss_xx.orderdetail && post.ss_xx.orderdetail.takeorder;
 
         if (takeorder) {
           this.setData({
@@ -519,7 +521,7 @@ Page({
                 var lzid = this.data.ss_xx.ss_xx.lzid;
 
                 console.log("sssssddddfffff", lzid, liuyan, takeorderphone, time);
-                callCloudFunction('ordernotice', {
+                postService.takeOrder({
                     orderid,
                     lzopenid,
                     ordertitle,
@@ -723,12 +725,28 @@ Page({
         confirmColor: '#FF4D49',
         cancelText: '取消',
         cancelColor: '#8b8b8b',
-        success(res) {
+        async success(res) {
           if (res.confirm) {
             console.log('用户点击确定');
             var id = e.currentTarget.dataset.id0; // 这是这条l0评论的id
             var index = e.currentTarget.dataset.index;
             var ss_xx = that.data.ss_xx.ss_xx;
+            var time = e.currentTarget.dataset.time;
+            var _data = {
+              id0: id,
+              id1: id1,
+              time: time,
+              time1: time1,
+              id: that.data.id,
+              liuyan: that.data.liuyan,
+            };
+            try {
+              await commentService.deleteComment(_data);
+            } catch (err) {
+              console.error('删除评论失败', err);
+              wx.showToast({ title: errorMessage(err, '删除失败'), icon: 'none' });
+              return;
+            }
 
             if (e.currentTarget.dataset.index1 == undefined) {
               // 这是lv0删除
@@ -752,32 +770,14 @@ Page({
             that.setData({
               ss_xx: xx
             });
-            var time = e.currentTarget.dataset.time;
-            var _data = {
-              id0: id, // 这是这条lv0评论的id
-              id1: id1, // 这是这条lv1.2评论的id
-              time: time, // 这是这条lv0评论的
-              time1: time1, // 这是这条lv1.2评论的
-              id: that.data.id, // 这是这条ss的
-              liuyan: that.data.liuyan, // 用于云函数判断删除所在集合
-            };
             console.log("id1::", id);
             console.log("id1::", id1);
-            // 下面云函数delete评论
-            wx.cloud.callFunction({
-              name: 'delete',
-              data: {
-                _data
-              },
-              type: "ss"
-            });
             // 判断ss是否还有自己的评论，
             var haiyou = false;
             var haiyou = JSON.stringify(ss_xx.huifunr).includes(app.userInfo._id);
             // 没了就删掉自己评论过的记录
             if (haiyou == false) {
-              callCloudFunction('login', {
-                action: 'removeCommentHistory',
+              userService.runUserAction('removeCommentHistory', {
                 postId: that.data.id
               }).catch(err => console.error('清理评论记录失败', err));
               return;
@@ -802,15 +802,7 @@ Page({
    */
   async checkStr(text) {
     try {
-      var res = await wx.cloud.callFunction({
-        name: 'checkStr',
-        data: {
-          text: text,
-        }
-      });
-      if (res.result.errCode == 0)
-        return true;
-      return false;
+      return await commentService.checkText(text);
     } catch (err) {
       console.log(err);
       return false;
@@ -1053,7 +1045,7 @@ Page({
         pinglunnr.tp = fileID; // ！！！说说信息中的图片写入完毕
         console.log("说说图片", fileID);
         // 带图发帖
-        this.fbpl(pinglunnr, pd, Mazhu); // 云函数上传发表
+        var publishResult = await this.fbpl(pinglunnr, pd, Mazhu); // 云函数上传发表
       } catch (err) {
         wx.hideLoading();
         wx.showToast({
@@ -1067,10 +1059,13 @@ Page({
 
     } else {
       // 纯文本发帖
-      this.fbpl(pinglunnr, pd, Mazhu); // 云函数上传发表
+      var publishResult = await this.fbpl(pinglunnr, pd, Mazhu); // 云函数上传发表
     }
 
-
+    if (!publishResult) {
+      wx.hideLoading({});
+      return;
+    }
 
     wx.hideLoading({});
     // 评论成功
@@ -1155,7 +1150,7 @@ Page({
           });
         }
 
-        callCloudFunction('login', { action: 'setMessageBadge', msgnb }).catch(err => {
+        userService.runUserAction('setMessageBadge', { msgnb }).catch(err => {
           console.error('保存订阅消息状态失败', err)
         });
         console.log('增加了所有授权');
@@ -1459,189 +1454,6 @@ Page({
       }
     }
     return e;
-  },
-
-  // 点赞帖子(这里得加index)
-  pldianzan(e) {
-    var _id = app.userInfo._id;
-    var id = e.currentTarget.dataset.id;
-    var plid = e.currentTarget.dataset.plid;
-    var index0 = e.currentTarget.dataset.index0;
-    console.log(e.currentTarget.dataset);
-
-    var obj = wx.getLaunchOptionsSync();
-    console.log('启动小程序的路径:', obj.path);
-    console.log('启动小程序的场景值:', obj.scene);
-    console.log('启动小程序的 query 参数:', obj.query);
-    console.log('来源信息:', obj.shareTicket);
-    console.log('来源信息参数appId:', obj.referrerInfo.appId);
-    console.log('来源信息传过来的数据:', obj.referrerInfo.extraData);
-
-    if (obj.scene == 1154) {
-      wx.showToast({
-        title: '前往小程序👇',
-        icon: 'none',
-        duration: 2000,
-      });
-      return;
-    }
-
-    // 未登录
-    var ss_xxid = this.data.ss_xx._id;
-
-    // 未登录
-    if (!this.checkFullLogin()) return;
-    // Get notification data
-    var time = new Date().getTime();
-    var name = app.userInfo.userinfo.username;
-    var photo = app.userInfo.userinfo.userphoto;
-    // Use dataset values as they are explicitly passed in WXML
-    var pllzid = e.currentTarget.dataset.pllzid;
-    var plnr = e.currentTarget.dataset.plnr;
-
-    wx.cloud.callFunction({
-      name: "dianzan",
-      data: {
-        id: id,
-        dzrid: _id,
-        plid: plid,
-        type: 'sspinglun',
-        name: name,
-        photo: photo,
-        time: time,
-        pllzid: pllzid,
-        plnr: plnr
-      }
-    });
-    var ss_xx = this.data.ss_xx;
-    if (ss_xx.ss_xx.huifunr[index0].pllove) {
-      ss_xx.ss_xx.huifunr[index0].pllove = false;
-      ss_xx.ss_xx.huifunr[index0].pldianzannb--;
-    } else {
-      ss_xx.ss_xx.huifunr[index0].pllove = true;
-      ss_xx.ss_xx.huifunr[index0].pldianzannb++;
-    }
-    this.setData({
-      ss_xx: ss_xx
-    });
-  },
-
-  // 马住
-  async mazhu(e) {
-    var obj = wx.getLaunchOptionsSync();
-    if (obj.scene == 1154) {
-      wx.showToast({
-        title: '前往小程序👇',
-        icon: 'none',
-        duration: 2000,
-      });
-      return;
-    }
-
-    // 未登录
-    if (app.userInfo.userinfo.login != true) {
-      wx.showModal({
-        title: '💡',
-        content: '登录可进行操作，是否授权登录？',
-        showCancel: true,
-        confirmText: '是',
-        confirmColor: '#20e606',
-        cancelText: '否',
-        cancelColor: '#8d8d8d',
-        success(res) {
-          if (res.confirm) {
-            console.log('用户点击确定');
-            wx.switchTab({
-              url: "../my/wd/wd"
-            });
-            return;
-          } else if (res.cancel) {
-            console.log('用户点击取消');
-            return;
-          }
-        }
-      });
-      return;
-    }
-    // 未登录
-    if (!this.checkFullLogin()) return;
-
-
-    if (app.userInfo._id == this.data.ss_xx.ss_xx.lzid) {
-      wx.showToast({ title: '自己的帖子无需马住', icon: 'none' });
-      return;
-    }
-    if (this._bookmarkSubmitting) return;
-    this._bookmarkSubmitting = true;
-    try {
-      const result = await callCloudFunction('dianzan', { type: 'mazhu', id: this.data.id });
-      this.setData({ PDMazhu: result.bookmarked });
-      wx.showToast({ title: result.bookmarked ? '已马' : '弃坑', icon: 'none', duration: 1000 });
-    } catch (err) {
-      console.error('码住失败', err);
-      wx.showToast({ title: errorMessage(err, '操作失败，请重试'), icon: 'none' });
-    } finally {
-      this._bookmarkSubmitting = false;
-    }
-  },
-
-  // 点赞帖子
-  dianzan(e) {
-    var id = app.userInfo._id;
-    var ssid = e.currentTarget.dataset.id;
-    var obj = wx.getLaunchOptionsSync();
-    console.log('用户', app.userInfo);
-    if (obj.scene == 1154) {
-      wx.showToast({
-        title: '前往小程序👇',
-        icon: 'none',
-        duration: 2000,
-      });
-      return;
-    }
-
-    // 未登录
-    // 未登录
-    if (!this.checkFullLogin()) return;
-
-    // Get current time
-    var time = new Date().getTime();
-    var name = app.userInfo.userinfo.username;
-    var photo = app.userInfo.userinfo.userphoto;
-    var lzid = this.data.ss_xx._openid;
-    var ywnr = this.data.ss_xx.ss_xx.nr;
-
-    wx.cloud.callFunction({
-      name: "dianzan",
-      data: {
-        id: ssid,
-        dzrid: id, // 点赞人id
-        type: 'ss',
-        name: name,
-        photo: photo,
-        time: time,
-        lzid: lzid,
-        ywnr: ywnr
-      }
-    });
-    var ss_xx = this.data.ss_xx;
-    if (this.data.dianzan) {
-      ss_xx.ss_xx.dianzannb--;
-      app.ssinfo.lovenb--;
-      this.setData({
-        dianzan: false,
-        ss_xx: ss_xx
-      });
-      app.loveinfo = 'false';
-    } else {
-      ss_xx.ss_xx.dianzannb++;
-      app.ssinfo.lovenb++;
-      this.setData({
-        dianzan: true,
-        ss_xx: ss_xx
-      });
-      app.loveinfo = 'true';
-    }
   },
 
   /**

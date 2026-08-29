@@ -8,8 +8,9 @@ const nearbyFlow = nearby.slice(nearby.indexOf('//判断是否为分享来的'),
 
 [normalFlow, nearbyFlow].forEach(flow => {
   assert(flow.includes('if (app.userInfo._openid)'));
-  assert.strictEqual((flow.match(/name: 'login'/g) || []).length, 1);
-  assert(flow.indexOf('if (app.userInfo._openid)') < flow.indexOf("name: 'login'"));
+  const loginCall = flow.includes('userService.getOpenId()') ? 'userService.getOpenId()' : "name: 'login'";
+  assert.strictEqual(flow.split(loginCall).length - 1, 1);
+  assert(flow.indexOf('if (app.userInfo._openid)') < flow.indexOf(loginCall));
   assert(flow.includes(".catch((err) =>"));
 });
 console.log('share login reuse checks passed');

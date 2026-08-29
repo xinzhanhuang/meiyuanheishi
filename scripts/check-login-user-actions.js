@@ -40,7 +40,7 @@ const migrated = {
 }
 for (const [file, action] of Object.entries(migrated)) {
   const source = read(file)
-  assert(source.includes(`action: '${action}'`), `${file} 未调用 login.${action}`)
+  assert(source.includes(`action: '${action}'`) || source.includes(`runUserAction('${action}'`), `${file} 未调用 login.${action}`)
   assert(!/collection\(['"]users['"]\)[^\n]*\.(add|update|remove)\s*\(/.test(source), `${file} 仍直接写 users`)
 }
 
@@ -58,7 +58,7 @@ for (const [file, action] of [
   ['miniprogram/pages/post-zhoubian/post-zhoubian.js', 'setMessageBadge']
 ]) {
   const source = read(file)
-  assert(source.includes(`action: '${action}'`), `${file} 未调用 login.${action}`)
+  assert(source.includes(`action: '${action}'`) || source.includes(`runUserAction('${action}'`), `${file} 未调用 login.${action}`)
 }
 
 console.log('login 用户安全写入检查通过')

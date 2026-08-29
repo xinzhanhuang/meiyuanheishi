@@ -2,16 +2,30 @@ const cloud = require('wx-server-sdk')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
+function fail(code, message, requestId) {
+  return { success: false, code, message: message || '', errCode: code, errMsg: message || '', requestId }
+}
+
+function ok(data, requestId) {
+  return Object.assign({ success: true, code: 'OK', message: '', data, requestId }, data)
+}
+
+function validObject(value) {
+  return value && typeof value === 'object' && !Array.isArray(value)
+}
+
 exports.main = async (event = {}) => {
+  const requestId = typeof event.requestId === 'string' ? event.requestId.slice(0, 128) : ''
   const openid = cloud.getWXContext().OPENID
-  if (!openid || !event.ss_xx) return { success: false, errCode: 'INVALID_ARGUMENT' }
+  if (!openid) return fail('UNAUTHENTICATED', 'Missing OPENID', requestId)
+  if (!validObject(event.ss_xx)) return fail('INVALID_ARGUMENT', 'Invalid post payload', requestId)
 
   const db = cloud.database()
   const _ = db.command
   const userResult = await db.collection('users').where({ _openid: openid }).limit(1).get()
   const actor = userResult.data[0]
-  if (!actor) return { success: false, errCode: 'USER_NOT_FOUND' }
-  if (actor.ban === true) return { success: false, errCode: 'ACCOUNT_BANNED' }
+  if (!actor) return fail('USER_NOT_FOUND', 'User not found', requestId)
+  if (actor.ban === true) return fail('ACCOUNT_BANNED', 'Account banned', requestId)
 
   const now = Date.now()
   const profile = actor.userinfo || {}
@@ -23,18 +37,40 @@ exports.main = async (event = {}) => {
     gender: profile.gender || '',
     zhuanye: profile.zhuanye || ''
   })
+  const schoolId = String(event.schoolId || ss_xx.schoolId || '')
+  const orderdetail = ss_xx.orderdetail || {}
+  const postType = event.postType === 'zhoubian'
+    ? 'zhoubian'
+    : (orderdetail.openlocationtitle ? 'order' : (ss_xx.isActivity ? 'activity' : 'post'))
+  const commonFields = {
+    postType,
+    schoolId,
+    authorId: actor._id,
+    status: 'active',
+    createdAt: now,
+    updatedAt: now,
+    requestId
+  }
+  if (requestId) {
+    const duplicate = await db.collection(event.postType === 'zhoubian' ? 'tianmeizhoubian' : 'ss')
+      .where({ authorId: actor._id, requestId }).limit(1).get()
+    if (duplicate.data[0]) {
+      console.log(JSON.stringify({ action: 'publishPost', requestId, duplicate: true, postId: duplicate.data[0]._id }))
+      return ok({ id: duplicate.data[0]._id, duplicate: true }, requestId)
+    }
+  }
   if (event.postType === 'zhoubian') {
     ss_xx.checked = false
     if (event.editId) {
       const existing = await db.collection('tianmeizhoubian').doc(event.editId).get()
       if (!existing.data || !existing.data.ss_xx || existing.data.ss_xx.lzid !== actor._id) {
-        return { success: false, errCode: 'PERMISSION_DENIED' }
+        return fail('PERMISSION_DENIED', 'Post owner required', requestId)
       }
-      await db.collection('tianmeizhoubian').doc(event.editId).update({ data: { ss_xx, time: ss_xx.firsttime } })
-      return { success: true, id: event.editId, edited: true }
+      await db.collection('tianmeizhoubian').doc(event.editId).update({ data: Object.assign({ ss_xx, time: ss_xx.firsttime }, commonFields, { createdAt: existing.data.createdAt || now }) })
+      return ok({ id: event.editId, edited: true }, requestId)
     }
     return db.runTransaction(async (transaction) => {
-      const addResult = await transaction.collection('tianmeizhoubian').add({ data: { ss_xx, time: ss_xx.firsttime } })
+      const addResult = await transaction.collection('tianmeizhoubian').add({ data: Object.assign({ ss_xx, time: ss_xx.firsttime }, commonFields) })
       const record = {
         time: ss_xx.firsttime,
         zilei: ss_xx.zilei,
@@ -47,21 +83,21 @@ exports.main = async (event = {}) => {
       await transaction.collection('users').doc(actor._id).update({
         data: { wenzhang: _.push({ each: [record], slice: -50 }) }
       })
-      return { success: true, id: addResult._id, record }
+      console.log(JSON.stringify({ action: 'publishPost', requestId, postId: addResult._id, postType }))
+      return ok({ id: addResult._id, record }, requestId)
     })
   }
   const voteOption = Array.isArray(event.voteOption) ? event.voteOption.slice(0, 5) : []
-  const orderdetail = ss_xx.orderdetail || {}
   return db.runTransaction(async (transaction) => {
     const addResult = await transaction.collection('ss').add({
-      data: {
+      data: Object.assign({
         voteNumberPerPerson: event.voteNumberPerPerson,
         votepeopleNumber: 0,
         voteOption,
         isEnd: false,
         ss_xx,
         time: now
-      }
+      }, commonFields)
     })
 
     for (const option of voteOption) {
@@ -83,6 +119,7 @@ exports.main = async (event = {}) => {
       data: { wenzhang: _.push({ each: [record], slice: -50 }) }
     })
 
-    return { success: true, id: addResult._id, record }
+    console.log(JSON.stringify({ action: 'publishPost', requestId, postId: addResult._id, postType }))
+    return ok({ id: addResult._id, record }, requestId)
   })
 }

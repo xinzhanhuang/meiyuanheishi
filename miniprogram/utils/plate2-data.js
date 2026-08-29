@@ -1,7 +1,8 @@
 const app = getApp()
-const db = wx.cloud.database()
 const utils = require('./util')
-const { callCloudFunction } = require('./cloud-call')
+const postService = require('../services/post-service')
+const userService = require('../services/user-service')
+const voteService = require('../services/vote-service')
 
 module.exports = {
 
@@ -11,21 +12,15 @@ module.exports = {
     return;
   }
   var ku = this.data.ku;
-  db.collection(ku).where({
-    '_id': id
-  }).get().then(async (res) => {
+  postService.getPost(ku, id).then(async (post) => {
     let updates = {};
 
-    if (res.data[0] != undefined) {
-      var ss_xx = utils.normalizePost(res.data[0]); // WXS处理名字，此处直接赋值
+    if (post != undefined) {
+      var ss_xx = utils.normalizePost(post); // WXS处理名字，此处直接赋值
 
       // 普通帖没有投票选项，无需查询两个投票集合。
       if (Array.isArray(ss_xx.voteOption) && ss_xx.voteOption.length > 0) {
-        wx.cloud.callFunction({
-          name: 'VoteOption',
-          data: { action: 'getVoteState', itemid: id }
-        }).then((res) => {
-          const result = res && res.result;
+        voteService.getVoteState(id).then((result) => {
           if (!result || result.success !== true) throw new Error('VOTE_STATE_FAILED');
           const updates = { options: result.options || [] };
           if (result.record) {
@@ -112,7 +107,7 @@ module.exports = {
 
 
         app.ssinfo.tp = ss_xx.ss_xx.tp
-        if (res.data[0].ss_xx.jubao[1] < 20) {
+        if (post.ss_xx.jubao[1] < 20) {
 
           //判断是否马住
           let Mazhu = ss_xx.ss_xx.Mazhu
@@ -170,7 +165,7 @@ module.exports = {
       nr: nr
     }; // 当前的时间戳
 
-    callCloudFunction('login', { action: 'appendLookHistory', entry: historyEntry }).then(updateRes => {
+    userService.runUserAction('appendLookHistory', { entry: historyEntry }).then(updateRes => {
       console.log('浏览记录已更新', updateRes);
     }).catch(updateErr => {
       console.error('更新浏览记录失败', updateErr);

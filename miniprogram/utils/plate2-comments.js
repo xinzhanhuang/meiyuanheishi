@@ -1,5 +1,6 @@
 const app = getApp()
-const { callCloudFunction, errorMessage } = require('./cloud-call')
+const { errorMessage } = require('./cloud-call')
+const commentService = require('../services/comment-service')
 
 module.exports = {
   showCommentMenu(e) {
@@ -74,9 +75,13 @@ module.exports = {
   async fbpl(pinglunnr, pd, Mazhu) {
     if (this._commentSubmitting) return false
     this._commentSubmitting = true
+    this.setData({ commentSubmitState: 'loading' })
     try {
-      return await callCloudFunction('fbpl', { pinglunnr, pd, Mazhu })
+      const result = await commentService.publishComment(pinglunnr, pd, Mazhu)
+      this.setData({ commentSubmitState: 'success' })
+      return result
     } catch (error) {
+      this.setData({ commentSubmitState: 'failed' })
       wx.showToast({ title: errorMessage(error, '评论失败，请重试'), icon: 'none' })
       return false
     } finally {

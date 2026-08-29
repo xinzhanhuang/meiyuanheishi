@@ -1,5 +1,6 @@
 const app = getApp()
-const { callCloudFunction, errorMessage } = require('./cloud-call')
+const { errorMessage } = require('./cloud-call')
+const postService = require('../services/post-service')
 
 module.exports = {
 
@@ -62,7 +63,7 @@ module.exports = {
     confirmColor: '#FF4D49',
     cancelText: '取消',
     cancelColor: '#000000',
-    success(res) {
+    async success(res) {
       if (res.confirm) {
         console.log('用户点击确定');
         var ssid = e.currentTarget.dataset.id; // 取到ssid
@@ -72,15 +73,18 @@ module.exports = {
           // pinglunnr.ywnr='分享的'+this.data.ss_xx.ss_xx.tp.length+'张图片'
         }
         console.log("cc:", cc);
-        wx.cloud.callFunction({
-          name: "jubao",
-          data: {
+        try {
+          await postService.reportPost({
             id: ssid,
             time: new Date().getTime(), // 发布时间
             ywnr: cc, // 这里没有判断空文本的情况！！！
             jbrid: app.userInfo._id // 举报人
-          }
-        });
+          });
+        } catch (err) {
+          console.error('举报失败', err);
+          wx.showToast({ title: errorMessage(err, '举报失败'), icon: 'none' });
+          return;
+        }
 
         // 更新本地举报
         var ss_xx = that.data.ss_xx;
@@ -106,8 +110,7 @@ module.exports = {
   async gameover() {
   try {
     const targetIsOver = this.data.ss_xx.ss_xx.isover !== true;
-    const result = await callCloudFunction('delete', {
-      action: 'toggleActivity',
+    const result = await postService.managePost('toggleActivity', {
       postId: this.data.id,
       isover: targetIsOver
     });
@@ -123,8 +126,7 @@ module.exports = {
   async oderover() {
   try {
     const targetTakeOrder = this.data.ss_xx.ss_xx.orderdetail.takeorder !== true;
-    const result = await callCloudFunction('delete', {
-      action: 'toggleOrder',
+    const result = await postService.managePost('toggleOrder', {
       postId: this.data.id,
       takeorder: targetTakeOrder
     });
@@ -162,7 +164,7 @@ module.exports = {
     success(res) {
       if (res.confirm) {
         console.log('用户点击确定');
-        callCloudFunction('delete', { action: 'deletePost', postId: that.data.id }).then(() => {
+        postService.managePost('deletePost', { postId: that.data.id }).then(() => {
           that.setData({ ss_xx: 0 });
           app.shuaxin = true;
           wx.showToast({ title: '已删除', icon: 'none' });

@@ -615,21 +615,27 @@ Page({
     } = this.data.publish
     if (this._posting) return
     this._posting = true
+    this.setData({ publishState: 'loading' })
     try {
-      const res = await wx.cloud.callFunction({
-        name: 'publishPost',
-        data: { ss_xx, voteNumberPerPerson, voteOption }
-      })
-      const result = res && res.result
-      if (!result || result.success !== true) {
-        throw new Error((result && result.errCode) || 'PUBLISH_FAILED')
+      const postService = require('../../services/post-service')
+      if (!this._publishRequestId) {
+        this._publishRequestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`
       }
+      const result = await postService.publishPost({
+        ss_xx,
+        voteNumberPerPerson,
+        voteOption,
+        requestId: this._publishRequestId
+      })
       app.shuaxin = true
       if (!app.userInfo.wenzhang) app.userInfo.wenzhang = []
-      app.userInfo.wenzhang = app.userInfo.wenzhang.concat([result.record]).slice(-50)
+      if (result.record) app.userInfo.wenzhang = app.userInfo.wenzhang.concat([result.record]).slice(-50)
       this.setData({ imgs: [], wbnr: '', publishSuccess: true })
+      this.setData({ publishState: 'success' })
+      this._publishRequestId = ''
       wx.switchTab({ url: '/pages/index/index' })
     } catch (err) {
+      this.setData({ publishState: 'failed' })
       console.error('发布帖子失败', err)
       const message = err && err.errMsg && /network|timeout|connection|request:fail/i.test(err.errMsg)
         ? '网络失败，请重试'

@@ -1,6 +1,7 @@
 const app = getApp()
-const db = wx.cloud.database()
 const utils = require('./util')
+const postService = require('../services/post-service')
+const userService = require('../services/user-service')
 
 module.exports = {
 
@@ -33,14 +34,8 @@ module.exports = {
     var choosetitle1 = app.choosetitle1 || false;
   }
 
-  wx.cloud.callFunction({
-    name: "look",
-    data: {
-      id: id,
-      type: target.liuyan ? 'tj' : 'ss',
-      num: 1
-    }
-  });
+  postService.incrementView(id, target.liuyan ? 'tj' : 'ss')
+    .catch(error => console.warn('浏览计数更新失败', error));
 
   // 分享入口需要等待登录结果前先展示帖子；普通入口在身份状态设置后加载一次。
   if (options.fenxiang === 'true' || options.fenxiang === 'ture') {
@@ -170,21 +165,15 @@ module.exports = {
     if (app.userInfo._openid) {
       applyUserState();
     } else {
-      wx.cloud.callFunction({
-      name: 'login',
-      data: {}
-    }).then((res) => {
-      return db.collection("users").where({
-        _openid: res.result.openid
-      });
-    }).then((res) => {
-      if (res.data[0]) app.userInfo = Object.assign(app.userInfo, res.data[0]);
-      if (app.userInfo._openid) return applyUserState();
-      app.setPendingPostTarget(Object.assign({}, target, { source: target.source || 'share' }));
-      wx.showToast({ title: '还未登录', icon: 'none', duration: 1500 });
-    }).catch((err) => {
-      console.warn('分享入口登录状态读取失败', err);
-    });
+      userService.getOpenId()
+        .then(openid => userService.getByOpenId(openid)).then((user) => {
+          if (user) app.userInfo = Object.assign(app.userInfo, user);
+          if (app.userInfo._openid) return applyUserState();
+          app.setPendingPostTarget(Object.assign({}, target, { source: target.source || 'share' }));
+          wx.showToast({ title: '还未登录', icon: 'none', duration: 1500 });
+        }).catch((err) => {
+          console.warn('分享入口登录状态读取失败', err);
+        });
     }
   } else {
     applyUserState();
@@ -193,15 +182,11 @@ module.exports = {
 
   // 判断是否有了glid
   if (app.glid == "9999") {
-    db.collection('system').where({
-      '_id': '001'
-    })
-      .get().then((res) => {
-        this.setData({
-          glid: res.data[0].glid
-        });
-        app.glid = res.data[0].glid;
-      });
+    userService.getSystemConfig().then((systemConfig) => {
+      const config = systemConfig || {};
+      this.setData({ glid: config.glid });
+      app.glid = config.glid;
+    });
   }
 },
 

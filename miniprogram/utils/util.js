@@ -315,6 +315,12 @@ const util = {
     if (!detail.orderdetail || typeof detail.orderdetail !== 'object') detail.orderdetail = {};
     detail.isover = detail.isover === true;
     detail.orderdetail.takeorder = detail.orderdetail.takeorder === true;
+    post.postType = post.postType || (detail.orderdetail.openlocationtitle ? 'order' : 'post');
+    post.schoolId = post.schoolId || detail.schoolId || '';
+    post.authorId = post.authorId || detail.lzid || '';
+    post.status = post.status || (detail.isover || detail.orderdetail.takeorder ? 'closed' : 'active');
+    post.createdAt = post.createdAt || post.time || detail.firsttime || 0;
+    post.updatedAt = post.updatedAt || post.createdAt;
     ['dianzannb', 'huifunb', 'look', 'downloads', 'remark_num'].forEach(key => {
       if (typeof detail[key] !== 'number') detail[key] = 0;
     });

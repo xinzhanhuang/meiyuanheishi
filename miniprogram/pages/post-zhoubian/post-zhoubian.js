@@ -1,6 +1,7 @@
 // miniprogram/pages/post/post.js
 var util = require('../../utils/util.js');
 const { callCloudFunction, errorMessage } = require('../../utils/cloud-call');
+const postService = require('../../services/post-service');
 const app = getApp()
 const db = wx.cloud.database()
 Page({
@@ -719,12 +720,16 @@ Page({
   //真正的上传说说
   post(ss_xx) {
     const that = this; // Ensure 'that' is available if not already
+    if (!this._publishRequestId) {
+      this._publishRequestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`
+    }
 
     //loading发布中
     wx.showLoading({
       title: '即将完成...',
       mask: true
     })
+    this.setData({ publishState: 'loading' })
     //console.log("传过来",ss_xx)
     //var sjk=ss_xx.bankuai.toString()+"0"//@@@转成字符串@@@
     //添加说说记录
@@ -734,11 +739,13 @@ Page({
       // Reset status to pending
       ss_xx.checked = false;
 
-      callCloudFunction('publishPost', {
-        postType: 'zhoubian', editId: this.data.editId, ss_xx
+      postService.publishPost({
+        postType: 'zhoubian', editId: this.data.editId, ss_xx, requestId: this._publishRequestId
       }).then(res => {
         console.log("Edit Success", res);
         app.shuaxin = true;
+        this.setData({ publishState: 'success' });
+        this._publishRequestId = '';
         wx.hideLoading({});
         wx.switchTab({ url: '/pages/tools/tools' });
         // Update local user record if needed (logic below relies on 'res._id' which update doesn't return same way)
@@ -748,6 +755,7 @@ Page({
         // If we are editing, we probably shouldn't add a duplicate entry to 'mytopic'.
         // So we can return here.
       }).catch(err => {
+        this.setData({ publishState: 'failed' });
         console.error("Edit Failed", err);
         wx.hideLoading();
         wx.showToast({ title: errorMessage(err, '发布失败'), icon: 'none' });
@@ -756,13 +764,15 @@ Page({
     }
 
     // Normal Add Logic
-    callCloudFunction('publishPost', { postType: 'zhoubian', ss_xx }).then((res) => {
+    postService.publishPost({ postType: 'zhoubian', ss_xx, requestId: this._publishRequestId }).then((res) => {
       //console.log(res._id)//拿到id
       //console.log(ss_xx)
 
       //ss发送成功了
       //设置app跳转到首页后要刷新
       app.shuaxin = true
+      this.setData({ publishState: 'success' })
+      this._publishRequestId = ''
       wx.hideLoading({})//发布成功隐藏
 
       //app跳转到首页
@@ -774,7 +784,7 @@ Page({
       {
         //进行全局数据我的本地储存
         if (!app.userInfo.wenzhang) app.userInfo.wenzhang = [];
-        app.userInfo.wenzhang = app.userInfo.wenzhang.concat([jl]).slice(-50);
+        if (jl) app.userInfo.wenzhang = app.userInfo.wenzhang.concat([jl]).slice(-50);
         this.setData({
           imgs: [],
           wbnr: ""
@@ -810,6 +820,7 @@ Page({
       }
 
     }).catch((err) => {
+      this.setData({ publishState: 'failed' })
       console.error("发布失败", err)
       wx.hideLoading()
       wx.showToast({ title: errorMessage(err, '发布失败'), icon: 'none' })
