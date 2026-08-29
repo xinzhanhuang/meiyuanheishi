@@ -88,6 +88,7 @@ module.exports = {
 
     // 未登录
     if (app.userInfo.userinfo.login != true) {
+      const loginTarget = { postId: this.data.id, postType: 'ss', source: 'login' };
       wx.showModal({
         title: '💡',
         content: '登录可进行操作，是否授权登录？',
@@ -99,6 +100,7 @@ module.exports = {
         success(res) {
           if (res.confirm) {
             console.log('用户点击确定');
+            app.setPendingPostTarget(loginTarget);
             wx.switchTab({
               url: "../my/wd/wd"
             });

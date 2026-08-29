@@ -146,6 +146,7 @@ Page({
         success(res) {
           if (res.confirm) {
             console.log('用户点击确定');
+            app.setPendingPostTarget({ postId: ss_xxid, postType: 'ss', source: 'login' });
             app.ss_xxid = ss_xxid;
             wx.switchTab({
               url: "/pages/my/wd/wd"

@@ -42,20 +42,21 @@ module.exports = {
     this.jiazai(id);
   }
   app.fxssid = id;
-  app.fenxiang = options.fenxiang;
-  var love = options.love;
-  var reping = options.reping;
-  var liuyan = options.liuyan;
-  var takeorderid1 = options.takeorderid;
-  var lzopenid = options.openid;
-  var lzid = options.lzid;
-  var DONOT = options.DONOT;
+  var fenxiang = options.fenxiang || 'false';
+  app.fenxiang = fenxiang;
+  var love = options.love || '';
+  var reping = options.reping || '';
+  var liuyan = options.liuyan || 'false';
+  var takeorderid1 = options.takeorderid || '';
+  var lzopenid = options.openid || '';
+  var lzid = options.lzid || '';
+  var DONOT = options.DONOT === undefined ? this.data.DONOT : options.DONOT;
   var systeminfo = wx.getWindowInfo();
 
   if (options.heishiweixin) {
     var heishiweixin = options.heishiweixin;
   } else {
-    var heishiweixin = app.heishiweixin;
+    var heishiweixin = app.heishiweixin || '';
   }
 
   // 使用 sort 方法和 Math.random 打乱数组顺序
@@ -86,12 +87,10 @@ module.exports = {
       ku: 'tj'
     });
   }
-  if (lzid === app.userInfo._id) {
-    var orderlzid = true;
-  }
+  var orderlzid = lzid === app.userInfo._id;
 
   if (takeorderid1 == app.userInfo._id && takeorderid1 != "") {
-    var orderlzid = true;
+    orderlzid = true;
   }
 
   if (love == 'true') {
@@ -102,8 +101,8 @@ module.exports = {
     var dianzan = -1;
   }
 
-  if (options.fenxiang == 'false') {
-    var zuiress_zhuanfa = options.zuiress_xx1;
+  if (fenxiang == 'false') {
+    var zuiress_zhuanfa = options.zuiress_xx1 || false;
   } else {
     var zuiress_zhuanfa = false;
   }
@@ -113,14 +112,14 @@ module.exports = {
     choosetitle1,
     zuiress_xx1,
     zuiress_zhuanfa: zuiress_zhuanfa,
-    fenxiang: options.fenxiang,
-    openlocationtitle: options.openlocationtitle,
+    fenxiang,
+    openlocationtitle: options.openlocationtitle || '',
     takeorderid1: takeorderid1,
     dianzan: dianzan,
     id,
-    reping: options.reping,
-    openid: options.openid,
-    lzid: options.lzid,
+    reping,
+    openid: lzopenid,
+    lzid,
     orderlzid,
     lzopenid
   });
@@ -167,11 +166,15 @@ module.exports = {
     } else {
       userService.getOpenId()
         .then(openid => userService.getByOpenId(openid)).then((user) => {
-          if (user) app.userInfo = Object.assign(app.userInfo, user);
+          if (user) {
+            app.applyCurrentUser(user);
+            app.startUserWatcher();
+          }
           if (app.userInfo._openid) return applyUserState();
           app.setPendingPostTarget(Object.assign({}, target, { source: target.source || 'share' }));
           wx.showToast({ title: '还未登录', icon: 'none', duration: 1500 });
         }).catch((err) => {
+          app.setPendingPostTarget(Object.assign({}, target, { source: target.source || 'share' }));
           console.warn('分享入口登录状态读取失败', err);
         });
     }

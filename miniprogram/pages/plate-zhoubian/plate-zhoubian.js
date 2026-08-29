@@ -204,7 +204,10 @@ Page({
       } else {
         userService.getOpenId()
           .then(openid => userService.getByOpenId(openid)).then((user) => {
-        if (user) app.userInfo = Object.assign(app.userInfo, user)
+        if (user) {
+          app.applyCurrentUser(user)
+          app.startUserWatcher()
+        }
         if (app.userInfo._openid) {
           this.setData({ _openid: app.userInfo._openid, id, _id: app.userInfo._id })
           return
@@ -213,6 +216,8 @@ Page({
         wx.showToast({ title: '还未登录', icon: 'none', duration: 1500 })
         app.zhoubianfenxiang = "true"
       }).catch((err) => {
+        app.setPendingPostTarget(Object.assign({}, target, { source: target.source || 'share' }))
+        app.zhoubianfenxiang = "true"
         console.warn('周边分享入口登录状态读取失败', err)
       })
       }
@@ -1332,6 +1337,7 @@ Page({
     }
 
     if (id == "") {
+      const loginTarget = { postId: this.data.id, postType: 'zhoubian', source: 'login' }
       wx.showModal({
         title: '提示',
         content: '登录后才可进行此操作！是否进行授权登录？',
@@ -1343,6 +1349,7 @@ Page({
         success(res) {
           if (res.confirm) {
             console.log('用户点击确定')
+            app.setPendingPostTarget(loginTarget)
             wx.switchTab({ url: "../my/wd/wd" })
             return
           } else if (res.cancel) {
@@ -1513,6 +1520,7 @@ Page({
   checkFullLogin() {
 
     if (app.userInfo.userinfo.login != true) {
+      const loginTarget = { postId: this.data.id, postType: 'zhoubian', source: 'login' }
       wx.showModal({
         title: '💡',
         content: '登录可进行操作，是否授权登录？',
@@ -1523,6 +1531,7 @@ Page({
         cancelColor: '#8d8d8d',
         success(res) {
           if (res.confirm) {
+            app.setPendingPostTarget(loginTarget)
             wx.switchTab({
               url: "/pages/my/wd/wd"
             });
@@ -2139,11 +2148,13 @@ Page({
 
   checkFullLogin() {
     if (!app.userInfo || !app.userInfo.userinfo || app.userInfo.userinfo.login !== true) {
+      const loginTarget = { postId: this.data.id, postType: 'zhoubian', source: 'login' }
       wx.showModal({
         title: '提示',
         content: '登录后才可进行此操作！是否进行授权登录？',
         success(res) {
           if (res.confirm) {
+            app.setPendingPostTarget(loginTarget)
             wx.switchTab({ url: "../my/wd/wd" });
           }
         }
