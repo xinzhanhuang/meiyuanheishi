@@ -11,23 +11,12 @@ Page({
    * 页面的初始数据
    */
   data: {
-    userphoto1: "",
     username: "游客",
-    anonymous: "",
     login: "未知",
-    isVIP: false,
-    wenzhang: [],
-    message: [],
-    dzmessage: [],
-    message2: [],
-    fenxiang: "",
-    phone: "",
     zhuanye: "",
-    LCU: false,
     isgl: false, // 是否是管理员
     messagenumber: 0,
-    dzmessagenumber: 0, // 点赞消息数量
-    adload: true
+    dzmessagenumber: 0 // 点赞消息数量
   },
 
   resumePendingPost() {
@@ -39,9 +28,8 @@ Page({
 
   /**
    * 检查是否管理员
-   * @param {Object} e 
    */
-  isgl(e) {
+  isgl() {
     var mine = false
     var myid = app.userInfo._id
     // 遍历管理员ID列表，检查当前用户是否在其中
@@ -69,19 +57,13 @@ Page({
       userService.getAdminConfig().then((config) => {
           if (!config) return
           app.system1 = config
-          this.setData({
-            glids: config.system.glids
-          })
           app.glids = config.system.glids
-          this.isgl(config.system.glids)
+          this.isgl()
         })
     } else {
       // 使用全局缓存的系统配置
-      this.setData({
-        glids: app.system1.system.glids
-      })
       app.glids = app.system1.system.glids
-      this.isgl(app.system1.system.glids)
+      this.isgl()
     }
   },
 
@@ -90,7 +72,6 @@ Page({
    */
   async getather() {
     var ss_xxid = app.ss_xxid ? app.ss_xxid : 'nothing'
-    console.log("携带参数ss_xxid:", ss_xxid)
     wx.showLoading({
       title: '登陆中',
     })
@@ -171,14 +152,6 @@ Page({
   },
 
   /**
-   * 开启消息监听
-   * @param {String} _id 用户ID
-   */
-  jianting() {
-    this.bindUserWatcher()
-  },
-
-  /**
    * 生命周期函数--监听页面卸载
    */
   onUnload: function () {
@@ -219,48 +192,6 @@ Page({
     }
 
     this.checkred();
-
-    // 计算总未读数量
-    const message = app.message || [];
-    const dzmessage = app.userInfo && app.userInfo.dzmessage || [];
-    const weidu = message.length;
-    const dzweidu = dzmessage.length;
-    const totalWeidu = weidu + dzweidu;
-
-    if (totalWeidu > 0) {
-      // 更新底部导航栏红点
-      const ceng = getCurrentPages();
-      if (ceng.length == 1) {
-        wx.setTabBarBadge({
-          index: app.myTabIndex,
-          text: totalWeidu.toString()
-        });
-        app.hongdian = true;
-      }
-
-      // 处理新消息（用于页面展示）
-      const oldMessage = this.data.message2 || [];
-      const newMessages = e.filter(msg => !oldMessage.some(m => m.id === msg.id));
-
-      if (newMessages.length > 0) {
-        this.setData({
-          message2: [...oldMessage, ...newMessages]
-        });
-      }
-    } else {
-      // 消息数量为0时，强制移除红点
-      const ceng = getCurrentPages();
-      if (ceng.length == 1) {
-        try {
-          wx.removeTabBarBadge({ index: app.myTabIndex });
-          app.hongdian = false;
-          console.log('jiantingchuli: 已移除红点，消息数量为0');
-        } catch (e) {
-          console.log('jiantingchuli: 移除红点时出错:', e);
-          app.hongdian = false;
-        }
-      }
-    }
   },
 
   /**
@@ -289,8 +220,6 @@ Page({
     var weidu = Array.isArray(message) ? message.length : 0;
     var dzweidu = Array.isArray(dzmessage) ? dzmessage.length : 0; // 点赞消息数量
     var totalWeidu = weidu + dzweidu; // 总未读数量
-
-    console.log('checkred检查消息数量:', weidu, '点赞数量:', dzweidu, '总未读:', totalWeidu);
 
     if (app.userInfo && app.userInfo.userinfo) {
       var LCU = app.userInfo.userinfo.LCU == true;
@@ -325,9 +254,7 @@ Page({
       try {
         wx.removeTabBarBadge({ index: app.myTabIndex })
         app.hongdian = false
-        console.log('checkred: 已移除红点，消息数量为0')
       } catch (e) {
-        console.log('checkred: 移除红点时出错（可能红点不存在）:', e)
         app.hongdian = false
       }
     }
@@ -343,12 +270,4 @@ Page({
     }
   },
 
-  /**
-   * 广告加载失败处理
-   */
-  adError() {
-    this.setData({
-      adload: false
-    })
-  },
 })

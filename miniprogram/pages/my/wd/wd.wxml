@@ -21,9 +21,6 @@
         <text class="name1" wx:if="{{zhuanye}}">{{zhuanye[0]}}-{{zhuanye[1]}}</text>
         <text class="name1" wx:if="{{!zhuanye}}">未认证</text>
 
-        <button class="denglu auth-button" wx:if="{{login==false && phone==999}}" open-type="getPhoneNumber" bindgetphonenumber="GetUserInfo">
-            授权手机
-        </button>
       </view>
     </view>
     
