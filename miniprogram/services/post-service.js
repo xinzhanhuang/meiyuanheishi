@@ -8,6 +8,11 @@ function getPost(collection, postId) {
   return db.collection(collection).doc(postId).get().then(result => result.data || null)
 }
 
+function getPendingPosts(limit = 20) {
+  return db.collection('ss').where({ 'ss_xx.sstype': true }).orderBy('time', 'desc').limit(limit).get()
+    .then(result => result.data || [])
+}
+
 function incrementView(postId, postType) {
   return callCloudFunction('look', { id: postId, type: postType, num: 1 })
 }
@@ -117,6 +122,7 @@ function uploadImages(filePaths, { userId, format }) {
 
 module.exports = {
   getPost,
+  getPendingPosts,
   incrementView,
   incrementDownload,
   managePost,

@@ -1,7 +1,7 @@
-const app = getApp();
-const db = wx.cloud.database();
-const _ = db.command;
 const utils = require('../../utils/util');
+const userService = require('../../services/user-service');
+const postService = require('../../services/post-service');
+const workService = require('../../services/work-service');
 
 Page({
     data: {
@@ -27,22 +27,17 @@ Page({
         this.setData({ aiLoading: true });
         wx.showLoading({ title: '处理中...' });
 
-        // Call getworkmessage directly with the URL
-        wx.cloud.callFunction({
-            name: 'getworkmessage',
-            data: {
-                url: url
-            }
-        }).then(res => {
+        workService.generate({ url }).then(res => {
             wx.hideLoading();
-            this.setData({ aiLoading: false, inputUrl: '' });
 
-            if (res.result && res.result.success) {
+            if (res.success) {
+                this.setData({ aiLoading: false, inputUrl: '' });
                 wx.showToast({ title: '生成成功' });
                 this.loadPendingPosts();
                 this.setData({ currentTab: 1 }); // Switch to review
             } else {
-                const msg = res.result && res.result.msg ? res.result.msg : (res.result && res.result.error ? res.result.error : '未知错误');
+                this.setData({ aiLoading: false });
+                const msg = res.msg || res.error || '未知错误';
                 wx.showModal({
                     title: '执行结果',
                     content: '分析结束: ' + msg,
@@ -53,7 +48,6 @@ Page({
         }).catch(err => {
             wx.hideLoading();
             this.setData({ aiLoading: false });
-            console.error(err);
             wx.showToast({ title: '失败: ' + err.message, icon: 'none' });
         });
     },
@@ -65,11 +59,8 @@ Page({
     },
 
     getOpenid() {
-        wx.cloud.callFunction({
-            name: 'login'
-        }).then(res => {
-            this.setData({ openid: res.result.openid });
-        });
+        userService.getOpenId().then(openid => this.setData({ openid }))
+            .catch(err => console.error('获取管理员身份失败', err));
     },
 
     switchTab(e) {
@@ -83,20 +74,13 @@ Page({
     },
 
     loadWorkArticles() {
-        // Load pending tasks from work_queue
-        // No need to filter processed!=true, because queue only has pending items.
-        db.collection('work_queue').orderBy('created_at', 'desc').limit(20).get().then(res => {
-            this.setData({ workList: res.data });
-        });
+        workService.getQueue().then(workList => this.setData({ workList }))
+            .catch(() => wx.showToast({ title: '加载失败', icon: 'none' }));
     },
 
     loadPendingPosts() {
-        // Pending means sstype == true (as per user definition: false is effective)
-        db.collection('ss').where({
-            'ss_xx.sstype': true
-        }).orderBy('time', 'desc').limit(20).get().then(res => {
-            this.setData({ pendingList: res.data });
-        });
+        postService.getPendingPosts().then(pendingList => this.setData({ pendingList }))
+            .catch(() => wx.showToast({ title: '加载失败', icon: 'none' }));
     },
 
     onDeleteArticle(e) {
@@ -106,13 +90,10 @@ Page({
             content: '确定要忽略这个任务吗？',
             success: (res) => {
                 if (res.confirm) {
-                    // Start of fix: Hard delete from queue
-                    wx.cloud.callFunction({ name: 'getworkmessage', data: { action: 'deleteQueue', id } }).then((res) => {
-                        if (!res.result || !res.result.success) throw new Error('忽略失败');
+                    workService.deleteQueue(id).then(() => {
                         wx.showToast({ title: '已忽略' });
                         this.loadWorkArticles();
-                    });
-                    // End of fix
+                    }).catch(() => wx.showToast({ title: '忽略失败', icon: 'none' }));
                 }
             }
         });
@@ -123,19 +104,12 @@ Page({
         this.setData({ aiLoading: true });
         wx.showLoading({ title: 'AI 分析中...', mask: true });
 
-        wx.cloud.callFunction({
-            name: 'getworkmessage',
-            data: {
-                articleId: articleId
-            }
-        }).then(res => {
+        workService.generate({ articleId }).then(res => {
             wx.hideLoading();
             this.setData({ aiLoading: false });
 
-            console.log('AI Run Result:', res.result);
-
-            if (res.result && res.result.success) {
-                const stats = res.result.stats;
+            if (res.success) {
+                const stats = res.stats;
                 if (stats && stats.success > 0) {
                     wx.showToast({ title: '分析成功' });
                     this.setData({ currentTab: 1 });
@@ -150,7 +124,7 @@ Page({
                 this.loadWorkArticles();
                 this.loadPendingPosts();
             } else {
-                const msg = res.result && res.result.msg ? res.result.msg : '未知错误';
+                const msg = res.msg || '未知错误';
                 wx.showModal({
                     title: '执行失败',
                     content: msg,
@@ -161,8 +135,7 @@ Page({
         }).catch(err => {
             wx.hideLoading();
             this.setData({ aiLoading: false });
-            console.error(err);
-            wx.showToast({ title: '调用失败', icon: 'none' });
+            wx.showToast({ title: err.message || '调用失败', icon: 'none' });
         });
     },
 
@@ -174,16 +147,13 @@ Page({
             success: (res) => {
                 if (res.confirm) {
                     wx.showLoading({ title: '发布中...' });
-                    wx.cloud.callFunction({
-                        name: 'getworkmessage', data: { action: 'approvePost', id }
-                    }).then((res) => {
-                        if (!res.result || !res.result.success) throw new Error('发布失败');
+                    workService.approvePost(id).then(() => {
                         wx.hideLoading();
                         wx.showToast({ title: '已发布' });
                         this.loadPendingPosts();
                     }).catch(err => {
                         wx.hideLoading();
-                        wx.showToast({ title: '失败', icon: 'none' });
+                        wx.showToast({ title: err.message || '发布失败', icon: 'none' });
                     });
                 }
             }
@@ -198,11 +168,10 @@ Page({
             confirmColor: '#ff4d4f',
             success: (res) => {
                 if (res.confirm) {
-                    wx.cloud.callFunction({ name: 'getworkmessage', data: { action: 'deletePost', id } }).then((res) => {
-                        if (!res.result || !res.result.success) throw new Error('删除失败');
+                    workService.deletePost(id).then(() => {
                         wx.showToast({ title: '已删除' });
                         this.loadPendingPosts();
-                    });
+                    }).catch(err => wx.showToast({ title: err.message || '删除失败', icon: 'none' }));
                 }
             }
         });
