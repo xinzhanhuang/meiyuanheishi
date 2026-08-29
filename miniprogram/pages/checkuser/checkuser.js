@@ -1,6 +1,6 @@
-var db = wx.cloud.database()
-const app = getApp()
 const utils = require('../../utils/util')
+const userService = require('../../services/user-service')
+const adminService = require('../../services/admin-service')
 
 
 
@@ -10,7 +10,6 @@ Page({
    * 页面的初始数据
    */
   data: {
-    ku: "users",
     status: true,
   },
 
@@ -22,11 +21,6 @@ Page({
     //生命周期函数--监听页面加载
 
     this.jiazai(options.id)
-    console.log(options)
-
-
-
-
   },
 
 
@@ -34,11 +28,9 @@ Page({
   //加载对应说说id的内容
   // 加载对应说说id的内容
   jiazai(id) {
-    var ku = this.data.ku;
-    //console.log("哭哭哭：",ku)
-    db.collection(ku).where({ '_id': id }).get().then(async (res) => {
-      console.log(res.data, "数据");
-      var userdata = res.data; // 获取第一个元素中的 userdata
+    userService.getById(id).then((user) => {
+      if (!user) throw new Error('用户不存在')
+      var userdata = [user]; // 保持页面数据结构
 
       // 确保 lookhistory 存在并且是数组
       if (userdata[0].lookhistory && Array.isArray(userdata[0].lookhistory)) {
@@ -50,13 +42,15 @@ Page({
       var switch1Checked = userdata[0].ban === true ? true : false;
       var quanxian = userdata[0].ban === true ? true : false;
 
-      console.log("lookhistory", userdata, userdata.lookhistory);
       this.setData({
         userdata,
         quanxian,
         switch1Checked
       });
-    });
+    }).catch(err => {
+      console.error('获取用户信息失败', err)
+      wx.showToast({ title: '获取用户信息失败', icon: 'none' })
+    })
   },
 
   //灯  26  high1 low1
@@ -64,6 +58,8 @@ Page({
     //拿到状态
     var switch1Checked = e.detail.value
     var userdata = this.data.userdata
+    var user = userdata && userdata[0]
+    if (!user) return
 
     // Optimistic update
     this.setData({
@@ -71,55 +67,13 @@ Page({
       quanxian: switch1Checked
     });
 
-    if (switch1Checked == false) {
-      console.log("开灯")
-
-      wx.cloud.callFunction({ name: 'checknotice', data: {
-        action: 'setUserBan', userId: userdata[0]._id, ban: false
-      }}).then(res => {
-        if (!res.result || !res.result.success) throw new Error('解封失败')
-
-        wx.showToast({
-          title: '解封',
-        })
-      }).catch(err => {
-        console.error("解封失败", err);
-        // Revert on failure
-        this.setData({
-          switch1Checked: true,
-          quanxian: true
-        });
-        wx.showToast({
-          title: '操作失败',
-          icon: 'none'
-        });
-      })
-
-    } else {
-      console.log("关灯")
-
-
-      wx.cloud.callFunction({ name: 'checknotice', data: {
-        action: 'setUserBan', userId: userdata[0]._id, ban: true
-      }}).then(res => {
-        if (!res.result || !res.result.success) throw new Error('封号失败')
-
-        wx.showToast({
-          title: '已封',
-        })
-      }).catch(err => {
-        console.error("封号失败", err);
-        // Revert on failure
-        this.setData({
-          switch1Checked: false,
-          quanxian: false
-        });
-        wx.showToast({
-          title: '操作失败',
-          icon: 'none'
-        });
-      })
-    }
+    adminService.setUserBan(user._id, switch1Checked).then(() => {
+      wx.showToast({ title: switch1Checked ? '已封' : '解封' })
+    }).catch(err => {
+      console.error(switch1Checked ? '封号失败' : '解封失败', err)
+      this.setData({ switch1Checked: !switch1Checked, quanxian: !switch1Checked })
+      wx.showToast({ title: '操作失败', icon: 'none' })
+    })
   },
 
   /////////////////////详情

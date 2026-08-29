@@ -1,6 +1,5 @@
-var db = wx.cloud.database();
 const app = getApp();
-const _ = db.command;
+const adminService = require('../../services/admin-service');
 
 Page({
   data: {
@@ -38,15 +37,8 @@ Page({
     const that = this;
     const { skip, limit } = this.data;
 
-    // 调用聚合管道获取用户记录
-    db.collection('users').aggregate()
-      .sort({ logintime: -1 }) // 按照登录时间降序排序
-      .skip(skip) // 跳过已经获取的记录
-      .limit(limit) // 限制获取的记录数量
-      .project({ _id: 1, 'userinfo.userphoto': 1, 'userinfo.username': 1, online: 1, logintime: 1 }) // 指定输出的字段
-      .end()
-      .then(res => {
-        const userList = res.list.map(user => {
+    adminService.getRecentUsers(skip, limit).then(users => {
+        const userList = users.map(user => {
           return {
             ...user,
             formattedLogintime: that.formatTime(user.logintime)
@@ -122,27 +114,9 @@ Page({
       search: keywordsArray,
     });
 
-    db.collection('users').where(_.or([
-      {
-        'userinfo.username': db.RegExp({
-          regexp: '.*' + keyword + '.*',
-          options: 'i'
-        })
-      },
-      {
-        'phone': db.RegExp({
-          regexp: '.*' + keyword + '.*',
-          options: 'i'
-        })
-      }
-    ])).field({
-      'userinfo.username': true,
-      'userinfo.userphoto': true,
-      'logintime': true,
-      'online': true
-    }).get().then(res => {
+    adminService.searchUsers(keyword).then(users => {
       // 更新过滤后的用户列表并格式化logintime
-      const filteredList = res.data.map(user => ({
+      const filteredList = users.map(user => ({
         ...user,
         formattedLogintime: this.formatTime(user.logintime)
       }));
@@ -151,7 +125,7 @@ Page({
         filteredUserList: filteredList
       });
 
-      console.log("搜索结果：", res);
+      console.log("搜索结果：", filteredList);
     }).catch(err => {
       console.error("搜索失败：", err);
     });
@@ -169,7 +143,7 @@ Page({
     var mine = false;
     var myid = app.userInfo._id;
     for (var ii = 0; ii < app.glids.length; ii++) {
-      if (app.glids[0] == myid) {
+      if (app.glids[ii] == myid) {
         mine = true;
         break;
       }
@@ -184,9 +158,9 @@ Page({
   },
 
   getTotalUsers: function () {
-    db.collection('users').count().then(res => {
+    adminService.countUsers().then(total => {
       this.setData({
-        totalUsers: res.total
+        totalUsers: total
       });
     }).catch(err => {
       console.error("获取总用户数失败：", err);
@@ -197,11 +171,9 @@ Page({
     const today = new Date();
     today.setHours(0, 0, 0, 0); // 设置为当天的开始时间
 
-    db.collection('users').where({
-      logintime: _.gte(today.getTime())
-    }).count().then(res => {
+    adminService.countTodayLoginUsers(today.getTime()).then(total => {
       this.setData({
-        todayLoginUsers: res.total
+        todayLoginUsers: total
       });
     }).catch(err => {
       console.error("获取今日登录用户数失败：", err);
