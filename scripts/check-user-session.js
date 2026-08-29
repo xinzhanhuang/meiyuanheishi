@@ -21,7 +21,7 @@ global.wx = {
       return { collection() { return { doc() { return { watch() { return { close() {} } } } } } } }
     }
   },
-  setTabBarBadge() {}, removeTabBarBadge() {}, setStorageSync() {}
+  setTabBarBadge() {}, removeTabBarBadge() {}, setStorageSync() {}, getStorageSync() { return '' }
 }
 
 require('../miniprogram/app.js')

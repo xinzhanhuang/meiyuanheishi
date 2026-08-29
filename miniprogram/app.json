@@ -44,12 +44,6 @@
                 "selectedIconPath": "images/tabBar/zhuye1.png"
             },
             {
-                "pagePath": "pages/tools/tools",
-                "text": "点评",
-                "iconPath": "images/tabBar/xingxing1.png",
-                "selectedIconPath": "images/tabBar/xingxing0.png"
-            },
-            {
                 "pagePath": "pages/my/wd/wd",
                 "text": "我的",
                 "iconPath": "images/tabBar/wode0.png",

@@ -31,7 +31,7 @@ module.exports = {
       this.setData({ ss_xx1: posts })
       app.zuiress_xx1 = posts
     }).catch(err => console.error('获取首页置顶帖失败', err))
-    return homeService.getBannerConfig('天津美术学院').then(config => {
+    return homeService.getBannerConfig(app.currentSchool.name).then(config => {
       if (!config) return
       app.heishiweixin = config.lunbotu[4].cover
       app.zilei = config.zilei

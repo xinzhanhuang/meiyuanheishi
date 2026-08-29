@@ -2,6 +2,7 @@
 const app = getApp()
 const { getCloudEnvId } = require('./config/cloud-env')
 const { callCloudFunction } = require('./utils/cloud-call')
+const { DEFAULT_SCHOOL_ID, getSchool } = require('./config/schools')
 App({
   onLaunch: function () {
     if (!wx.cloud) {
@@ -18,6 +19,9 @@ App({
     }
     this.system1 = ""
     this.hongdian = false//标记当前tabar上是否有红点、文本
+    this.myTabIndex = 1
+    this.currentSchool = getSchool(wx.getStorageSync('currentSchoolId') || DEFAULT_SCHOOL_ID)
+    this.currentSchoolId = this.currentSchool.id
     this.shuaxin = false
     this.fenxiang = "false"
     this.fxssid = ""
@@ -97,11 +101,22 @@ App({
     var message = Array.isArray(this.message) ? this.message : []
     var dzmessage = this.userInfo && Array.isArray(this.userInfo.dzmessage) ? this.userInfo.dzmessage : []
     var total = message.length + dzmessage.length
-    if (total > 0) wx.setTabBarBadge({ index: 2, text: total.toString() })
-    else wx.removeTabBarBadge({ index: 2 })
+    if (total > 0) wx.setTabBarBadge({ index: this.myTabIndex, text: total.toString() })
+    else wx.removeTabBarBadge({ index: this.myTabIndex })
     this.hongdian = total > 0
     wx.setStorageSync('badgeCount', total)
     return total
+  },
+
+  getCurrentSchoolId() {
+    return this.currentSchoolId || DEFAULT_SCHOOL_ID
+  },
+
+  setCurrentSchoolId(schoolId) {
+    this.currentSchool = getSchool(schoolId)
+    this.currentSchoolId = this.currentSchool.id
+    wx.setStorageSync('currentSchoolId', this.currentSchoolId)
+    return this.currentSchool
   },
 
   applyCurrentUser(user) {

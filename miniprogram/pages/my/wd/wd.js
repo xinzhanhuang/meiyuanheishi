@@ -232,7 +232,7 @@ Page({
       const ceng = getCurrentPages();
       if (ceng.length == 1) {
         wx.setTabBarBadge({
-          index: 2,
+          index: app.myTabIndex,
           text: totalWeidu.toString()
         });
         app.hongdian = true;
@@ -252,7 +252,7 @@ Page({
       const ceng = getCurrentPages();
       if (ceng.length == 1) {
         try {
-          wx.removeTabBarBadge({ index: 2 });
+          wx.removeTabBarBadge({ index: app.myTabIndex });
           app.hongdian = false;
           console.log('jiantingchuli: 已移除红点，消息数量为0');
         } catch (e) {
@@ -316,14 +316,14 @@ Page({
     if (totalWeidu != 0) {
       // 有未读消息，设置底部导航栏红点
       wx.setTabBarBadge({
-        index: 2,
+        index: app.myTabIndex,
         text: totalWeidu.toString()
       })
       app.hongdian = true
     } else {
       // 没有未读消息时，强制移除红点
       try {
-        wx.removeTabBarBadge({ index: 2 })
+        wx.removeTabBarBadge({ index: app.myTabIndex })
         app.hongdian = false
         console.log('checkred: 已移除红点，消息数量为0')
       } catch (e) {

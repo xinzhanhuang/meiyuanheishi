@@ -40,7 +40,8 @@ function takeOrder(data) {
 }
 
 function publishPost(data) {
-  return callCloudFunction('publishPost', data)
+  const app = getApp()
+  return callCloudFunction('publishPost', Object.assign({ schoolId: app.getCurrentSchoolId() }, data))
 }
 
 module.exports = { getPost, incrementView, incrementDownload, managePost, reportPost, moderatePost, bookmarkPost, toggleLike, takeOrder, publishPost }

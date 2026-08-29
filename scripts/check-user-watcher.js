@@ -19,7 +19,7 @@ global.wx = {
   },
   setTabBarBadge(options) { badges.push(options.text); },
   removeTabBarBadge() { badges.push('0'); },
-  setStorageSync() {}, getUpdateManager() { return { onCheckForUpdate() {} }; }
+  setStorageSync() {}, getStorageSync() { return ''; }, getUpdateManager() { return { onCheckForUpdate() {} }; }
 };
 
 require('../miniprogram/app.js');

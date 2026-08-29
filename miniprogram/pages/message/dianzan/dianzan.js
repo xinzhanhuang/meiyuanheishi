@@ -81,12 +81,12 @@ Page({
                 var weidu = app.message.length + message.length
                 if (weidu == 0) {
                     if (app.hongdian) {
-                        wx.removeTabBarBadge({ index: 2 })
+                        wx.removeTabBarBadge({ index: app.myTabIndex })
                         app.hongdian = false
                     }
                 } else {
                     wx.setTabBarBadge({
-                        index: 2,
+                        index: app.myTabIndex,
                         text: weidu.toString()
                     })
                     app.hongdian = true

@@ -126,7 +126,7 @@ Page({
     var badgeCount = wx.getStorageSync('badgeCount')
     if (badgeCount > 0) {
       wx.setTabBarBadge({
-        index: 2,
+        index: app.myTabIndex,
         text: badgeCount.toString(),
         fail: (err) => {
           console.error("onLoad setTabBarBadge failed:", err);
@@ -358,7 +358,7 @@ Page({
     var badgeCount = wx.getStorageSync('badgeCount')
     if (badgeCount > 0) {
       wx.setTabBarBadge({
-        index: 2,
+        index: app.myTabIndex,
         text: badgeCount.toString(),
         fail: (err) => {
           console.error("onShow setTabBarBadge failed:", err);
@@ -435,7 +435,7 @@ Page({
     if (totalWeidu != 0) {
       // 有未读消息，设置底部导航栏红点
       wx.setTabBarBadge({
-        index: 2,
+        index: app.myTabIndex,
         text: totalWeidu.toString()
       })
       app.hongdian = true
@@ -443,7 +443,7 @@ Page({
     } else {
       // 没有未读消息时，强制移除红点
       try {
-        wx.removeTabBarBadge({ index: 2 })
+        wx.removeTabBarBadge({ index: app.myTabIndex })
         app.hongdian = false
         wx.setStorageSync('badgeCount', 0)
       } catch (e) {
@@ -857,14 +857,14 @@ Page({
 
     if (totalWeidu > 0) {
       wx.setTabBarBadge({
-        index: 2,
+        index: app.myTabIndex,
         text: totalWeidu.toString()
       });
       app.hongdian = true;
     } else {
       // 消息数量为0时，强制移除红点
       try {
-        wx.removeTabBarBadge({ index: 2 });
+        wx.removeTabBarBadge({ index: app.myTabIndex });
         app.hongdian = false;
       } catch (e) {
         console.log('jiantingchuli: 移除红点时出错:', e);

@@ -82,13 +82,13 @@ Page({
         if (weidu == 0) {
           // 没有未读消息，移除红点
           if (app.hongdian) {
-            wx.removeTabBarBadge({ index: 2 })
+            wx.removeTabBarBadge({ index: app.myTabIndex })
             app.hongdian = false
           }
         } else {
           // 更新红点数字
           wx.setTabBarBadge({
-            index: 2,
+            index: app.myTabIndex,
             text: weidu.toString()
           })
           app.hongdian = true
@@ -111,7 +111,7 @@ Page({
           // 移除红点
           if (app.hongdian) {
             wx.removeTabBarBadge({
-              index: 2
+              index: app.myTabIndex
             });
             app.hongdian = false;
           }
@@ -133,7 +133,7 @@ Page({
       // 立即更新红点状态（不等待数据库响应）
       if (app.hongdian) {
         wx.removeTabBarBadge({
-          index: 2
+          index: app.myTabIndex
         });
         app.hongdian = false;
       }
@@ -196,12 +196,12 @@ Page({
           var weidu = message.length
           if (weidu == 0) {
             if (app.hongdian) {
-              wx.removeTabBarBadge({ index: 2 })
+              wx.removeTabBarBadge({ index: app.myTabIndex })
               app.hongdian = false
             }
           } else {
             wx.setTabBarBadge({
-              index: 2,
+              index: app.myTabIndex,
               text: weidu.toString()
             })
             app.hongdian = true
