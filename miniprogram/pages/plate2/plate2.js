@@ -25,13 +25,7 @@ Page({
    * 页面的初始数据
    */
   data: {
-    indicatorDots: true, // 是否显示指示点
-    autoplay: true, // 是否自动切换
-    interval: 1000, // 自动切换时间间隔
-    duration: 200, // 滑动动画时长
-
     loadingHidden: false,
-    xianshi: false,
     id: "",
     ss_xx: {},
     isover: false,
@@ -71,54 +65,22 @@ Page({
     sortMethod: true,
 
     // 键盘弹起
-    statsuBarHeight: app.globalData.statsuBarHeight,
-    isKeyboardOpen: false,
     headHeight: 40,
     chatListHeight: 0,
     keyboardHeight: 0,
     showKeyboardMask: false,
-    messageList: [],
     inutPanelHeight: 50,
-    toView: "item0",
-    curMessage: "",
-
-    // 投票
-    list: [],
-    count: 0,
-    args: {
-      where: {
-        isShow: true
-      },
-      orderBy: {
-        field: "publishTime",
-        sort: "desc"
-      },
-      limit: 20,
-      size: 20,
-      skip: 0
-    },
     number: 1,
     option: {},
-    remainVoteNumber: 0,
-    pwd: {},
-    $toast: {
-      show: false,
-      text: '',
-      icon: '',
-      iconColor: ''
-    },
     already: false,
     colorIndex: "",
     percent: 0,
     already22: false,
     option11111: ["A", "B", "C", "D", "E"],
     istrue: false,
-    istrue: false,
 
     // 订阅通知
-    allow: 'true',
     msgnb: [0, 0],
-    isorder: false,
     // gao:750,
     tmplIds: ['hs60e8rl8z2e_dMIRqBgT5izdt7qw_e9O3Y8xWFh9pY'],
 
@@ -240,14 +202,6 @@ Page({
     this.setData({
       [path]: value
     });
-  },
-
-  bindDialogButtonTap(e) {
-    console.log('dialog button tap', e)
-    const { index } = e.detail;
-    if (index === 0) {
-      this.changewbnrtijiao();
-    }
   },
 
   /**
@@ -431,11 +385,6 @@ Page({
   },
 
   /**
-   * 删除帖子
-   */
-  ////////////////接单按钮////
-
-  /**
    * 接单按钮
    */
   kaishixuanze(e) {
@@ -558,15 +507,6 @@ Page({
     }
   },
 
-  /**
-   * 拨打电话
-   */
-  /**
-   * 活动结束
-   */
-  /**
-   * 活动结束
-   */
   genghuan: function (e) {
 
     if (!this.data.already11) {
@@ -599,18 +539,6 @@ Page({
 
 
 
-  //生命周期函数--监听页面加载
-  /**
-   * 生命周期函数--监听页面加载
-   */
-  /**
-   * 加载对应说说id的内容
-   */
-  // 图片加载成功回调
-  // 评论图片加载成功回调
-  /**
-   * 格式化时间
-   */
   /**
    * 改变评论顺序
    */
@@ -682,12 +610,6 @@ Page({
     });
   },
 
-  /**
-   * 预览图片
-   */
-  /**
-   * 删除评论 (原逻辑优化)
-   */
   changanshanchu(e) {
     console.log("changanshanchu called with:", e.currentTarget.dataset);
     var _id = app.userInfo._id;
@@ -1173,30 +1095,6 @@ Page({
   },
 
   /**
-   * 回复别人的评论1
-   */
-  /**
-   * 输入框失去焦点
-   */
-  onInputBlur() {
-    this.setData({
-      focus: false
-    });
-  },
-
-  /**
-   * 回复用户的评论
-   */
-  /**
-   * 输入框失去焦点
-   */
-  onInputBlur() {
-    this.setData({
-      focus: false
-    });
-  },
-
-  /**
    * 回复用户的评论
    */
   huifu(e) {
@@ -1258,44 +1156,6 @@ Page({
       chatListHeight: app.globalData.sysHeight - app.globalData.statsuBarHeight - this.data.headHeight - this.data.keyboardHeight - this.data.inutPanelHeight
     })
   },
-  hideKeyboard() {
-    wx.hideKeyboard();
-    this.hideMediaPanel();
-  },
-
-  onInputBlur() {
-    console.log('[Debug] Input Blur. Clearing focus.');
-    this.setData({
-      focus: false,
-      activeReplyId: '' // Clear highlight
-    });
-  },
-
-  getInput(e) {
-    let value = e.detail.value;
-    this.setData({
-      curMessage: value
-    });
-  },
-
-  send() {
-    let curMessage = this.data.curMessage;
-    if (curMessage.trim() === "") {
-      wx.showToast({
-        title: '请输入聊天内容',
-        duration: 2000,
-        icon: "none"
-      });
-      return;
-    }
-    let messageList = this.data.messageList;
-    messageList.push(curMessage);
-    this.setData({
-      curMessage: "",
-      messageList: messageList
-    });
-  },
-
   /**
    * 点击确认
    */
@@ -1399,49 +1259,6 @@ Page({
     return submitVote(this);
   },
 
-  /**
-   * 显示 Toast
-   */
-  showToast(text, icon, iconColor, duration) {
-    this.setData({
-      $toast: {
-        show: true,
-        text: text,
-        icon: icon,
-        iconColor: iconColor
-      }
-    });
-    setTimeout(() => {
-      this.setData({
-        $toast: {
-          show: false,
-          text: '',
-          icon: '',
-          iconColor: ''
-        }
-      });
-    }, duration);
-  },
-
-  /**
-   * 图片内容合法性检测
-   */
-  /**
-   * 图片取buffer
-   */
-  /**
-   * 图片压缩
-   */
-  /**
-   * 图片压缩 (Canvas 2D)
-   */
-  // 图片压缩及审核
-  // 图片压缩及审核
-  // 图片压缩及审核
-  // 图片压缩及审核
-  // 删除图片
-  // 添加图片
-  // 添加图片
   // 处理点赞数据
   async pllove(e) {
     console.log(e);
@@ -1456,36 +1273,6 @@ Page({
       }
     }
     return e;
-  },
-
-  /**
-   * 输入框获得焦点
-   */
-  onInputFocus() {
-    this.setData({
-      isKeyboardOpen: true,
-      focus: true
-    });
-  },
-
-  /**
-   * 输入框失去焦点
-   */
-  onInputBlur() {
-    this.setData({
-      isKeyboardOpen: false,
-      focus: false
-    });
-  },
-
-  // 判断登录,返回true或false
-  async islogin() {
-    var _id = this.data._id;
-    if (_id != "") {
-      return true;
-    } else {
-      return false;
-    }
   },
 
   // 回到首页
