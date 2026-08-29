@@ -1,6 +1,6 @@
 // miniprogram/pages/post/post.js
-var util = require('../../utils/util.js');
-const { callCloudFunction } = require('../../utils/cloud-call')
+const postService = require('../../services/post-service')
+const userService = require('../../services/user-service')
 
 
 const app = getApp()
@@ -51,62 +51,6 @@ Page({
 
 
 
-  /**
-   * 文本内容合法性检测
-   * @param {String} text - 待检测文本
-   */
-  async checkStr(text) {
-    try {
-      var res = await wx.cloud.callFunction({
-        name: 'checkStr',
-        data: {
-          text: text,
-        }
-      });
-      //console.log(res.result.errCode);
-      return res.result.errCode == 0;
-    } catch (err) {
-      console.error('文字审核请求失败', err);
-      throw err;
-    }
-  },
-  /**
-   * 图片内容合法性检测
-   * @param {Buffer} media - 图片Buffer
-   */
-  async checkImg(media) {
-    console.log("要检测的buffer", media)
-    try {
-      var res = await wx.cloud.callFunction({
-        name: 'checkImg',
-        data: {
-          media
-        }
-      });
-      console.log("云检测结果", res.result);
-      return res.result.errCode
-    } catch (err) {
-      console.log("云检测错误", err);
-      throw err;
-    }
-  },
-  /**
-   * 读取图片Buffer
-   * @param {String} media - 图片路径
-   */
-  async qubuffer(media) {
-    //console.log("图片路径",media)
-    return new Promise((resolve, reject) => {
-      wx.getFileSystemManager().readFile({
-        filePath: media,
-        success: res => {
-          //console.log("刚转换完",res.data)
-          resolve(res.data)
-        },
-        fail: reject
-      })
-    })
-  },
   /**
    * 图片压缩
    * @param {String} media - 图片路径
@@ -392,7 +336,7 @@ Page({
     // 文字和图片互不依赖，并行审核以缩短带图发帖等待时间。
     try {
       var reviewResults = await Promise.all([
-        text.length > 0 ? this.checkStr(text) : Promise.resolve(true),
+        text.length > 0 ? postService.reviewText(text) : Promise.resolve(true),
         imageCheckPromise
       ])
       var checkOk = reviewResults[0]
@@ -415,46 +359,11 @@ Page({
 
     //判断 默认选择器分类[0,0]
     biaodan.fenlei = biaodan.fenlei === null ? [0, 0] : biaodan.fenlei
-    console.log("楼主id::::", app.userInfo._id)
-    var ss_xx = {
-      choosetitle: this.data.choosetitle111, //标签
-      firsttime: new Date().getTime(), //发布时间
-      username: app.userInfo.userinfo.username, //签名
-      zhuanye: app.userInfo.userinfo.zhuanye,
-      gender: app.userInfo.userinfo.gender, //用户性别
-      userphoto: app.userInfo.userinfo.userphoto, //头像
-      nr: biaodan.wbnr, //文本
-
-
-      orderdetail: {
-        takeorder: false, //派单状态
-        takeorderid: "", //接单人id
-        takeordername: "", //接单人昵称
-        takeorderphone: "", //接单人电话
-        openlocationtitle: this.data.openlocationtitle, //派单类型
-        ordertitle: biaodan.ordertitle, //订单标题
-        jg: biaodan.jg, //价格
-        starPOINT: biaodan.starPOINT, //开始位置
-        endPOINT: biaodan.endPOINT, //结束位置
-        lianxi: biaodan.lianxi, //电话
-        weixin: biaodan.weixin, //微信
-
-      },
-      tp: [], //图片数组！！！！！！！！！数组缺少图片
-      huifunr: [], //别人的评论
-      huifunb: 0, //评论总数
-      dianzanid: [], //别人的评论点赞
-      Mazhu: [], //别人的马住id
-      dianzannb: 0, //点赞数
-      jubao: [
-        [], 0
-      ], //被举报的id合集，前面添加id，加完云函数记个数
-      look: 0, //记录浏览量 
-      lzid: app.userInfo._id, //楼主所在主体
-
-
-    }
-    //console.log(ss_xx)
+    const ss_xx = postService.buildPublishRecord({
+      form: biaodan,
+      pageData: this.data,
+      userInfo: app.userInfo
+    })
 
     //上传图片
     var Imgs = that.data.Imgs
@@ -465,27 +374,10 @@ Page({
         mask: true
       })
       try {
-        const uploadPromises = Imgs.map((filePath, i) => {
-          return new Promise((resolve, reject) => {
-            var time = new Date().getTime()
-            const cloudPath = "ss_img1/" + app.userInfo._id + "-" + time + "-" + i.toString() + "." + format
-
-            wx.cloud.uploadFile({
-              cloudPath: cloudPath,
-              filePath: filePath,
-              success: res => {
-                console.log('上传结果：', res)
-                resolve(res.fileID)
-              },
-              fail: err => {
-                console.error("上传失败：", err)
-                reject(err)
-              }
-            })
-          })
+        const fileIDs = await postService.uploadImages(Imgs, {
+          userId: app.userInfo._id,
+          format
         })
-
-        const fileIDs = await Promise.all(uploadPromises)
         ss_xx.tp = fileIDs
         console.log("说说图片", fileIDs)
         //带图发帖！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
@@ -508,77 +400,25 @@ Page({
   /**
    * 普通图片压缩及审核
    */
-  async imgcheck() {
-    //审核图片
+  async reviewImages() {
     try {
-      var imgs = this.data.imgs
-      var tp = imgs; // 直接使用已压缩的图片
-      var tp2 = [];
-      var that = this
-
-      console.log("ischeck?:", app.system1.system.tpcheck)
-      if (app.system1.system.tpcheck) {
-        //need
-        //--------经过上面过程已经压缩完毕，再整体取buffer检测
-        // 直接使用已压缩的图片(1000px)进行检测，省去生成缩略图的步骤
-        // 并行执行图片内容检测
-        const checkPromises = imgs.map(async (filePath) => {
-          const buffer = await that.qubuffer(filePath);
-          return that.checkImg(buffer);
-        });
-
-        const results = await Promise.all(checkPromises);
-
-        for (const checkOk of results) {
-          if (checkOk == 87014 || checkOk == -604102) {
-            //图片检测出现问题
-            return false
-          }
-        }
-      }
-      that.setData({
-        Imgs: tp
-      })
-      return true
-      //--------返回结果
+      const imgs = this.data.imgs
+      const ok = await postService.reviewImages(imgs, app.system1.system.tpcheck)
+      if (ok) this.setData({ Imgs: imgs })
+      return ok
     } catch (err) {
       console.log("imgcheck错误", err);
       throw err;
     }
   },
 
+  // 保留历史方法名，避免改变现有提交流程与事件兼容。
+  imgcheck() {
+    return this.reviewImages()
+  },
+
   async GIFimgcheck() {
-    //审核GIF图片
-    try {
-      var imgs = this.data.imgs
-      var tp = imgs;
-      var that = this
-
-      console.log("ischeck?:", app.system1.system.tpcheck)
-      if (app.system1.system.tpcheck) {
-        // 并行执行图片内容检测
-        const checkPromises = imgs.map(async (filePath) => {
-          const buffer = await that.qubuffer(filePath);
-          return that.checkImg(buffer);
-        });
-
-        const results = await Promise.all(checkPromises);
-
-        for (const checkOk of results) {
-          if (checkOk == 87014 || checkOk == -604102) {
-            //图片检测出现问题
-            return false
-          }
-        }
-      }
-      that.setData({
-        Imgs: tp
-      })
-      return true
-    } catch (err) {
-      console.log("GIFimgcheck错误", err);
-      throw err;
-    }
+    return this.reviewImages()
   },
   /**
    * 实时获取文本输入
@@ -617,7 +457,6 @@ Page({
     this._posting = true
     this.setData({ publishState: 'loading' })
     try {
-      const postService = require('../../services/post-service')
       if (!this._publishRequestId) {
         this._publishRequestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`
       }
@@ -901,7 +740,7 @@ Page({
 
         console.log("加到数据库")
 
-        callCloudFunction('login', { action: 'setMessageBadge', msgnb }).catch(err => {
+        userService.runUserAction('setMessageBadge', { msgnb }).catch(err => {
           console.error('保存订阅消息状态失败', err)
         })
         console.log('增加了所有授权')
