@@ -23,6 +23,10 @@ function reportPost(data) {
   return callCloudFunction('jubao', data)
 }
 
+function moderatePost(data) {
+  return callCloudFunction('jubaoplus', data)
+}
+
 function bookmarkPost(postId) {
   return callCloudFunction('dianzan', { type: 'mazhu', id: postId })
 }
@@ -39,4 +43,4 @@ function publishPost(data) {
   return callCloudFunction('publishPost', data)
 }
 
-module.exports = { getPost, incrementView, incrementDownload, managePost, reportPost, bookmarkPost, toggleLike, takeOrder, publishPost }
+module.exports = { getPost, incrementView, incrementDownload, managePost, reportPost, moderatePost, bookmarkPost, toggleLike, takeOrder, publishPost }

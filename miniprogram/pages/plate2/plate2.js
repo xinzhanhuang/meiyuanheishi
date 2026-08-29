@@ -672,8 +672,9 @@ Page({
     } else {
       love = 'false';
     }
+    var detailUrl = utils.getPostTargetUrl({ postId: id, postType: 'ss', source: 'recommendation' })
     wx.navigateTo({
-      url: "/pages/plate2/plate2?id=" + id + "&fenxiang=false&liuyan=false&love=" + love + "&reping=" + reping + "&openid=" + openid + "&lzid=" + lzid,
+      url: detailUrl + "&love=" + love + "&reping=" + encodeURIComponent(reping || '') + "&openid=" + encodeURIComponent(openid || '') + "&lzid=" + encodeURIComponent(lzid || ''),
     });
     this.setData({
       index: index
@@ -958,7 +959,7 @@ Page({
       lzid: this.data.ss_xx.ss_xx.lzid,
       lv: 0, // 表示对帖子的直接评论
       huifu: [],
-      path: "pages/plate2/plate2?id=" + this.data.id + "&fenxiang=true&liuyan=" + this.data.liuyan
+      path: utils.getPostTargetUrl({ postId: this.data.id, postType: 'ss', source: 'comment', liuyan: this.data.liuyan }).replace(/^\//, '')
     };
 
     if (this.data.liuyan == true) {

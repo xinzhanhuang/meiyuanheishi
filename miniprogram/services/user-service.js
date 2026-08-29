@@ -8,8 +8,17 @@ function getByOpenId(openid) {
     .then(result => result.data && result.data[0] || null)
 }
 
+function getById(userId) {
+  if (!userId) return Promise.resolve(null)
+  return db.collection('users').doc(userId).get().then(result => result.data || null)
+}
+
 function getSystemConfig() {
   return db.collection('system').doc('001').get().then(result => result.data || null)
+}
+
+function getAdminConfig() {
+  return db.collection('system').doc('system01').get().then(result => result.data || null)
 }
 
 function runUserAction(action, data) {
@@ -20,4 +29,8 @@ function getOpenId() {
   return callCloudFunction('login', {}).then(result => result.openid || '')
 }
 
-module.exports = { getByOpenId, getSystemConfig, runUserAction, getOpenId }
+function ensureUser() {
+  return runUserAction('ensureUser', {}).then(result => result.user || null)
+}
+
+module.exports = { getByOpenId, getById, getSystemConfig, getAdminConfig, runUserAction, getOpenId, ensureUser }

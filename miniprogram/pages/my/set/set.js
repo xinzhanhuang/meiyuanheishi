@@ -603,7 +603,7 @@ Page({
         app.zhoubianfenxiang = "false"
         wx.navigateTo({ url: utils.getPostTargetUrl({ postId: app.fxssid, postType: 'zhoubian', source: 'login' }) })
       } else if (ss_xxid != "nothing") {
-        wx.navigateTo({ url: "/pages/plate2/plate2?id=" + ss_xxid })
+        wx.navigateTo({ url: utils.getPostTargetUrl({ postId: ss_xxid, postType: 'ss', source: 'login' }) })
       } else {
         wx.switchTab({ url: '/pages/index/index' })
       }

@@ -1,10 +1,12 @@
 // miniprogram/pages/wd/wd.js
 const app = getApp()
-const db = wx.cloud.database()
 const utils = require('../../../utils/util.js')
 const { callCloudFunction } = require('../../../utils/cloud-call')
+const userMethods = require('../../../utils/wd-user')
+const userService = require('../../../services/user-service')
 
 Page({
+  ...userMethods,
   /**
    * 页面的初始数据
    */
@@ -64,14 +66,14 @@ Page({
   getgl() {
     if (app.system1 == "" || app.system1 == undefined) {
       // 从数据库获取系统配置
-      db.collection('system').where({ '_id': 'system01' })
-        .get().then((res) => {
-          app.system1 = res.data[0]
+      userService.getAdminConfig().then((config) => {
+          if (!config) return
+          app.system1 = config
           this.setData({
-            glids: res.data[0].system.glids
+            glids: config.system.glids
           })
-          app.glids = res.data[0].system.glids
-          this.isgl(res.data[0].system.glids)
+          app.glids = config.system.glids
+          this.isgl(config.system.glids)
         })
     } else {
       // 使用全局缓存的系统配置
@@ -94,30 +96,16 @@ Page({
     })
 
     try {
-      const loginRes = await wx.cloud.callFunction({ name: 'login', data: { action: 'ensureUser' } })
-      const result = loginRes && loginRes.result
-      if (!result || !result.success || !result.user) throw new Error('login did not return user')
-      let user = result.user
-
-      app.userInfo = Object.assign(app.userInfo, user)
-      this.jianting(user._id)
-      app.jianting = true
-      this.setData({
-        userphoto: user.userinfo.userphoto || '/images/message/touxiang1.png',
-        username: user.userinfo.username || '校园用户',
-        anonymous: user.userinfo.anonymous || '',
-        isVIP: user.userinfo.isVIP === true,
-        login: true,
-        wenzhang: user.wenzhang || [],
-        message: user.message || [],
-        gender: user.userinfo.gender || ''
-      })
+      const user = await app.ensureCurrentUser({ create: true, refresh: true })
+      if (!user) throw new Error('login did not return user')
+      this.applyUserState(user)
+      this.bindUserWatcher()
       wx.hideLoading()
       wx.showToast({ title: '登录成功', icon: 'success' })
 
       if (this.resumePendingPost()) return
       if (ss_xxid !== 'nothing') {
-        wx.navigateTo({ url: '/pages/plate2/plate2?id=' + encodeURIComponent(ss_xxid) })
+        wx.navigateTo({ url: utils.getPostTargetUrl({ postId: ss_xxid, postType: 'ss', source: 'login' }) })
       }
     } catch (err) {
       console.error('登录或创建用户失败', err)
@@ -133,111 +121,30 @@ Page({
    */
   weidengluchongshi() {
     var ss_xxid = this.data.ss_xxid
-    let logined = app.userInfo.userinfo.login;
-
-    if (logined != true) {
-      /* 若不是登录状态，调用云函数尝试静默登录 */
-      wx.showLoading({
-        title: '尝试登录',
-      })
-      wx.cloud.callFunction({
-        name: 'login',
-        data: {}
-      }).then((res) => {
-        // 根据openid查询用户
-        return db.collection("users").where({ _openid: res.result.openid }).get().then((res) => {
-          if (res.data.length > 0) {
-            app.userInfo = Object.assign(app.userInfo, res.data[0]);
-            wx.hideLoading()
-
-            if (app.userInfo.userinfo.login == true) {
-              if (!app.jianting) {
-                // 开启监听
-                this.jianting(app.userInfo._id)
-                app.jianting = true
-              }
-
-              /* 加载用户信息和配置 */
-              this.getgl()
-              this.checkred() // 刷新红点
-
-              this.setData({
-                userphoto: app.userInfo.userinfo.userphoto,
-                gender: app.userInfo.userinfo.gender,
-                username: app.userInfo.userinfo.username,
-                anonymous: app.userInfo.userinfo.anonymous,
-                isVIP: app.userInfo.userinfo.isVIP,
-                login: app.userInfo.userinfo.login,
-                wenzhang: app.userInfo.wenzhang,
-                message: app.userInfo.message,
-                zhuanye: app.zhuanye
-              })
-
-              this.logintime() // 更新登录时间
-
-              if (this.resumePendingPost()) return
-
-              // 处理分享跳转
-              if (app.fenxiang == "ture" || app.fenxiang == "true") {
-                app.fenxiang = "false"
-                wx.navigateTo({
-                  url: utils.getPostTargetUrl({ postId: app.fxssid, postType: 'ss', source: 'login' })
-                })
-              }
-              if (app.zhoubianfenxiang == "true" || app.zhoubianfenxiang == "ture") {
-                app.zhoubianfenxiang = "false"
-                wx.navigateTo({
-                  url: utils.getPostTargetUrl({ postId: app.fxssid, postType: 'zhoubian', source: 'login' })
-                })
-              }
-              if (ss_xxid) {
-                wx.navigateTo({
-                  url: "/pages/plate2/plate2?id=" + ss_xxid
-                })
-              }
-            } else {
-              // 登录状态为false
-              this.setData({
-                login: false
-              })
-              app.userInfo.userinfo = Object.assign(app.userInfo.userinfo, { login: false })
-              wx.showToast({
-                title: '还未授权登录',
-                icon: 'none',
-                duration: 2000,
-              })
-            }
-          } else {
-            // 未找到用户
-            wx.hideLoading();
-            this.setData({ login: false });
-          }
-        })
-      }).catch(err => {
-        wx.hideLoading();
-        this.setData({ login: false });
-        console.error("云函数登录失败", err);
-        wx.showToast({ title: '登录失败，请稍后重试', icon: 'none' });
-      });
-    } else {
-      // 已登录状态
-      if (!app.jianting) {
-        // 开启监听
-        this.jianting(app.userInfo._id)
-        app.jianting = true
+    return app.ensureCurrentUser().then(user => {
+      if (!user || !user.userinfo || user.userinfo.login !== true) {
+        this.setData({ login: false })
+        return
       }
+      this.applyUserState(user)
+      this.bindUserWatcher()
       this.getgl()
-      this.checkred() // 刷新红点
-
+      this.checkred()
+      this.logintime()
       if (this.resumePendingPost()) return
-
       if (app.fenxiang == "ture" || app.fenxiang == "true") {
         app.fenxiang = "false"
-        wx.navigateTo({
-          url: utils.getPostTargetUrl({ postId: app.fxssid, postType: 'ss', source: 'login' })
-        })
+        wx.navigateTo({ url: utils.getPostTargetUrl({ postId: app.fxssid, postType: 'ss', source: 'login' }) })
+      } else if (app.zhoubianfenxiang == "true" || app.zhoubianfenxiang == "ture") {
+        app.zhoubianfenxiang = "false"
+        wx.navigateTo({ url: utils.getPostTargetUrl({ postId: app.fxssid, postType: 'zhoubian', source: 'login' }) })
+      } else if (ss_xxid) {
+        wx.navigateTo({ url: utils.getPostTargetUrl({ postId: ss_xxid, postType: 'ss', source: 'login' }) })
       }
-    }
+    }).catch(err => {
+      this.setData({ login: false })
+      console.error('用户会话恢复失败', err)
+    })
   },
 
   /**
@@ -268,22 +175,21 @@ Page({
    * @param {String} _id 用户ID
    */
   jianting() {
-    app.setUserWatcherListener((user) => this.jiantingchuli(user.message || []))
-    app.startUserWatcher()
+    this.bindUserWatcher()
   },
 
   /**
    * 生命周期函数--监听页面卸载
    */
   onUnload: function () {
-    app.clearUserWatcherListener()
+    this.unbindUserWatcher()
   },
 
   /**
    * 生命周期函数--监听页面隐藏
    */
   onHide: function () {
-    app.clearUserWatcherListener()
+    this.unbindUserWatcher()
   },
 
   /**
@@ -297,44 +203,9 @@ Page({
    * 生命周期函数--监听页面显示
    */
   onShow: function () {
-    // 重新从数据库获取最新消息数据，确保红点状态正确
-    if (app.userInfo._id && app.userInfo.userinfo && app.userInfo.userinfo.login) {
-      var that = this;
-      db.collection('users').doc(app.userInfo._id).get().then((res) => {
-        if (res.data) {
-          // 无论message是否存在，都要更新（包括空数组的情况）
-          var message = res.data.message || [];
-          var dzmessage = res.data.dzmessage || []; // 获取点赞消息
-
-          // 更新app.userInfo的完整数据
-          app.userInfo = res.data;
-          // 确保app.message和app.userInfo.message一致
-          app.message = message;
-          app.userInfo.message = message;
-          app.userInfo.dzmessage = dzmessage; // 更新点赞消息
-
-          // 更新本地数据
-          that.setData({
-            message: message,
-            dzmessage: dzmessage
-          });
-          console.log('onShow获取到的消息数量:', message.length, '点赞数量:', dzmessage.length);
-        }
-        // 检查并更新红点状态
-        that.checkred();
-      }).catch((err) => {
-        console.error('获取消息数据失败:', err);
-        // 即使获取失败，也尝试检查红点
-        that.checkred();
-      });
-    } else {
-      this.checkred();
-    }
-
-    // 如果用户已登录且没有活跃的监听器，则重新初始化
-    if (app.userInfo._id) {
-      this.jianting();
-    }
+    this.applyUserState(app.userInfo)
+    this.bindUserWatcher()
+    this.checkred()
   },
 
   /**
@@ -396,37 +267,14 @@ Page({
    * 页面相关事件处理函数--监听用户下拉动作
    */
   onPullDownRefresh: function () {
-    var _id = app.userInfo._id
-    if (!_id) {
+    if (!app.userInfo._id) {
       wx.stopPullDownRefresh();
       return;
     }
-
-    db.collection('users').doc(_id).get().then((res) => {
-      console.log("下拉刷新获取信息", res.data)
-      this.setData({
-        userphoto: res.data.userinfo.userphoto,
-        username: res.data.userinfo.username,
-        anonymous: res.data.userinfo.anonymous,
-        isVIP: res.data.userinfo.isVIP,
-        login: res.data.userinfo.login,
-        wenzhang: res.data.wenzhang,
-        message: res.data.message,
-        zhuanye: res.data.userinfo.zhuanye,
-        gender: res.data.userinfo.gender
-      })
-
-      app.userInfo = res.data
-      app.zhuanye = res.data.userinfo.zhuanye
-
-      wx.stopPullDownRefresh({})
-      this.checkred()
-      wx.showToast({
-        title: '刷新成功',
-        icon: 'none',
-        duration: 800
-      })
-    })
+    this.refreshCurrentUser(true).then(() => this.checkred()).catch(err => {
+      console.error('刷新用户信息失败', err)
+      wx.showToast({ title: '刷新失败', icon: 'none' })
+    }).finally(() => wx.stopPullDownRefresh())
   },
 
   /**

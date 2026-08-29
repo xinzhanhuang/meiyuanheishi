@@ -23,6 +23,7 @@ App({
     this.fxssid = ""
     this.pendingPostTarget = null
     this.userWatcherUnavailable = false
+    this.userWatcherListeners = new Set()
     this.jianting = false
 
 
@@ -103,6 +104,39 @@ App({
     return total
   },
 
+  applyCurrentUser(user) {
+    if (!user) return null
+    var defaults = this.userInfo || {}
+    this.userInfo = Object.assign({}, defaults, user, {
+      userinfo: Object.assign({}, defaults.userinfo || {}, user.userinfo || {})
+    })
+    this.message = Array.isArray(this.userInfo.message) ? this.userInfo.message : []
+    this.refreshMessageBadge()
+    return this.userInfo
+  },
+
+  ensureCurrentUser(options = {}) {
+    var userService = require('./services/user-service')
+    if (this.userSessionPromise) return this.userSessionPromise
+    var create = options.create === true
+    var refresh = options.refresh === true
+    if (!refresh && this.userInfo && this.userInfo._id && this.userInfo.userinfo && this.userInfo.userinfo.login === true) {
+      this.startUserWatcher()
+      return Promise.resolve(this.userInfo)
+    }
+    var request
+    if (create) request = userService.ensureUser()
+    else if (refresh && this.userInfo && this.userInfo._id) request = userService.getById(this.userInfo._id)
+    else request = userService.getOpenId().then(openid => userService.getByOpenId(openid))
+    this.userSessionPromise = request.then(user => {
+      if (!user) return null
+      this.applyCurrentUser(user)
+      this.startUserWatcher()
+      return this.userInfo
+    }).finally(() => { this.userSessionPromise = null })
+    return this.userSessionPromise
+  },
+
   setPendingPostTarget(target) {
     if (!target || !target.postId) return
     this.pendingPostTarget = Object.assign({}, target, { expiresAt: Date.now() + 30 * 60 * 1000 })
@@ -116,13 +150,11 @@ App({
     return target && target.postId && target.expiresAt > Date.now() ? target : null
   },
 
-  setUserWatcherListener(listener) {
-    this.userWatcherListener = listener
-    if (listener && this.userInfo && this.userInfo._id) listener(this.userInfo)
-  },
-
-  clearUserWatcherListener() {
-    this.userWatcherListener = null
+  subscribeUserWatcher(listener) {
+    if (typeof listener !== 'function') return () => {}
+    this.userWatcherListeners.add(listener)
+    if (this.userInfo && this.userInfo._id) listener(this.userInfo)
+    return () => this.userWatcherListeners.delete(listener)
   },
 
   startUserWatcher(retryCount = 0) {
@@ -138,10 +170,8 @@ App({
       onChange(event) {
         var user = event.docs && event.docs[0]
         if (!user) return
-        that.userInfo = user
-        that.message = Array.isArray(user.message) ? user.message : []
-        that.refreshMessageBadge()
-        if (that.userWatcherListener) that.userWatcherListener(user)
+        that.applyCurrentUser(user)
+        that.userWatcherListeners.forEach(listener => listener(that.userInfo))
       },
       onError(err) {
         console.error('用户消息监听出现问题！', err)

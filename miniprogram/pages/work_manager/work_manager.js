@@ -1,6 +1,7 @@
 const app = getApp();
 const db = wx.cloud.database();
 const _ = db.command;
+const utils = require('../../utils/util');
 
 Page({
     data: {
@@ -220,9 +221,7 @@ Page({
     onPostTap(e) {
         const item = e.detail.item || e.currentTarget.dataset.item;
         const id = item._id;
-        wx.navigateTo({
-            url: '/pages/plate2/plate2?id=' + id + '&isReview=true' // Adding flag just in case
-        });
+        wx.navigateTo({ url: utils.getPostTargetUrl({ postId: id, postType: 'ss', source: 'work_manager' }) });
     },
 
 

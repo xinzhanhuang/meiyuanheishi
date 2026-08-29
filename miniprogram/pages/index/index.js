@@ -1,10 +1,14 @@
 const app = getApp()
-const db = wx.cloud.database()
-const _ = db.command
 const { callCloudFunction } = require('../../utils/cloud-call')
 const utils = require('../../utils/util')
+const homeService = require('../../services/home-service')
+const sessionMethods = require('../../utils/index-session')
+const postService = require('../../services/post-service')
+const homeMethods = require('../../utils/index-home')
 
 Page({
+  ...sessionMethods,
+  ...homeMethods,
   /**
    * 页面的初始数据
    */
@@ -53,69 +57,6 @@ Page({
   },
 
   /**
-   * 获取热门搜索关键词
-   * 统计最近三个月内的搜索记录
-   */
-  hotsearckeys: function () {
-    var than = this
-    // 获取当前时间的时间戳
-    const currentTime = Date.now()
-
-    // 计算三个月前的时间戳
-    const threeMonthsAgo = currentTime - (90 * 24 * 60 * 60 * 1000)
-
-    // 使用云开发的聚合操作统计搜索量前十的搜索词
-    db.collection('searchLogs').aggregate()
-      .match({
-        timestamp: _.gte(threeMonthsAgo) // 限定搜索记录在最近三个月内
-      })
-      .group({
-        _id: '$searchText', // 根据搜索内容进行分组
-        count: { $sum: 1 } // 统计每个搜索内容的搜索次数
-      })
-      .sort({
-        count: -1 // 按搜索次数倒序排序
-      })
-      .limit(15) // 只获取搜索量前十的搜索词
-      .end()
-      .then(res => {
-        if (res.list.length > 0) {
-          console.log('近三个月搜索量前十的搜索词：', res.list)
-          var hotsearckeys = res.list
-          than.setData({
-            hotsearckeys
-          })
-        } else {
-          console.log('没有搜索记录或者搜索量前十的搜索词。')
-        }
-      })
-      .catch(err => {
-        console.error('获取搜索量前十的搜索词失败:', err)
-      })
-  },
-
-  /**
-   * 统计并显示当前在线人数
-   */
-  currentOnlineNum: function () {
-    db.collection("users").where({
-      logintime: _.gte(Date.now() - 18e6)
-    }).count().then((function (e) {
-      // 生成一个随机整数，范围在1到9之间（包括1和5）
-      var A = Math.floor(Math.random() * 9) + 1;
-      var B = Math.floor(Math.random() * 9) + 1;
-      var C = A * B
-
-      setTimeout(() => {
-        wx.showToast({
-          title: e.total + C + "人在线",
-          icon: "none"
-        })
-      }, 3000)
-    }))
-  },
-
-  /**
    * 模态框确认回调
    */
   modalConfirm: function () {
@@ -133,97 +74,6 @@ Page({
     var m = JSON.stringify(this.data.hotsearckeys);
     wx.navigateTo({
       url: "/pages/plate4/plate4?choosetitle=" + e + "&hotsearckeys=" + m
-    })
-  },
-
-  /**
-   * 获取轮播图和置顶帖子列表
-   */
-  getBannerList() {
-    var now = new Date().getTime() // 现在的时间
-    var yizhou = (now - 3600 * 7000 * 24)
-    var openlocationtitle = db.command.eq("")
-
-    console.log("现在：", now)
-    console.log("一周：", yizhou)
-    this.setData({
-      yizhou: yizhou
-    })
-
-    // 获取置顶/热门帖子
-    db.collection('ss').limit(5).where({
-      'ss_xx.jubao.1': db.command.lte(9),
-      'time': db.command.gt(this.data.yizhou),
-      "ss_xx.orderdetail.openlocationtitle": openlocationtitle
-    }).field(
-      {
-        "ss_xx.nr": true,
-        "ss_xx.look": true,
-        "ss_xx.dianzanid": true
-      }
-    ).orderBy('ss_xx.look', 'desc')
-      .skip(0).get().then(async (res) => {
-        console.log(res.data)
-        var ss_xx1 = await this.love(res.data)
-
-        this.setData({
-          ss_xx1: ss_xx1,
-        })
-
-        app.zuiress_xx1 = ss_xx1
-      })
-
-    // 获取轮播图数据
-    var that = this
-    wx.cloud.database().collection('lunbotu3').where({
-      'schooltype': '天津美术学院',
-    }).get({
-      success(res) {
-        console.log(res)
-        var choosetitle = res.data[0].choosetile
-        var bannerList = res.data[0].lunbotu[4].cover
-        var bannerList0 = res.data[0].lunbotu
-        app.heishiweixin = bannerList
-        app.zilei = res.data[0].zilei
-
-        var bannerList1 = bannerList0
-
-        // Ensure choosetitle is an array
-        if (choosetitle && typeof choosetitle === 'object' && !Array.isArray(choosetitle)) {
-          choosetitle = Object.values(choosetitle);
-        }
-
-        // Process Emoji Separation
-        choosetitle = choosetitle.map(item => {
-          const str = item.title11 || "";
-          let icon = "";
-          let label = "";
-
-          if (str.length > 0) {
-            const firstCode = str.charCodeAt(0);
-            // Check for High Surrogate (0xD800 - 0xDBFF) indicating a multi-byte character
-            if (firstCode >= 0xD800 && firstCode <= 0xDBFF && str.length >= 2) {
-              icon = str.substring(0, 2);
-              label = str.substring(2);
-            } else {
-              icon = str.substring(0, 1);
-              label = str.substring(1);
-            }
-          }
-
-          return {
-            ...item,
-            _icon: icon,
-            _label: label
-          };
-        });
-
-        console.log("测试", choosetitle)
-        that.setData({
-          bannerList1,
-          choosetitle: choosetitle
-        })
-      }
     })
   },
 
@@ -271,9 +121,6 @@ Page({
     var tjid = options.id
     var fenxiang = options.fenxiang
     var liuyan = options.liuyan
-    let logined = app.userInfo.userinfo.login;
-    var _id = app.userInfo._id
-    console.log("当前用户ID:", _id.toString());
 
     // 优先读取缓存红点
     var badgeCount = wx.getStorageSync('badgeCount')
@@ -289,15 +136,15 @@ Page({
 
     // 获取系统配置
     if (app.system1 == "" || app.system1 == undefined) {
-      db.collection('system').where({ '_id': 'system01' })
-        .get().then((res) => {
-          app.system1 = res.data[0]
-          app.glids = res.data[0].system.glids
-          app.glids_openid = res.data[0].glids_openid
+      homeService.getSystemConfig().then((config) => {
+          if (!config) return
+          app.system1 = config
+          app.glids = config.system.glids
+          app.glids_openid = config.glids_openid
 
-          if (res.data[0].system.ADcheck) {
-            app.bannerList2 = res.data[0].system.lunbotu
-            app.bannerListtool = res.data[0].system.lunbotutool
+          if (config.system.ADcheck) {
+            app.bannerList2 = config.system.lunbotu
+            app.bannerListtool = config.system.lunbotutool
             var bannerList2 = app.bannerList2.sort(() => Math.random() - 0.5);
 
           } else {
@@ -307,10 +154,10 @@ Page({
           }
 
           this.setData({
-            glids: res.data[0].system.glids,
+            glids: config.system.glids,
             bannerList2: bannerList2
           })
-        })
+        }).catch(err => console.error('获取首页系统配置失败', err))
     }
 
     // 初始化数据
@@ -339,63 +186,19 @@ Page({
       searchWidth: right - width - 20 // 胶囊按钮右边坐标 - 胶囊按钮宽度 = 按钮左边可使用宽度
     })
 
-    this.logintime()
-
-    // 检查登录状态
-    if (logined != true) {
-      /* 调用云函数登录 */
-      wx.cloud.callFunction({
-        name: 'login',
-        data: {}
-      }).then((res) => {
-        db.collection("users").where({
-          _openid: res.result.openid
-        }).get().then((res) => {
-          if (!res.data.length) {
-            this.jiazai()
-            return
-          }
-          app.userInfo = Object.assign(app.userInfo, res.data[0]);
-          // Sync message arrays
-          app.message = app.userInfo.message || [];
-
-          this.jiazai()
-
-          if (app.userInfo._openid == "") {
-            /* 如果没有登录信息 */
-            // 可以在这里处理未注册用户的逻辑
-          } else {
-            // 登录成功，开启监听
-            if (!app.jianting) {
-              this.jianting()
-              app.jianting = true
-              this.logintime() // 更新登录时间
-            }
-            // 显式调用checkred以更新红点
-            this.checkred();
-          }
-        }).catch((err) => {
-          console.error('首页用户信息读取失败', err)
-          this.jiazai()
-        })
-      }).catch((err) => {
-        console.error('首页静默登录失败', err)
-        this.jiazai()
-      });
-    } else {
-      this.jiazai()
-      // 已登录，开启监听
-      if (!app.jianting) {
-        this.jianting()
-        app.jianting = true
-      }
-    }
+    // 公共帖子不等待用户会话，登录失败也不阻塞首屏。
+    this.jiazai()
+    app.ensureCurrentUser().then(user => {
+      if (!user) return
+      this.jianting()
+      this.logintime()
+      this.checkred()
+    }).catch(err => console.warn('首页用户会话恢复失败', err))
 
     // 处理分享进入的参数
     if (tjid != "" && tjid != undefined && tjid != null) {
-      wx.navigateTo({
-        url: "../plate2/plate2?id=" + tjid + "&fenxiang=" + fenxiang + "&liuyan=" + liuyan
-      })
+      const target = utils.getPostTarget({ id: tjid, liuyan, source: fenxiang ? 'share' : 'home' }, 'ss')
+      wx.navigateTo({ url: utils.getPostTargetUrl(target) })
     }
 
     // 延迟显示列表
@@ -406,31 +209,6 @@ Page({
       });
     }, 1500);
   },
-
-  //获取广告/system1/轮播图地址(管理openid)并赋值到data！！！！！！！！！！！！！！
-  // guanggao(){
-  //   console.log(app.system1)
-  //   if(app.system1==""||app.system1==undefined){
-  //     //获取写入
-  //     db.collection('system').where({'_id':'system01'})
-  //     .get().then((res)=>{
-  //       //console.log(res)
-  //       app.system1=res.data[0]
-  //       this.setData({
-  //         glids:res.data[0].system.glids
-  //       })
-  //       app.glids=res.data[0].system.glids
-  //       app.glids_openid=res.data[0].glids_openid
-  //       if(res.data[0].system.ADcheck){
-  //         app.bannerList2=res.data[0].system.lunbotu
-  //       }else{
-  //         app.bannerList2=false
-  //       }
-
-
-  //     })
-  //   }
-  // },
 
   /**
    * 页面滚动监听
@@ -504,16 +282,13 @@ Page({
             console.log("封贴内容:", cc)
 
             // 调用举报云函数
-            wx.cloud.callFunction({
-              name: "jubaoplus",
-              data: {
+            postService.moderatePost({
                 id: ssid,
                 time: new Date().getTime(), // 发布时间
                 ywnr: cc,
                 jbrid: app.userInfo._id, // 举报人
                 type: 'ss'
-              }
-            })
+            }).catch(err => console.error('封贴失败', err))
             wx.showToast({
               title: '封了',
               icon: 'none',
@@ -608,13 +383,7 @@ Page({
       app.shuaxin = false
     }
 
-    // 检测登录并开启监听
-    if (app.userInfo._id != "") {
-      if (!app.jianting) {
-        this.jianting()
-        app.jianting = true
-      }
-    }
+    if (app.userInfo._id) this.bindUserWatcher()
 
     // 点赞页面返回更新点赞评论浏览状态
     var index = this.data.index
@@ -643,19 +412,6 @@ Page({
       } else {
         console.warn("Index out of bounds or ss_xx undefined:", index);
       }
-    }
-
-    // 检查登录状态并重新初始化监听器
-    if (app.userInfo._id && !app.jianting) {
-      this.jianting();
-      app.jianting = true;
-    } else if (!app.userInfo._id && app.jianting) {
-      // 用户登出时关闭监听器
-      if (this.watcher) {
-        this.watcher.close();
-        this.watcher = null;
-      }
-      app.jianting = false;
     }
 
     // 消息与红点由 app 的用户实时监听统一同步，避免每次显示首页再读取同一用户文档。
@@ -702,7 +458,7 @@ Page({
    * 生命周期函数--监听页面隐藏
    */
   onHide: function () {
-    app.clearUserWatcherListener()
+    this.unbindUserWatcher()
   },
 
   /**
@@ -716,7 +472,7 @@ Page({
    * 生命周期函数--监听页面卸载
    */
   onUnload: function () {
-    app.clearUserWatcherListener()
+    this.unbindUserWatcher()
   },
 
   /**
@@ -781,29 +537,9 @@ Page({
       console.log("加载更多，当前数量:", head)
     }
 
-    var yizhou = 0
-    var openlocationtitle = null
-
-    if (zuixinorzuire == 0) {
-      // 按照时间排取消时间限制
-      zuixinorzuire = "time"
-      yizhou = 0
-      openlocationtitle = db.command.neq("111")
-    } else {
-      // 搜索派单信息
-      zuixinorzuire = "time"
-      yizhou = this.data.yizhou
-      openlocationtitle = db.command.neq("")
-    }
-
-    db.collection('ss').where({
-      'ss_xx.jubao.1': db.command.lte(19),
-      'ss_xx.sstype': db.command.neq(true), // Exclude pending posts (sstype: true)
-      time: db.command.gt(yizhou),
-      "ss_xx.orderdetail.openlocationtitle": openlocationtitle
-    }).orderBy(zuixinorzuire, 'desc')
-      .skip(head).get().then(async (res) => {
-        if (res.data == "") {
+    homeService.getPosts({ orderMode: zuixinorzuire, since: this.data.yizhou, skip: head })
+      .then(async (posts) => {
+        if (!posts.length) {
           this.setData({
             kong: true,
             jiazaizhong: false
@@ -816,11 +552,11 @@ Page({
         var postStartIndex = 0
         if (shuaxin == true) {
           // 真刷新状态
-          ss_xx_new = await this.love(res.data)
+          ss_xx_new = await this.love(posts)
         } else {
           // 加载并加入
           var ss_xx = this.data.ss_xx
-          var xx = await this.love(res.data)
+          var xx = await this.love(posts)
           postStartIndex = ss_xx.length
           ss_xx.push.apply(ss_xx, xx)
           ss_xx_new = ss_xx
@@ -1070,9 +806,7 @@ Page({
     var lzid = this.data.ss_xx[index]._openid
     var ywnr = this.data.ss_xx[index].ss_xx.nr
 
-    wx.cloud.callFunction({
-      name: "dianzan",
-      data: {
+    postService.toggleLike({
         id: id,
         dzrid: _id,
         type: 'ss',
@@ -1081,8 +815,7 @@ Page({
         time: time,
         lzid: lzid,
         ywnr: ywnr
-      }
-    })
+    }).catch(err => console.error('点赞失败', err))
 
     var ss_xx = this.data.ss_xx
     if (this.data.ss_xx[index].love) {
@@ -1101,8 +834,7 @@ Page({
    * 消息监听
    */
   jianting() {
-    app.setUserWatcherListener((user) => this.jiantingchuli(user.message || []))
-    app.startUserWatcher()
+    this.bindUserWatcher()
   },
 
   /**
@@ -1326,93 +1058,6 @@ Page({
     this.imageOnLoadError({
       currentTarget: { dataset }
     });
-  },
-
-  // --------------------------------------------------------------------------------
-  // 以下为保留的未使用或未来功能的代码 (Unused / Future implementation)
-  // --------------------------------------------------------------------------------
-
-  // 点赞处理 (优化版 - 未使用)
-  async handleLike(e) {
-    const { id, index } = e.currentTarget.dataset;
-    const userId = app.userInfo._id;
-
-    if (!this.checkUserLogin()) return;
-
-    try {
-      await wx.cloud.callFunction({
-        name: "dianzan",
-        data: { id, dzrid: userId, type: 'ss' }
-      });
-
-      const ss_xx = [...this.data.ss_xx];
-      const isLiked = ss_xx[index].love;
-
-      ss_xx[index] = {
-        ...ss_xx[index],
-        love: !isLiked,
-        ss_xx: {
-          ...ss_xx[index].ss_xx,
-          dianzannb: isLiked ? ss_xx[index].ss_xx.dianzannb - 1 : ss_xx[index].ss_xx.dianzannb + 1
-        }
-      };
-
-      this.setData({ ss_xx });
-
-    } catch (err) {
-      console.error('点赞失败:', err);
-      wx.showToast({ title: '操作失败', icon: 'none' });
-    }
-  },
-
-  // 3. 优化数据加载 (优化版 - 未使用)
-  async loadData(isRefresh = false) {
-    const { zuixinorzuire, yizhou } = this.data;
-    const skip = isRefresh ? 0 : this.data.ss_xx.length;
-
-    try {
-      const { data } = await db.collection('ss')
-        .where({
-          'ss_xx.jubao.1': db.command.lte(19),
-          time: db.command.gt(yizhou),
-          "ss_xx.orderdetail.openlocationtitle": db.command.neq("")
-        })
-        .orderBy(zuixinorzuire, 'desc')
-        .skip(skip)
-        .get();
-
-      if (!data.length) {
-        this.setData({
-          'pageConfig.kong': true,
-          'pageConfig.jiazaizhong': false
-        });
-        return;
-      }
-
-      const processedData = await this.processPostData(data);
-      this.updatePostList(processedData, isRefresh);
-
-    } catch (err) {
-      console.error('加载数据失败:', err);
-      wx.showToast({ title: '加载失败', icon: 'none' });
-    }
-  },
-
-  // 4. 抽取通用方法 (优化版 - 未使用)
-  checkUserLogin() {
-    if (!app.userInfo.userinfo.login) {
-      wx.showModal({
-        title: '提示',
-        content: '请先登录',
-        success: (res) => {
-          if (res.confirm) {
-            wx.switchTab({ url: "../my/wd/wd" });
-          }
-        }
-      });
-      return false;
-    }
-    return true;
   },
 
 })

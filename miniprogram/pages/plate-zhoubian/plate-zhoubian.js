@@ -791,7 +791,7 @@ Page({
       lv: 0,
       huifu: [],
       tp: [],
-      path: "/pages/plate-zhoubian/plate-zhoubian?id=" + this.data.id + "&zhoubianfenxiang=true&liuyan=" + this.data.liuyan
+      path: utils.getPostTargetUrl({ postId: this.data.id, postType: 'zhoubian', source: 'comment', liuyan: this.data.liuyan })
     };
 
     if (this.data.liuyan == true) {
@@ -1288,11 +1288,10 @@ Page({
 
   //用户转发
   onShareAppMessage: function () {
-    console.log("path:/pages/plate-zhoubian/plate-zhoubian?id=" + this.data.id)
     return {
       title: app.ssinfo.jg,
       imageUrl: app.ssinfo.tp[0],
-      path: "/pages/plate-zhoubian/plate-zhoubian?id=" + this.data.id + "&postId=" + this.data.id + "&postType=zhoubian&source=share&zhoubianfenxiang=true&liuyan=" + this.data.liuyan
+      path: utils.getPostTargetUrl({ postId: this.data.id, postType: 'zhoubian', source: 'share', liuyan: this.data.liuyan }) + '&zhoubianfenxiang=true'
     }
   },
   //用户转发
