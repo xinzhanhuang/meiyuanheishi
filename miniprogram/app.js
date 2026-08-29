@@ -2,7 +2,8 @@
 const app = getApp()
 const { getCloudEnvId } = require('./config/cloud-env')
 const { callCloudFunction } = require('./utils/cloud-call')
-const { DEFAULT_SCHOOL_ID, getSchool } = require('./config/schools')
+const { DEFAULT_SCHOOL_ID, SCHOOLS, getSchools, getSchool } = require('./config/schools')
+const { loadSchoolCatalog } = require('./services/school-service')
 App({
   onLaunch: function () {
     if (!wx.cloud) {
@@ -22,6 +23,9 @@ App({
     this.myTabIndex = 1
     this.currentSchool = getSchool(wx.getStorageSync('currentSchoolId') || DEFAULT_SCHOOL_ID)
     this.currentSchoolId = this.currentSchool.id
+    this.schools = getSchools()
+    this.schoolConfigReady = false
+    this.refreshSchoolConfig()
     this.shuaxin = false
     this.fenxiang = "false"
     this.fxssid = ""
@@ -110,6 +114,23 @@ App({
 
   getCurrentSchoolId() {
     return this.currentSchoolId || DEFAULT_SCHOOL_ID
+  },
+
+  refreshSchoolConfig() {
+    if (this.schoolConfigPromise) return this.schoolConfigPromise
+    this.schoolConfigPromise = loadSchoolCatalog().then(result => {
+      this.schools = result.schools
+      this.setCurrentSchoolId(wx.getStorageSync('currentSchoolId') || DEFAULT_SCHOOL_ID)
+      this.schoolConfigReady = true
+      return result
+    }).catch(error => {
+      console.warn('学校配置加载失败，继续使用本地默认配置', error)
+      this.schools = SCHOOLS
+      this.setCurrentSchoolId(DEFAULT_SCHOOL_ID)
+      this.schoolConfigReady = true
+      return { schools: this.schools, currentSchoolId: DEFAULT_SCHOOL_ID, source: 'local', reason: 'app-refresh-failed', error }
+    }).finally(() => { this.schoolConfigPromise = null })
+    return this.schoolConfigPromise
   },
 
   setCurrentSchoolId(schoolId) {

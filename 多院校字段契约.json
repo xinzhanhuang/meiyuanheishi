@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "defaultSchoolId": "tjarts",
+  "schoolCollection": {
+    "name": "schools",
+    "readPolicy": "active-only",
+    "writePolicy": "manual-admin-migration-only",
+    "fields": {
+      "_id": "string; stable school id when id is omitted",
+      "id": "string; preferred stable school id",
+      "name": "string; display name",
+      "shortName": "string; compact display name",
+      "status": "active|inactive",
+      "city": "string; optional",
+      "logo": "string; optional"
+    }
+  },
+  "runtime": {
+    "storageKey": "currentSchoolId",
+    "fallback": "local:tjarts",
+    "queryFilterEnabled": false,
+    "uiChangeEnabled": false
+  },
+  "collections": [
+    { "name": "users", "schoolId": "recommended", "legacyFill": "tjarts", "isolation": "phase-7" },
+    { "name": "ss", "schoolId": "required-on-new-write", "legacyFill": "tjarts", "isolation": "phase-7" },
+    { "name": "tj", "schoolId": "required-on-new-write", "legacyFill": "tjarts", "isolation": "phase-7" },
+    { "name": "VoteOption", "schoolId": "required-on-new-write", "legacyFill": "tjarts", "isolation": "phase-7" },
+    { "name": "VoteRecord", "schoolId": "required-on-new-write", "legacyFill": "tjarts", "isolation": "phase-7" },
+    { "name": "searchLogs", "schoolId": "required-on-new-write", "legacyFill": "tjarts", "isolation": "phase-7" },
+    { "name": "search_keywords", "schoolId": "required-on-new-write", "legacyFill": "tjarts", "isolation": "phase-7" },
+    { "name": "work_queue", "schoolId": "required-on-new-write", "legacyFill": "tjarts", "isolation": "phase-7" },
+    { "name": "system", "schoolId": "config-dependent", "legacyFill": "review-before-write", "isolation": "phase-7" },
+    { "name": "lunbotu3", "schoolId": "config-dependent", "legacyFill": "review-before-write", "isolation": "phase-7" },
+    { "name": "tianmeizhoubian", "schoolId": "deferred", "legacyFill": "none", "isolation": "deferred-with-周边" }
+  ],
+  "targetFields": [
+    "schoolId",
+    "postId",
+    "postType",
+    "commentId",
+    "replyId",
+    "source"
+  ]
+}
