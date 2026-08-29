@@ -11,13 +11,14 @@ exports.main = async (event = {}) => {
   const openid = cloud.getWXContext().OPENID
   if (!openid) return fail('UNAUTHENTICATED')
   if (typeof event.id !== 'string' || !event.id) return fail('INVALID_ARGUMENT')
+  const collectionName = event.type === 'tianmeizhoubian' ? 'tianmeizhoubian' : 'ss'
 
   const actorResult = await db.collection('users').where({ _openid: openid }).limit(1).get()
   const actor = actorResult.data[0]
   if (!actor) return fail('USER_NOT_FOUND')
 
   return db.runTransaction(async transaction => {
-    const postResult = await transaction.collection('ss').doc(event.id).get()
+    const postResult = await transaction.collection(collectionName).doc(event.id).get()
     const post = postResult.data
     if (!post || !post.ss_xx) return fail('POST_NOT_FOUND')
 
@@ -32,7 +33,7 @@ exports.main = async (event = {}) => {
       ? await transaction.collection('users').doc(post.ss_xx.lzid).get()
       : { data: null }
     reporters.push(actor._id)
-    await transaction.collection('ss').doc(event.id).update({ data: { 'ss_xx.jubao': [reporters, nextTotal] } })
+    await transaction.collection(collectionName).doc(event.id).update({ data: { 'ss_xx.jubao': [reporters, nextTotal] } })
 
     if (nextTotal >= 10 && post.ss_xx.lzid) {
       const owner = ownerResult.data
@@ -44,7 +45,7 @@ exports.main = async (event = {}) => {
         const messages = Array.isArray(owner.message) ? owner.message.slice() : []
         messages.push({
           type: 'jubao', time: now, ssid: event.id, postId: event.id,
-          postType: 'ss', source: 'message', plnr: event.ywnr || '',
+          postType: collectionName === 'ss' ? 'ss' : 'zhoubian', source: 'message', plnr: event.ywnr || '',
           name: '帖子被封：', id: event.id + now, liuyan: false
         })
         const violationCount = Number(owner.weiguinb || 0) + 1

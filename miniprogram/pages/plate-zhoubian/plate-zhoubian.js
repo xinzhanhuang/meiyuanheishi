@@ -1,9 +1,12 @@
-var db = wx.cloud.database()
 var app = getApp()
-var _ = db.command
 var utils = require('../../utils/util.js')
 var cloudCall = require('../../utils/cloud-call')
+var postService = require('../../services/post-service')
+var userService = require('../../services/user-service')
+var commentService = require('../../services/comment-service')
+var commentMethods = require('../../utils/plate-zhoubian-comments')
 Page({
+  ...commentMethods,
   //页面的初始数据
   data: {
     alldibutitle: ['发帖前先搜索，是黑市的基本礼仪哦～', '遇到感兴趣的帖子可以先马住～', '评论可以发图，甚至是GIF动图哦～', '举报到一定数值，帖子自动粉碎哦～',],
@@ -190,14 +193,8 @@ Page({
       movehight2: systeminfo.windowHeight - 80
     })
 
-    wx.cloud.callFunction({
-      name: "look",
-      data: {
-        id,
-        type: target.liuyan ? 'tj' : 'tianmeizhoubian',
-        num: 1
-      }
-    })
+    postService.incrementView(id, target.liuyan ? 'tj' : 'tianmeizhoubian')
+      .catch(err => console.warn('周边浏览计数更新失败', err))
 
     //判断是否为分享来的！！！！！！！！！！！！！
     if (isSharedEntry) {
@@ -205,15 +202,9 @@ Page({
       if (app.userInfo._openid) {
         this.setData({ _openid: app.userInfo._openid, id, _id: app.userInfo._id })
       } else {
-        wx.cloud.callFunction({
-        name: 'login',
-        data: {}
-      }).then((res) => {
-        return db.collection("users").where({
-          _openid: res.result.openid
-        })
-      }).then((res) => {
-        if (res.data[0]) app.userInfo = Object.assign(app.userInfo, res.data[0])
+        userService.getOpenId()
+          .then(openid => userService.getByOpenId(openid)).then((user) => {
+        if (user) app.userInfo = Object.assign(app.userInfo, user)
         if (app.userInfo._openid) {
           this.setData({ _openid: app.userInfo._openid, id, _id: app.userInfo._id })
           return
@@ -236,13 +227,12 @@ Page({
 
     //判断是否有了glid
     if (app.glid == "9999") {
-      db.collection('system').where({ '_id': '001' })
-        .get().then((res) => {
-          //console.log(res.data[0].tp)
+      userService.getSystemConfig().then((systemConfig) => {
+          const config = systemConfig || {}
           this.setData({
-            glid: res.data[0].glid
+            glid: config.glid
           })
-          app.glid = res.data[0].glid
+          app.glid = config.glid
         })
     } else {
       this.setData({
@@ -273,13 +263,13 @@ Page({
     }
     var ku = this.data.ku
     //console.log("哭哭哭：",ku)
-    db.collection(ku).where({ '_id': id }).get().then(async (res) => {
-      console.log("加载的：", res.data[0])
+    postService.getPost(ku, id).then(async (post) => {
+      console.log("加载的：", post)
 
 
-      if (res.data[0] != undefined) {
+      if (post != undefined) {
         //var ss_xx=await this.read(res.data[0])//读缓存图
-        var ss_xx = await this.readd(utils.normalizePost(res.data[0]))//处理超长名
+        var ss_xx = await this.readd(utils.normalizePost(post))//处理超长名
 
         // Initialize tp2 for main post images
         if (ss_xx.ss_xx.tp && ss_xx.ss_xx.tp.length > 0) {
@@ -358,7 +348,7 @@ Page({
             app.ssinfo.jg = ss_xx.ss_xx.jg
           }
 
-          if (res.data[0].ss_xx.jubao[1] < 10) {
+          if (post.ss_xx.jubao[1] < 10) {
             this.setData({
               ss_xx: ss_xx
             }, () => utils.jumpToComment(this, this.commentId))
@@ -509,8 +499,8 @@ Page({
         return;
       }
 
-      cloudCall.callCloudFunction('delete', {
-        action: 'editPost', collection: 'tianmeizhoubian', postId: that.data.id, nr: textwbnr
+      postService.managePost('editPost', {
+        collection: 'tianmeizhoubian', postId: that.data.id, nr: textwbnr
       }).then(res => {
         wx.showToast({
           title: '修改成功',
@@ -547,8 +537,8 @@ Page({
         return;
       }
 
-      cloudCall.callCloudFunction('delete', {
-        action: 'editPost', collection: 'tianmeizhoubian', postId: that.data.id,
+      postService.managePost('editPost', {
+        collection: 'tianmeizhoubian', postId: that.data.id,
         nr: textwbnr, ordertitle, phone, jg, weixin
       }).then(res => {
         wx.showToast({
@@ -643,13 +633,7 @@ Page({
     })
 
     //添加浏览数
-    wx.cloud.callFunction({
-      name: "look",
-      data: {
-        id: id,
-        type: 'tj'
-      }
-    })
+    postService.incrementView(id, 'tj').catch(err => console.warn('推荐浏览计数更新失败', err))
   },
 
 
@@ -686,52 +670,6 @@ Page({
   //删除评论
 
 
-
-  //文本内容合法性检测
-  async checkStr(text) {
-    try {
-      var res = await wx.cloud.callFunction({
-        name: 'checkStr',
-        data: {
-          text: text,
-        }
-      });
-      //console.log(res.result.errCode);
-      if (res.result.errCode == 0)
-        return true;
-      return false;
-    } catch (err) {
-      console.log(err);
-      return false;
-    }
-
-
-  },
-
-
-
-
-
-
-  /**
-   * 文本内容合法性检测
-   */
-  async checkStr(text) {
-    try {
-      var res = await wx.cloud.callFunction({
-        name: 'checkStr',
-        data: {
-          text: text,
-        }
-      });
-      if (res.result.errCode == 0)
-        return true;
-      return false;
-    } catch (err) {
-      console.log(err);
-      return false;
-    }
-  },
 
   /**
    * 发送评论 (Adapted from Plate2)
@@ -915,14 +853,19 @@ Page({
       try {
         fileID = await Promise.all(uploadPromises);
         pinglunnr.tp = fileID;
-        this.fbzbpj(pinglunnr, pd); // Use existing fbzbpj
+        var publishResult = await this.fbzbpj(pinglunnr, pd); // Use existing fbzbpj
       } catch (err) {
         wx.hideLoading();
         wx.showToast({ title: '图片上传失败', icon: 'none' });
         return;
       }
     } else {
-      this.fbzbpj(pinglunnr, pd);
+      var publishResult = await this.fbzbpj(pinglunnr, pd);
+    }
+
+    if (!publishResult) {
+      wx.hideLoading({});
+      return;
     }
 
     wx.hideLoading({});
@@ -978,9 +921,8 @@ Page({
 
     //console.log(this.data.ss_xx)
     if (star_num > 0) {
-      cloudCall.callCloudFunction('fbzbpj', {
-        action: 'ratePost', id: this.data.id, rating: Number(this.data.star_num)
-      }).catch(err => console.log('更新评分失败', err))
+      commentService.rateNearbyPost(this.data.id, Number(this.data.star_num))
+        .catch(err => console.log('更新评分失败', err))
     }
 
     app.shuaxin = true
@@ -1015,7 +957,7 @@ Page({
           });
         }
 
-        cloudCall.callCloudFunction('login', { action: 'setMessageBadge', msgnb })
+        userService.runUserAction('setMessageBadge', { msgnb })
           .catch(err => console.error('订阅计数保存失败', err));
         console.log('增加了所有授权');
       },
@@ -1039,18 +981,6 @@ Page({
    * 弹出框蒙层截断touchmove事件
    */
   preventTouchMove: function () {
-  },
-
-
-
-
-  //发送前刷新内容
-  async fasongqian(e) {
-    //console.log(e)
-    return db.collection('users').doc(e).field({ pinglunguode: true }).get().then((res) => {
-      // 只获取 pinglunguode 字段，不再覆盖整个 app.userInfo
-      return res.data ? res.data.pinglunguode || [] : [];
-    }).catch(() => []);
   },
 
 
@@ -1192,27 +1122,6 @@ Page({
 
 
 
-  //用云函数发表评论
-  async fbzbpj(pinglunnr, pd) {
-    if (this._commentSubmitting) return false;
-    this._commentSubmitting = true;
-    try {
-      return await cloudCall.callCloudFunction('fbzbpj', {
-        pinglunnr: pinglunnr,
-        pd: pd
-      });
-    } catch (err) {
-      console.log(err);
-      wx.showToast({ title: cloudCall.errorMessage(err, '评论失败，请重试'), icon: 'none' });
-      return false;
-    } finally {
-      this._commentSubmitting = false;
-    }
-
-  },
-
-
-
   //实时获取input,写到data中储存为wbnr
   wbnr(e) {
     //console.log(e.detail.value)
@@ -1341,9 +1250,7 @@ Page({
           // For now I follow "Shows Completed".
 
           // Increment Download Count
-          cloudCall.callCloudFunction('look', {
-            action: 'incrementDownload', id: that.data.id
-          }).then(res => {
+          postService.incrementDownload(that.data.id).then(res => {
             console.log("Download count incremented");
             // Update local state
             let current = that.data.ss_xx.ss_xx.downloads || 0;
@@ -1402,7 +1309,7 @@ Page({
 
 
   //点赞帖子
-  dianzan(e) {
+  async dianzan(e) {
     //判断是否举报过
     //console.log("点赞id",e.currentTarget.dataset.dianzanid)
     //var dianzanid=e.currentTarget.dataset.dianzanid//取到dianzan数组
@@ -1457,9 +1364,10 @@ Page({
 
 
 
-    wx.cloud.callFunction({
-      name: "dianzan",
-      data: {
+    if (this._postLikeSubmitting) return
+    this._postLikeSubmitting = true
+    try {
+      await postService.toggleLike({
         id: ssid,
         dzrid: id,//点赞人id
         type: 'tianmeizhoubian',
@@ -1470,8 +1378,13 @@ Page({
         ywnr: ywnr,
         zilei: zilei,
         zbtitle: zbtitle
-      }
-    })
+      })
+    } catch (err) {
+      wx.showToast({ title: cloudCall.errorMessage(err, '点赞失败'), icon: 'none' })
+      return
+    } finally {
+      this._postLikeSubmitting = false
+    }
     var ss_xx = this.data.ss_xx
     if (this.data.dianzan) {
       ss_xx.ss_xx.dianzannb--
@@ -1717,8 +1630,8 @@ Page({
       cancelColor: '#000000',
       success(res) {
         if (res.confirm) {
-          cloudCall.callCloudFunction('delete', {
-            action: 'deletePost', collection: 'tianmeizhoubian', postId: that.data.id
+          postService.managePost('deletePost', {
+            collection: 'tianmeizhoubian', postId: that.data.id
           }).then(() => {
             that.setData({ ss_xx: 0 });
             wx.showToast({ title: '已删除', icon: "none" });
@@ -1742,8 +1655,8 @@ Page({
 
       if (openlocationtitle) {
         var targetTakeOrder = !this.data.ss_xx.ss_xx.orderdetail.takeorder;
-        cloudCall.callCloudFunction('delete', {
-          action: 'toggleOrder', collection: 'tianmeizhoubian', postId: this.data.id,
+        postService.managePost('toggleOrder', {
+          collection: 'tianmeizhoubian', postId: this.data.id,
           takeorder: targetTakeOrder
         }).then(() => {
           wx.showToast({ title: targetTakeOrder ? '结束' : '已恢复' });
@@ -1752,8 +1665,8 @@ Page({
         });
       } else {
         var targetIsOver = !this.data.ss_xx.ss_xx.isover;
-        cloudCall.callCloudFunction('delete', {
-          action: 'toggleActivity', collection: 'tianmeizhoubian', postId: this.data.id,
+        postService.managePost('toggleActivity', {
+          collection: 'tianmeizhoubian', postId: this.data.id,
           isover: targetIsOver
         }).then(() => {
           wx.showToast({ title: targetIsOver ? '已结束' : '已恢复' });
@@ -1780,8 +1693,8 @@ Page({
     if (!this.checkFullLogin()) return;
     var _id = app.userInfo._id;
     if (_id != this.data.ss_xx.ss_xx.lzid) {
-      db.collection(this.data.ku).doc(this.data.id).get().then((res) => {
-        var takeorder = res.data.ss_xx.orderdetail.takeorder;
+      postService.getPost(this.data.ku, this.data.id).then((post) => {
+        var takeorder = post && post.ss_xx && post.ss_xx.orderdetail && post.ss_xx.orderdetail.takeorder;
         if (takeorder) {
           this.setData({ 'ss_xx.ss_xx.orderdetail.takeorder': true });
           wx.showToast({ title: '已接单', icon: 'none' });
@@ -1797,7 +1710,7 @@ Page({
               if (res.confirm) {
                 var takeorderphone = res.content;
                 var takeordername = app.userInfo.userinfo.username;
-                cloudCall.callCloudFunction('ordernotice', {
+                postService.takeOrder({
                   orderid: this.data.id,
                   postType: 'zhoubian',
                   ordertitle: this.data.ss_xx.ss_xx.orderdetail.ordertitle,
@@ -1846,20 +1759,22 @@ Page({
       showCancel: true,
       confirmText: '确认举报',
       confirmColor: '#FF4D49',
-      success(res) {
+      async success(res) {
         if (res.confirm) {
           var ssid = e.currentTarget.dataset.id;
           var cc = that.data.ss_xx.ss_xx.nr || '分享内容';
-          wx.cloud.callFunction({
-            name: "jubao",
-            data: {
+          try {
+            await postService.reportPost({
               id: ssid,
               time: new Date().getTime(),
               ywnr: cc,
               jbrid: app.userInfo._id,
               type: that.data.ku // Use current collection name type
-            }
-          });
+            })
+          } catch (err) {
+            wx.showToast({ title: cloudCall.errorMessage(err, '举报失败'), icon: 'none' })
+            return
+          }
           var ss_xx = that.data.ss_xx;
           ss_xx.ss_xx.jubao[0].push(id);
           ss_xx.ss_xx.jubao[1]++;
@@ -1873,7 +1788,7 @@ Page({
   /**
   * 评论点赞
   */
-  pldianzan(e) {
+  async pldianzan(e) {
     if (!this.checkFullLogin()) return;
     var _id = app.userInfo._id;
     var id = e.currentTarget.dataset.id;
@@ -1890,9 +1805,10 @@ Page({
     var name = app.userInfo.userinfo.username;
     var photo = app.userInfo.userinfo.userphoto;
 
-    wx.cloud.callFunction({
-      name: "dianzan",
-      data: {
+    if (this._commentLikeSubmitting) return;
+    this._commentLikeSubmitting = true;
+    try {
+      await commentService.toggleLike({
         id: id,
         dzrid: _id,
         plid: plid,
@@ -1904,8 +1820,13 @@ Page({
         time: time,
         pllzid: pllzid,
         plnr: plnr
-      }
-    });
+      });
+    } catch (err) {
+      wx.showToast({ title: cloudCall.errorMessage(err, '点赞失败'), icon: 'none' });
+      return;
+    } finally {
+      this._commentLikeSubmitting = false;
+    }
 
     var ss_xx = this.data.ss_xx;
     if (ss_xx.ss_xx.huifunr[index0].pllove) {
@@ -2053,8 +1974,8 @@ Page({
 
     wx.showLoading({ title: '更新中...', mask: true });
 
-    cloudCall.callCloudFunction('delete', {
-      action: 'editPost', collection: 'tianmeizhoubian', postId: id,
+    postService.managePost('editPost', {
+      collection: 'tianmeizhoubian', postId: id,
       nr: ss_xx.nr, zbtitle: ss_xx.zbtitle, link: ss_xx.link,
       lianxi: ss_xx.lianxi, weizhi: ss_xx.weizhi,
       latitude: ss_xx.latitude, longitude: ss_xx.longitude
@@ -2387,12 +2308,31 @@ Page({
         content: '删除后无法恢复！',
         confirmText: '确认删除',
         confirmColor: '#FF4D49',
-        success(res) {
+        async success(res) {
           if (res.confirm) {
             var id = e.currentTarget.dataset.id0;
             var index = e.currentTarget.dataset.index;
             var ss_xx = that.data.ss_xx.ss_xx;
             var index1 = e.currentTarget.dataset.index1;
+
+            var _data = {
+              id0: id,
+              id1: e.currentTarget.dataset.id1 || "",
+              time: e.currentTarget.dataset.time,
+              time1: e.currentTarget.dataset.time1 || "",
+              id: that.data.id,
+              liuyan: that.data.liuyan,
+              type111: that.data.ku,
+              collection: that.data.ku,
+              tableName: that.data.ku,
+              type: that.data.ku
+            };
+            try {
+              await commentService.deleteComment(_data);
+            } catch (err) {
+              wx.showToast({ title: cloudCall.errorMessage(err, '删除失败'), icon: 'none' });
+              return;
+            }
 
             if (index1 == undefined) {
               ss_xx.huifunr.splice(index, 1);
@@ -2403,23 +2343,6 @@ Page({
             that.setData({ "ss_xx.ss_xx": ss_xx });
             wx.showToast({ title: '删除成功', icon: "none" });
 
-            // Invoke cloud delete
-            var _data = {
-              id0: id,
-              id1: e.currentTarget.dataset.id1 || "", // Ensure empty string if undefined for main comments
-              time: e.currentTarget.dataset.time,
-              time1: e.currentTarget.dataset.time1 || "",
-              id: that.data.id,
-              liuyan: that.data.liuyan,
-              type111: that.data.ku, // existing logic
-              collection: that.data.ku, // explicitly specify collection
-              tableName: that.data.ku, // alias
-              type: that.data.ku // alias
-            };
-            wx.cloud.callFunction({
-              name: 'delete',
-              data: { _data },
-            });
           }
         }
       });
@@ -2481,14 +2404,9 @@ Page({
   async checkImg(media) {
     console.log("要检测的buffer", media);
     try {
-      var res = await wx.cloud.callFunction({
-        name: 'checkImg',
-        data: {
-          media
-        }
-      });
-      console.log("云检测结果", res.result);
-      return res.result.errCode;
+      var errCode = await commentService.checkImage(media);
+      console.log("云检测结果", errCode);
+      return errCode;
     } catch (err) {
       console.log("云检测错误", err);
       return 1;

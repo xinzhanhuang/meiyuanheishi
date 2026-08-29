@@ -11,6 +11,10 @@ function incrementView(postId, postType) {
   return callCloudFunction('look', { id: postId, type: postType, num: 1 })
 }
 
+function incrementDownload(postId) {
+  return callCloudFunction('look', { action: 'incrementDownload', id: postId })
+}
+
 function managePost(action, data) {
   return callCloudFunction('delete', Object.assign({ action }, data))
 }
@@ -35,4 +39,4 @@ function publishPost(data) {
   return callCloudFunction('publishPost', data)
 }
 
-module.exports = { getPost, incrementView, managePost, reportPost, bookmarkPost, toggleLike, takeOrder, publishPost }
+module.exports = { getPost, incrementView, incrementDownload, managePost, reportPost, bookmarkPost, toggleLike, takeOrder, publishPost }
