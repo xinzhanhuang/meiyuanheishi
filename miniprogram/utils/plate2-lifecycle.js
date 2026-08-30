@@ -7,6 +7,10 @@ module.exports = {
 
   onLoad: function (options) {
   const target = utils.getPostTarget(options, 'ss');
+  // 分享/消息跨院校进入时只恢复浏览上下文，不改变现有数据加载策略。
+  if (app.setCurrentSchoolId && target.schoolId && app.getCurrentSchoolId() !== target.schoolId) {
+    app.setCurrentSchoolId(target.schoolId);
+  }
   this.commentId = target.replyId || target.commentId;
   // Initialize window metrics for top-based positioning
   const sys = wx.getSystemInfoSync();
@@ -121,7 +125,8 @@ module.exports = {
     openid: lzopenid,
     lzid,
     orderlzid,
-    lzopenid
+    lzopenid,
+    schoolId: target.schoolId
   });
 
   // 键盘弹起

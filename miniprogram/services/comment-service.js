@@ -1,11 +1,16 @@
 const { callCloudFunction } = require('../utils/cloud-call')
+const app = getApp()
+
+function schoolId() {
+  return app && typeof app.getCurrentSchoolId === 'function' ? app.getCurrentSchoolId() : 'tjarts'
+}
 
 function publishComment(pinglunnr, pd, Mazhu) {
-  return callCloudFunction('fbpl', { pinglunnr, pd, Mazhu })
+  return callCloudFunction('fbpl', { pinglunnr: Object.assign({ schoolId: schoolId() }, pinglunnr), pd, Mazhu })
 }
 
 function publishNearbyComment(pinglunnr, pd) {
-  return callCloudFunction('fbzbpj', { pinglunnr, pd })
+  return callCloudFunction('fbzbpj', { pinglunnr: Object.assign({ schoolId: schoolId() }, pinglunnr), pd })
 }
 
 function rateNearbyPost(postId, rating) {
@@ -17,7 +22,7 @@ function deleteComment(data) {
 }
 
 function toggleLike(data) {
-  return callCloudFunction('dianzan', Object.assign({ type: 'sspinglun' }, data))
+  return callCloudFunction('dianzan', Object.assign({ type: 'sspinglun', schoolId: schoolId() }, data))
 }
 
 function checkText(text) {

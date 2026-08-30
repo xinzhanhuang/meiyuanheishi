@@ -45,6 +45,7 @@ async function togglePostLike(event, actorId, collectionName, postType) {
       postId: event.id,
       postType,
       source: 'message',
+      schoolId: event.schoolId || 'tjarts',
       isorder: false
     }
     if (collectionName === 'tianmeizhoubian') notification.subtype = 'tianmeizhoubian'
@@ -97,6 +98,7 @@ async function toggleCommentLike(event, actorId, collectionName) {
           postType: collectionName === 'tianmeizhoubian' ? 'zhoubian' : 'ss',
           commentId: event.plid,
           source: 'message',
+          schoolId: event.schoolId || 'tjarts',
           isorder: false,
           subtype: collectionName === 'tianmeizhoubian' ? 'tianmeizhoubian' : ''
         })

@@ -2,8 +2,7 @@
 const app = getApp()
 const { getCloudEnvId } = require('./config/cloud-env')
 const { callCloudFunction } = require('./utils/cloud-call')
-const { DEFAULT_SCHOOL_ID, SCHOOLS, getSchools, getSchool } = require('./config/schools')
-const { loadSchoolCatalog } = require('./services/school-service')
+const schoolContext = require('./services/school-context-service')
 App({
   onLaunch: function () {
     if (!wx.cloud) {
@@ -21,9 +20,9 @@ App({
     this.system1 = ""
     this.hongdian = false//标记当前tabar上是否有红点、文本
     this.myTabIndex = 1
-    this.currentSchool = getSchool(wx.getStorageSync('currentSchoolId') || DEFAULT_SCHOOL_ID)
+    this.currentSchool = schoolContext.get(this)
     this.currentSchoolId = this.currentSchool.id
-    this.schools = getSchools()
+    this.schools = schoolContext.list(this)
     this.schoolConfigReady = false
     this.refreshSchoolConfig()
     this.shuaxin = false
@@ -113,31 +112,25 @@ App({
   },
 
   getCurrentSchoolId() {
-    return this.currentSchoolId || DEFAULT_SCHOOL_ID
+    return schoolContext.get(this).id
+  },
+
+  getSchools() {
+    return schoolContext.list(this)
   },
 
   refreshSchoolConfig() {
     if (this.schoolConfigPromise) return this.schoolConfigPromise
-    this.schoolConfigPromise = loadSchoolCatalog().then(result => {
-      this.schools = result.schools
-      this.setCurrentSchoolId(wx.getStorageSync('currentSchoolId') || DEFAULT_SCHOOL_ID)
-      this.schoolConfigReady = true
-      return result
-    }).catch(error => {
-      console.warn('学校配置加载失败，继续使用本地默认配置', error)
-      this.schools = SCHOOLS
-      this.setCurrentSchoolId(DEFAULT_SCHOOL_ID)
-      this.schoolConfigReady = true
-      return { schools: this.schools, currentSchoolId: DEFAULT_SCHOOL_ID, source: 'local', reason: 'app-refresh-failed', error }
-    }).finally(() => { this.schoolConfigPromise = null })
+    this.schoolConfigPromise = schoolContext.refresh(this).finally(() => { this.schoolConfigPromise = null })
     return this.schoolConfigPromise
   },
 
   setCurrentSchoolId(schoolId) {
-    this.currentSchool = getSchool(schoolId)
-    this.currentSchoolId = this.currentSchool.id
-    wx.setStorageSync('currentSchoolId', this.currentSchoolId)
-    return this.currentSchool
+    return schoolContext.set(this, schoolId)
+  },
+
+  subscribeSchoolContext(listener) {
+    return schoolContext.subscribe(this, listener)
   },
 
   applyCurrentUser(user) {
@@ -175,7 +168,11 @@ App({
 
   setPendingPostTarget(target) {
     if (!target || !target.postId) return
-    this.pendingPostTarget = Object.assign({}, target, { expiresAt: Date.now() + 30 * 60 * 1000 })
+    this.pendingPostTarget = Object.assign({}, target, {
+      // 登录返回必须恢复进入目标所属院校；旧调用方没有传值时使用当前院校。
+      schoolId: target.schoolId || this.getCurrentSchoolId(),
+      expiresAt: Date.now() + 30 * 60 * 1000
+    })
     wx.setStorageSync('pendingPostTarget', this.pendingPostTarget)
   },
 

@@ -1,3 +1,16 @@
+const { DEFAULT_SCHOOL_ID } = require('../config/schools')
+
+function getActiveSchoolId() {
+  try {
+    const app = typeof getApp === 'function' ? getApp() : null
+    return app && typeof app.getCurrentSchoolId === 'function'
+      ? app.getCurrentSchoolId()
+      : DEFAULT_SCHOOL_ID
+  } catch (error) {
+    return DEFAULT_SCHOOL_ID
+  }
+}
+
 const util = {
   API: 'http://localhost:3336/api/', 
   webSrc: 'http://localhost:8080/dist/#/dayin_wx',
@@ -284,7 +297,8 @@ const util = {
       commentId: source.commentId || '',
       replyId: source.replyId || '',
       source: source.source || '',
-      schoolId: source.schoolId || '',
+      // 旧链接没有 schoolId 时仍归属现有默认院校。
+      schoolId: source.schoolId || DEFAULT_SCHOOL_ID,
       liuyan: isMessage || rawType === 'tj'
     };
   },
@@ -299,7 +313,7 @@ const util = {
     ];
     if (target.commentId) params.push(`commentId=${encodeURIComponent(target.commentId)}`);
     if (target.replyId) params.push(`replyId=${encodeURIComponent(target.replyId)}`);
-    if (target.schoolId) params.push(`schoolId=${encodeURIComponent(target.schoolId)}`);
+    params.push(`schoolId=${encodeURIComponent(target.schoolId || getActiveSchoolId())}`);
     if (target.liuyan || type === 'tj') params.push('liuyan=true');
     return `${page}?${params.join('&')}`;
   },

@@ -38,12 +38,13 @@ exports.main = async (event = {}, context) => {
   var id = event.pinglunnr.ssid
   var lzid = event.pinglunnr.lzid
   var plrid = event.pinglunnr.plrid
+  var schoolId = event.pinglunnr.schoolId || 'tjarts'
 
   if (typeof id !== 'string' || !id || typeof event.pinglunnr.wbnr !== 'string') {
     return { success: false, errCode: 'INVALID_COMMENT' }
   }
 
-  var path = "pages/plate2/plate2?id=" + id + "&fenxiang=true&liuyan=" + liuyan
+  var path = "pages/plate2/plate2?id=" + id + "&fenxiang=true&liuyan=" + liuyan + "&schoolId=" + encodeURIComponent(schoolId)
   const _ = cloud.database().command
 
   if (liuyan == true) {
@@ -82,6 +83,7 @@ exports.main = async (event = {}, context) => {
         postType: 'ss',
         commentId: event.pinglunnr.ssid + event.pinglunnr.time,
         source: 'message',
+        schoolId: schoolId,
         type: "huifu",
         time: event.pinglunnr.time,
         bhfpl: event.pinglunnr.bhfpl,
@@ -235,6 +237,7 @@ exports.main = async (event = {}, context) => {
         postType: 'ss',
         commentId: event.pinglunnr.ssid + event.pinglunnr.time,
         source: 'message',
+        schoolId: schoolId,
         type: "pinglun",
         time: event.pinglunnr.time,
         ywnr: event.pinglunnr.ywnr,

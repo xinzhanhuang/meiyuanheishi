@@ -59,11 +59,12 @@ exports.main = async (event = {}, context) => {
   var id = event.pinglunnr.ssid
   var lzid = event.pinglunnr.lzid
   var plrid = event.pinglunnr.plrid
+  var schoolId = event.pinglunnr.schoolId || 'tjarts'
   var zilei = event.pinglunnr.zilei
   if (typeof id !== 'string' || !id || typeof event.pinglunnr.wbnr !== 'string') {
     return { success: false, errCode: 'INVALID_COMMENT' }
   }
-  var path = "pages/plate-zhoubian/plate-zhoubian?id=" + id + "&zhoubianfenxiang=true&liuyan=" + liuyan
+  var path = "pages/plate-zhoubian/plate-zhoubian?id=" + id + "&zhoubianfenxiang=true&liuyan=" + liuyan + "&schoolId=" + encodeURIComponent(schoolId)
   const _ = cloud.database().command
 
 
@@ -103,6 +104,7 @@ exports.main = async (event = {}, context) => {
         postType: 'zhoubian',
         commentId: event.pinglunnr.ssid + event.pinglunnr.time,
         source: 'message',
+        schoolId: schoolId,
         type: "zhoubiantype",
         zilei: zilei,
         time: event.pinglunnr.time,
@@ -252,6 +254,7 @@ exports.main = async (event = {}, context) => {
         postType: 'zhoubian',
         commentId: event.pinglunnr.ssid + event.pinglunnr.time,
         source: 'message',
+        schoolId: schoolId,
         type: "zhoubiantype",
         time: event.pinglunnr.time,
         zbtitle: event.pinglunnr.zbtitle,

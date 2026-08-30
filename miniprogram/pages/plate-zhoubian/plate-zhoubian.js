@@ -92,6 +92,10 @@ Page({
   //生命周期函数--监听页面加载
   onLoad: function (options) {
     const target = utils.getPostTarget(options, 'zhoubian');
+    // 仅切换当前浏览院校，保留现有周边数据加载和旧链接行为。
+    if (app.setCurrentSchoolId && target.schoolId && app.getCurrentSchoolId() !== target.schoolId) {
+      app.setCurrentSchoolId(target.schoolId)
+    }
     this.commentId = target.replyId || target.commentId;
     var id = target.postId;
     const isSharedEntry = options.zhoubianfenxiang === 'true' || options.zhoubianfenxiang === 'ture';
@@ -128,7 +132,8 @@ Page({
       zuiress_xx1,
       fenxiang: options.zhoubianfenxiang,
       dianzan: dianzan,
-      id: target.postId
+      id: target.postId,
+      schoolId: target.schoolId
     })
 
     // Initialization logic from plate2.js

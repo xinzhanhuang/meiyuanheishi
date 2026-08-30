@@ -51,6 +51,7 @@ exports.main = async (event = {}, context) => {
                 postId: id,
                 postType: 'zhoubian',
                 source: 'message',
+                schoolId: event.schoolId || 'tjarts',
                 type: 'reject', // Message Type
                 name: '系统通知', // Sender Name
                 photo: '/images/icon/system_notice.png', // System Icon (Fallback or specific)

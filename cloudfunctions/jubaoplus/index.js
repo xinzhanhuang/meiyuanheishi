@@ -49,6 +49,7 @@ exports.main = async (event = {}) => {
         messages.push({
           type: 'jubaoplus', time: now, ssid: event.id, postId: event.id,
           postType: event.type === 'ss' ? 'ss' : 'zhoubian', source: 'message',
+          schoolId: event.schoolId || 'tjarts',
           plnr: event.ywnr || '', name: '帖子被封：', id: event.id + now, liuyan: false
         })
         const violationCount = Number(owner.weiguinb || 0) + 1

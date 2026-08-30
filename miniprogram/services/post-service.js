@@ -26,11 +26,13 @@ function managePost(action, data) {
 }
 
 function reportPost(data) {
-  return callCloudFunction('jubao', data)
+  const app = getApp()
+  return callCloudFunction('jubao', Object.assign({ schoolId: app.getCurrentSchoolId() }, data))
 }
 
 function moderatePost(data) {
-  return callCloudFunction('jubaoplus', data)
+  const app = getApp()
+  return callCloudFunction('jubaoplus', Object.assign({ schoolId: app.getCurrentSchoolId() }, data))
 }
 
 function bookmarkPost(postId) {
@@ -38,11 +40,13 @@ function bookmarkPost(postId) {
 }
 
 function toggleLike(data) {
-  return callCloudFunction('dianzan', Object.assign({ type: 'ss' }, data))
+  const app = getApp()
+  return callCloudFunction('dianzan', Object.assign({ type: 'ss', schoolId: app.getCurrentSchoolId() }, data))
 }
 
 function takeOrder(data) {
-  return callCloudFunction('ordernotice', data)
+  const app = getApp()
+  return callCloudFunction('ordernotice', Object.assign({ schoolId: app.getCurrentSchoolId() }, data))
 }
 
 function publishPost(data) {

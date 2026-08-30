@@ -3,7 +3,8 @@ const app = getApp()
 function shareData(page) {
   const detail = page.data.ss_xx.ss_xx
   const order = detail.orderdetail || {}
-  const query = `id=${page.data.id}&postId=${page.data.id}&postType=ss&source=share&fenxiang=ture&liuyan=${page.data.liuyan}`
+  const schoolId = page.data.schoolId || (app.getCurrentSchoolId && app.getCurrentSchoolId()) || 'tjarts'
+  const query = `id=${encodeURIComponent(page.data.id)}&postId=${encodeURIComponent(page.data.id)}&postType=ss&source=share&schoolId=${encodeURIComponent(schoolId)}&fenxiang=ture&liuyan=${page.data.liuyan}`
   return {
     order,
     query,

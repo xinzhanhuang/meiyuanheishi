@@ -41,6 +41,7 @@ exports.main = async (event = {}) => {
     postId: event.orderid,
     postType: event.postType === 'zhoubian' ? 'zhoubian' : 'ss',
     source: 'message',
+    schoolId: event.schoolId || 'tjarts',
     id: `${Date.now()}${Math.random().toString(36).slice(2, 11)}`,
     liuyan: Boolean(event.liuyan)
   }
@@ -69,7 +70,7 @@ exports.main = async (event = {}) => {
         touser: owner._openid,
         page: event.postType === 'zhoubian'
           ? `pages/plate-zhoubian/plate-zhoubian?id=${event.orderid}&zhoubianfenxiang=true`
-          : `pages/plate2/plate2?id=${event.orderid}&fenxiang=true&liuyan=${Boolean(event.liuyan)}`,
+          : `pages/plate2/plate2?id=${event.orderid}&fenxiang=true&liuyan=${Boolean(event.liuyan)}&schoolId=${encodeURIComponent(event.schoolId || 'tjarts')}`,
         lang: 'zh_CN',
         data: {
           thing1: { value: ordertitle.slice(0, 20) },
