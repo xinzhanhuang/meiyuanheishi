@@ -2,6 +2,27 @@ const cloud = require('wx-server-sdk')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
+const DEFAULT_SCHOOL_ID = 'tjarts'
+
+function getActorSchoolId(actor) {
+  return actor && typeof actor.schoolId === 'string' && actor.schoolId.trim()
+    ? actor.schoolId.trim().slice(0, 64)
+    : DEFAULT_SCHOOL_ID
+}
+
+async function resolveActiveSchoolId(db, requestedSchoolId, actor) {
+  const schoolId = String(requestedSchoolId || getActorSchoolId(actor)).trim().slice(0, 64) || DEFAULT_SCHOOL_ID
+  if (schoolId === DEFAULT_SCHOOL_ID) return schoolId
+  try {
+    const result = await db.collection('schools').doc(schoolId).get()
+    const school = result.data || {}
+    if (school.status === 'active') return schoolId
+  } catch (error) {
+    console.warn('发帖学校校验失败', schoolId, error)
+  }
+  return ''
+}
+
 function fail(code, message, requestId) {
   return { success: false, code, message: message || '', errCode: code, errMsg: message || '', requestId }
 }
@@ -37,7 +58,12 @@ exports.main = async (event = {}) => {
     gender: profile.gender || '',
     zhuanye: profile.zhuanye || ''
   })
-  const schoolId = String(event.schoolId || ss_xx.schoolId || '')
+  // 用户主学校与当前浏览学校分离；发帖归属前端选定且经云端验证的 active 学校。
+  const schoolId = event.postType === 'zhoubian'
+    ? String(event.schoolId || ss_xx.schoolId || '')
+    : await resolveActiveSchoolId(db, event.schoolId, actor)
+  if (event.postType !== 'zhoubian' && !schoolId) return fail('INVALID_SCHOOL', 'School is unavailable', requestId)
+  if (event.postType !== 'zhoubian') ss_xx.schoolId = schoolId
   const orderdetail = ss_xx.orderdetail || {}
   const postType = event.postType === 'zhoubian'
     ? 'zhoubian'
@@ -102,7 +128,7 @@ exports.main = async (event = {}) => {
 
     for (const option of voteOption) {
       await transaction.collection('VoteOption').add({
-        data: { id: addResult._id, voteOption: option, voteNumber: 0 }
+        data: { id: addResult._id, schoolId, voteOption: option, voteNumber: 0 }
       })
     }
 

@@ -4,6 +4,7 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
 const db = cloud.database()
 const _ = db.command
+const DEFAULT_SCHOOL_ID = 'tjarts'
 
 async function legacyVote(event) {
   if (!event.id || !event.itemid) {
@@ -57,6 +58,9 @@ exports.main = async (event = {}) => {
     }).get()
     const post = postResult.data
     const option = optionResult.data
+    const schoolId = post && typeof post.schoolId === 'string' && post.schoolId.trim()
+      ? post.schoolId.trim().slice(0, 64)
+      : DEFAULT_SCHOOL_ID
     const usedVotes = recordResult.data.reduce((total, record) => total + Number(record.voteNumber || 0), 0)
     const voteLimit = Number(post.voteNumberPerPerson || 1)
 
@@ -72,6 +76,7 @@ exports.main = async (event = {}) => {
         _openid: openid,
         voteTime: db.serverDate(),
         voteItemId: itemId,
+        schoolId,
         voteOptionId: optionId,
         voterId: openid,
         voteNumber,

@@ -9,6 +9,7 @@ cloud.init({
 const db = cloud.database();
 const queueCollection = db.collection('work_queue');
 const stateCollection = db.collection('fetch_states');
+const DEFAULT_SCHOOL_ID = 'tjarts';
 
 const TOKEN = process.env.WECHAT_ARTICLE_TOKEN || '';
 const BASE_URL = 'http://47.117.133.51:30015';
@@ -137,6 +138,7 @@ exports.main = async (event, context) => {
                             }
 
                             newItems.push({
+                                schoolId: DEFAULT_SCHOOL_ID,
                                 title: article.title,
                                 url: cleanUrl,
                                 post_time: postTime,

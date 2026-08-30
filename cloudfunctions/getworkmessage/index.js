@@ -10,6 +10,7 @@ cloud.init({
 const db = cloud.database();
 const queueCollection = db.collection('work_queue');
 const ssCollection = db.collection('ss');
+const DEFAULT_SCHOOL_ID = 'tjarts';
 
 async function isAdmin(openid) {
     if (!openid) return false;
@@ -187,6 +188,7 @@ exports.main = async (event = {}, context) => {
         // Save Combined Result
         await ssCollection.add({
             data: {
+                schoolId: DEFAULT_SCHOOL_ID,
                 ss_xx: {
                     title: combinedTitle, // Combined Title
                     choosetitle: "💰工作",

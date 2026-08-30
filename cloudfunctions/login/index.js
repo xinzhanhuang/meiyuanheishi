@@ -11,6 +11,13 @@ cloud.init({
 
 const db = cloud.database()
 const _ = db.command
+const DEFAULT_SCHOOL_ID = 'tjarts'
+
+function getActorSchoolId(user) {
+  return user && typeof user.schoolId === 'string' && user.schoolId.trim()
+    ? user.schoolId.trim().slice(0, 64)
+    : DEFAULT_SCHOOL_ID
+}
 
 const USER_ACTIONS = new Set([
   'ensureUser',
@@ -41,6 +48,7 @@ async function handleUserAction(event, openid) {
     if (!user) {
       const now = Date.now()
       const data = {
+        schoolId: DEFAULT_SCHOOL_ID,
         logintime: now, ban: false, msgnb: [0, 0], allow: true, online: true,
         wenzhang: [], message: [], dzmessage: [], pinglunguode: [], weiguinb: 0,
         phone: '', registrationCompleted: true,
@@ -100,6 +108,7 @@ async function handleUserAction(event, openid) {
     await db.runTransaction(async (transaction) => {
       await transaction.collection('searchLogs').add({
         data: {
+          schoolId: getActorSchoolId(user),
           searchText: keyword,
           userInfo: {
             _id: user._id,
